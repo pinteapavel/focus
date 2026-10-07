@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200;300;400&family=Inter:wght@700&display=swap" rel="stylesheet">
+    <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');document.documentElement.dataset.theme=u.theme||'dark';document.documentElement.dataset.font=u.font||'mono';}catch(e){}</script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-mode="focus" data-tab="focus">
+    <div class="nav">
+        <button class="nav-button" id="clock-btn">Clock</button>
+        <button class="nav-button active" id="focus-btn">Focus</button>
+        <button class="nav-button" id="todo-btn">To do</button>
+    </div>
+
+    <div class="stage">
+        <div class="realtime" id="realtime"><span id="rt-main">00:00</span><span class="rt-seconds" id="rt-sec">:00</span><span class="rt-ampm" id="rt-ampm"></span></div>
+        <div class="clock" id="clock">25:00</div>
+        <div class="progress" id="progress"><div class="progress-bar" id="progress-bar"></div></div>
+    </div>
+
+    <div class="below">
+        <div class="focus-container" id="focus-container">
+            <div class="status" id="status">Focus Time</div>
+            <div class="controls">
+                <button class="btn primary" id="start-btn">Start</button>
+                <button class="btn" id="pause-btn">Pause</button>
+                <button class="btn" id="reset-btn">Reset</button>
+            </div>
+
+            <div class="settings">
+                <div class="presets" id="presets">
+                    <button class="preset" data-min="15">15</button>
+                    <button class="preset" data-min="25">25</button>
+                    <button class="preset" data-min="45">45</button>
+                    <button class="preset" data-min="60">60</button>
+                </div>
+                <div class="custom">
+                    <label>Focus <input type="number" id="focus-input" min="1" max="180" value="25"> min</label>
+                    <label>Break <input type="number" id="break-input" min="1" max="60" value="5"> min</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="todo-container" id="todo-container">
+            <div class="todo-input">
+                <input type="text" id="task-input" placeholder="Enter a task..." maxlength="120">
+                <button class="btn primary" id="add-btn">Add</button>
+            </div>
+            <ul class="todo-list" id="todo-list"></ul>
+        </div>
+    </div>
+
+    <!-- Settings -->
+    <button class="icon-btn" id="settings-btn" aria-label="Open settings" aria-expanded="false" aria-controls="settings-panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+    </button>
+
+    <div class="overlay" id="overlay"></div>
+
+    <aside class="panel" id="settings-panel" aria-hidden="true" aria-label="Settings">
+        <div class="panel-head">
+            <h2>Settings</h2>
+            <button class="icon-btn small" id="settings-close" aria-label="Close settings">&times;</button>
+        </div>
+
+        <section class="panel-section">
+            <h3>Account</h3>
+            <button class="btn full" disabled>Continue with Google</button>
+            <p class="panel-note">Sign in to keep your tasks and settings synced across devices. Coming soon.</p>
+        </section>
+
+        <section class="panel-section">
+            <h3>Appearance</h3>
+            <div class="setting-row"><span>Theme</span>
+                <select id="theme-select"><option value="dark">Dark</option><option value="light">Light</option></select></div>
+            <div class="setting-row"><span>Time format</span>
+                <select id="format-select"><option value="24">24h</option><option value="12">12h</option></select></div>
+            <div class="setting-row"><span>Show seconds</span>
+                <input type="checkbox" class="switch" id="seconds-switch" checked></div>
+            <div class="setting-row"><span>Clock font</span>
+                <select id="font-select"><option value="mono">Mono</option><option value="inter">Inter (Bold)</option></select></div>
+        </section>
+
+        <section class="panel-section">
+            <h3>Timer</h3>
+            <div class="setting-row"><span>Sound at the end</span>
+                <input type="checkbox" class="switch" checked disabled></div>
+            <div class="setting-row"><span>Auto-start breaks</span>
+                <input type="checkbox" class="switch" checked disabled></div>
+        </section>
+
+        <section class="panel-section">
+            <h3>Data</h3>
+            <div class="setting-row"><span>Export tasks</span>
+                <button class="preset" disabled>Export</button></div>
+            <div class="setting-row"><span>Clear all data</span>
+                <button class="preset" disabled>Clear</button></div>
+        </section>
+    </aside>
+
+    <script src="script.js"></script>
+</body>
+</html>
