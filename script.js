@@ -79,6 +79,7 @@ function changeUi(key, value) {
     ui[key] = value;
     store.set('ui', ui);
     applyUi();
+    pushSettings();
 }
 
 themeSelect.addEventListener('change', () => changeUi('theme', themeSelect.value));
@@ -211,6 +212,7 @@ function applySettings() {
     focusInput.value = settings.focus;
     breakInput.value = settings.brk;
     store.set('settings', settings);
+    pushSettings();
     // If the timer is running, new values apply after the next Reset
     if (!running) {
         paused = false;
@@ -235,7 +237,11 @@ function saveTasks() { store.set('tasks', tasks); }
 
 function renderTasks() {
     // Done tasks stay (crossed out) for the rest of the day, then disappear
-    tasks = tasks.filter((t) => !t.done || t.doneOn === today());
+    const stale = tasks.filter((t) => t.done && t.doneOn !== today());
+    if (stale.length) {
+        tasks = tasks.filter((t) => !stale.includes(t));
+        cloudDelete(stale.map((t) => t.id));
+    }
     saveTasks();
     todoList.replaceChildren();
 
@@ -273,9 +279,11 @@ function renderTasks() {
 function addTask() {
     const text = taskInput.value.trim();
     if (!text) return;
-    tasks.push({ id: Date.now(), text, done: false, doneOn: null });
+    const task = { id: Date.now(), text, done: false, doneOn: null };
+    tasks.push(task);
     taskInput.value = '';
     renderTasks();
+    cloudUpsert(task);
 }
 
 todoList.addEventListener('change', (e) => {
@@ -286,6 +294,7 @@ todoList.addEventListener('change', (e) => {
     t.done = e.target.checked;
     t.doneOn = t.done ? today() : null;
     renderTasks();
+    cloudUpsert(t);
 });
 
 todoList.addEventListener('click', (e) => {
@@ -293,6 +302,7 @@ todoList.addEventListener('click', (e) => {
     const id = Number(e.target.closest('li').dataset.id);
     tasks = tasks.filter((x) => x.id !== id);
     renderTasks();
+    cloudDelete([id]);
 });
 
 addBtn.addEventListener('click', addTask);
@@ -328,6 +338,148 @@ overlay.addEventListener('click', () => setPanel(false));
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && settingsPanel.classList.contains('open')) setPanel(false);
 });
+
+// ---------- Cloud sync (Supabase) ----------
+const SUPABASE_URL = 'https://bdlrjmcrmlaqwuzynvtz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_vWR5en-EDQdOO66ZbOzklQ_E1PdcAKI';
+
+const googleBtn = $('google-btn');
+const signoutBtn = $('signout-btn');
+const accountOut = $('account-out');
+const accountIn = $('account-in');
+const accountEmail = $('account-email');
+const accountNote = $('account-note');
+const syncStatus = $('sync-status');
+
+let sb = null;
+try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch {}
+let user = null;
+let pending = 0;
+
+const toRow = (t) => ({ id: t.id, text: t.text, done: t.done, done_on: t.doneOn });
+const fromRow = (r) => ({ id: Number(r.id), text: r.text, done: r.done, doneOn: r.done_on });
+
+function setSync(msg) { syncStatus.textContent = msg; }
+
+async function track(query) {
+    pending++;
+    try {
+        const { error } = await query;
+        setSync(error ? 'Sync failed. Changes are saved on this device.' : 'Synced');
+    } catch {
+        setSync('Offline. Changes are saved on this device.');
+    } finally {
+        pending--;
+    }
+}
+
+function cloudUpsert(t) {
+    if (sb && user) track(sb.from('tasks').upsert(toRow(t)));
+}
+function cloudDelete(ids) {
+    if (sb && user && ids.length) track(sb.from('tasks').delete().in('id', ids));
+}
+function pushSettings() {
+    if (sb && user) track(sb.from('user_settings').upsert({ user_id: user.id, data: { timer: settings, ui } }));
+}
+
+function applyRemoteSettings(data) {
+    if (data.timer) {
+        settings.focus = clamp(data.timer.focus, 1, 180);
+        settings.brk = clamp(data.timer.brk, 1, 60);
+        store.set('settings', settings);
+        focusInput.value = settings.focus;
+        breakInput.value = settings.brk;
+        if (!running) { paused = false; remaining = duration(); }
+        markPreset();
+        render();
+    }
+    if (data.ui) {
+        ui.theme = data.ui.theme === 'light' ? 'light' : 'dark';
+        ui.format = data.ui.format === '12' ? '12' : '24';
+        ui.seconds = data.ui.seconds !== false;
+        ui.font = data.ui.font === 'inter' ? 'inter' : 'mono';
+        store.set('ui', ui);
+        applyUi();
+    }
+}
+
+async function loadCloud() {
+    if (!sb || !user || pending) return;
+    const uid = user.id;
+    setSync('Syncing…');
+    try {
+        const { data: remote, error } = await sb.from('tasks').select('*').order('id');
+        if (error) throw error;
+
+        if (!store.get('synced:' + uid, false)) {
+            // First sign-in on this device: keep tasks made before signing in
+            const have = new Set(remote.map((r) => Number(r.id)));
+            const extra = tasks.filter((t) => !have.has(t.id));
+            if (extra.length) {
+                const { error: e2 } = await sb.from('tasks').upsert(extra.map(toRow));
+                if (e2) throw e2;
+            }
+            tasks = [...remote.map(fromRow), ...extra].sort((a, b) => a.id - b.id);
+            store.set('synced:' + uid, true);
+        } else {
+            tasks = remote.map(fromRow);
+        }
+        if (!user || user.id !== uid) return;
+        renderTasks();
+
+        const { data: s, error: e3 } = await sb.from('user_settings').select('data').maybeSingle();
+        if (e3) throw e3;
+        if (s && s.data) applyRemoteSettings(s.data);
+        else pushSettings();
+        setSync('Synced');
+    } catch {
+        setSync('Sync failed. Working offline.');
+    }
+}
+
+function updateAccountUi() {
+    accountOut.hidden = !!user;
+    accountIn.hidden = !user;
+    accountEmail.textContent = user ? (user.email || 'Signed in') : '';
+}
+
+googleBtn.addEventListener('click', async () => {
+    if (!sb) {
+        accountNote.textContent = 'Could not load the sign-in service. Check your connection.';
+        return;
+    }
+    const { error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + window.location.pathname }
+    });
+    if (error) accountNote.textContent = 'Could not start sign-in. Please try again.';
+});
+
+signoutBtn.addEventListener('click', async () => {
+    if (!sb) return;
+    await sb.auth.signOut();
+    // Clear this device's copy so the next person who signs in doesn't inherit it
+    tasks = [];
+    renderTasks();
+});
+
+if (sb) {
+    sb.auth.onAuthStateChange((event, session) => {
+        const next = session ? session.user : null;
+        const changed = (next && next.id) !== (user && user.id);
+        user = next;
+        updateAccountUi();
+        if (user && changed) setTimeout(loadCloud, 0);
+    });
+}
+
+// Refresh from the cloud when coming back to the tab (e.g. after using another device)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && user) loadCloud();
+});
+
+updateAccountUi();
 
 // ---------- Init ----------
 focusInput.value = settings.focus;

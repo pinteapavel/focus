@@ -515,3 +515,9 @@ body[data-tab="clock"] .stage { width: auto; max-width: 100%; }
 @media (max-width: 380px) {
     .nav-button { padding: 8px 14px; }
 }
+
+.account-email {
+    margin: 0 0 12px;
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+}

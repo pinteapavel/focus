@@ -73,8 +73,15 @@
 
         <section class="panel-section">
             <h3>Account</h3>
-            <button class="btn full" disabled>Continue with Google</button>
-            <p class="panel-note">Sign in to keep your tasks and settings synced across devices. Coming soon.</p>
+            <div id="account-out">
+                <button class="btn full" id="google-btn">Continue with Google</button>
+                <p class="panel-note" id="account-note">Sign in to keep your tasks and settings synced across devices.</p>
+            </div>
+            <div id="account-in" hidden>
+                <p class="account-email" id="account-email"></p>
+                <button class="btn full" id="signout-btn">Sign out</button>
+                <p class="panel-note" id="sync-status">Synced</p>
+            </div>
         </section>
 
         <section class="panel-section">
@@ -106,6 +113,7 @@
         </section>
     </aside>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
