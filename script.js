@@ -239,6 +239,7 @@ function fmtDuration(ms) {
 }
 
 function updateStats() {
+    if (!statToday || !statWeek) return;
     const today = dayKey();
     const start = weekStartKey();
     let t = 0;
