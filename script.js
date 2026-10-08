@@ -152,6 +152,7 @@ function startTimer() {
     if (running) return;
     if (remaining <= 0) remaining = duration();
     endTime = Date.now() + remaining;
+    lastTickAt = Date.now();
     running = true;
     paused = false;
     tick = setInterval(update, 250);
@@ -160,22 +161,27 @@ function startTimer() {
 
 function pauseTimer() {
     if (!running) return;
+    accrueFocus();
     remaining = endTime - Date.now();
     clearInterval(tick);
     running = false;
     paused = true;
     render();
+    pushSettings();
 }
 
 function resetTimer() {
+    accrueFocus();
     clearInterval(tick);
     running = false;
     paused = false;
     remaining = duration();
     render();
+    pushSettings();
 }
 
 function update() {
+    accrueFocus();
     remaining = endTime - Date.now();
     if (remaining > 0) return render();
 
@@ -183,6 +189,7 @@ function update() {
     if (mode === 'focus') {
         // Focus done: break starts automatically
         mode = 'break';
+        pushSettings();
         remaining = duration();
         endTime = Date.now() + remaining;
         render();
@@ -200,6 +207,99 @@ function update() {
 startBtn.addEventListener('click', startTimer);
 pauseBtn.addEventListener('click', pauseTimer);
 resetBtn.addEventListener('click', resetTimer);
+
+// ---------- Focus time tracking ----------
+// Stored as { deviceId: { 'YYYY-MM-DD': milliseconds } }. Each device only ever
+// increases its own numbers, so merging devices with "max" never loses time.
+const statToday = $('stat-today');
+const statWeek = $('stat-week');
+const focusLog = store.get('focus', {});
+const deviceId = store.get('deviceId', null) || (() => {
+    const id = Math.random().toString(36).slice(2, 10);
+    store.set('deviceId', id);
+    return id;
+})();
+let lastTickAt = null;
+let lastFocusPush = 0;
+
+const pad2 = (n) => String(n).padStart(2, '0');
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+
+function weekStartKey() {
+    const d = new Date();
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // Monday
+    return dayKey(d);
+}
+
+function fmtDuration(ms) {
+    const total = Math.floor(ms / 60000);
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    return h > 0 ? `${h}h ${pad2(m)}m` : `${m}m`;
+}
+
+function updateStats() {
+    const today = dayKey();
+    const start = weekStartKey();
+    let t = 0;
+    let w = 0;
+    for (const days of Object.values(focusLog)) {
+        for (const [day, ms] of Object.entries(days)) {
+            if (day === today) t += ms;
+            if (day >= start && day <= today) w += ms;
+        }
+    }
+    statToday.textContent = `Today: ${fmtDuration(t)}`;
+    statWeek.textContent = `This week: ${fmtDuration(w)}`;
+}
+
+function pruneFocus() {
+    const cutoff = dayKey(new Date(Date.now() - 120 * 86400000));
+    for (const days of Object.values(focusLog)) {
+        for (const day of Object.keys(days)) if (day < cutoff) delete days[day];
+    }
+}
+
+// Adds the time that passed since the last tick, only while a focus session runs
+function accrueFocus() {
+    if (!running || mode !== 'focus' || lastTickAt === null) return;
+    const now = Math.min(Date.now(), endTime);
+    const ms = now - lastTickAt;
+    if (ms <= 0) return;
+    lastTickAt = now;
+    const mine = focusLog[deviceId] || (focusLog[deviceId] = {});
+    const day = dayKey();
+    mine[day] = Math.round((mine[day] || 0) + ms);
+    store.set('focus', focusLog);
+    updateStats();
+    if (Date.now() - lastFocusPush > 60000) {
+        lastFocusPush = Date.now();
+        pushSettings();
+    }
+}
+
+function mergeFocus(remote) {
+    if (!remote || typeof remote !== 'object') return;
+    for (const [dev, days] of Object.entries(remote)) {
+        if (!/^[a-z0-9]{1,16}$/.test(dev) || !days || typeof days !== 'object') continue;
+        const mine = focusLog[dev] || (focusLog[dev] = {});
+        for (const [day, ms] of Object.entries(days)) {
+            const v = Number(ms);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(day) && Number.isFinite(v) && v > (mine[day] || 0)) mine[day] = v;
+        }
+    }
+    pruneFocus();
+    store.set('focus', focusLog);
+    updateStats();
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        accrueFocus();
+        pushSettings();
+    }
+});
+window.addEventListener('pagehide', accrueFocus);
 
 // ---------- Custom duration ----------
 function markPreset() {
@@ -271,7 +371,13 @@ function renderTasks() {
         del.textContent = 'Delete';
         del.setAttribute('aria-label', `Delete ${t.text}`);
 
-        li.append(label, del);
+        const handle = document.createElement('span');
+        handle.className = 'drag-handle';
+        handle.textContent = '\u283F';
+        handle.title = 'Drag to reorder';
+        handle.setAttribute('aria-hidden', 'true');
+
+        li.append(handle, label, del);
         todoList.append(li);
     });
 }
@@ -329,15 +435,119 @@ function setPanel(open) {
     overlay.classList.toggle('open', open);
     settingsPanel.setAttribute('aria-hidden', String(!open));
     settingsBtn.setAttribute('aria-expanded', String(open));
+    if (open) updateStats();
     (open ? settingsClose : settingsBtn).focus();
 }
 
 settingsBtn.addEventListener('click', () => setPanel(true));
 settingsClose.addEventListener('click', () => setPanel(false));
 overlay.addEventListener('click', () => setPanel(false));
+
+// ---------- Keyboard shortcuts ----------
+let swallowSpaceUp = false;
+
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && settingsPanel.classList.contains('open')) setPanel(false);
+    if (e.key === 'Escape') {
+        if (settingsPanel.classList.contains('open')) setPanel(false);
+        else if (document.activeElement === taskInput) taskInput.blur();
+        return;
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
+    if (settingsPanel.classList.contains('open')) return;
+
+    const key = e.key.toLowerCase();
+    const onTimerTab = document.body.dataset.tab !== 'clock';
+
+    if (e.key === ' ' && onTimerTab) {
+        e.preventDefault();
+        if (tag === 'BUTTON') swallowSpaceUp = true;
+        if (running) pauseTimer();
+        else startTimer();
+    } else if (key === 'r' && onTimerTab) {
+        resetTimer();
+    } else if (key === 'n') {
+        e.preventDefault();
+        showTab('todo');
+        taskInput.focus();
+    }
 });
+
+document.addEventListener('keyup', (e) => {
+    if (e.key === ' ' && swallowSpaceUp) {
+        e.preventDefault();
+        swallowSpaceUp = false;
+    }
+});
+
+// ---------- Reorder tasks (drag & drop) ----------
+let drag = null;
+let suppressClick = false;
+
+todoList.addEventListener('pointerdown', (e) => {
+    const li = e.target.closest('.todo-item');
+    if (!li || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    const onHandle = e.target.closest('.drag-handle');
+    const mouseGrab = e.pointerType === 'mouse' && !e.target.closest('input, button');
+    if (!onHandle && !mouseGrab) return;
+    drag = { li, id: Number(li.dataset.id), startY: e.clientY, active: false, index: 0 };
+});
+
+document.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const dy = e.clientY - drag.startY;
+    if (!drag.active) {
+        if (Math.abs(dy) < 6) return;
+        drag.active = true;
+        drag.li.classList.add('dragging');
+        todoList.classList.add('is-dragging');
+    }
+    e.preventDefault();
+    drag.li.style.transform = `translateY(${dy}px)`;
+
+    const others = [...todoList.querySelectorAll('.todo-item')].filter((x) => x !== drag.li);
+    let idx = others.findIndex((x) => {
+        const r = x.getBoundingClientRect();
+        return e.clientY < r.top + r.height / 2;
+    });
+    if (idx === -1) idx = others.length;
+    drag.index = idx;
+    others.forEach((x, i) => {
+        x.classList.toggle('drop-before', i === idx);
+        x.classList.toggle('drop-after', idx === others.length && i === others.length - 1);
+    });
+});
+
+function endDrag(cancel) {
+    if (!drag) return;
+    const d = drag;
+    drag = null;
+    d.li.classList.remove('dragging');
+    d.li.style.transform = '';
+    todoList.classList.remove('is-dragging');
+    todoList.querySelectorAll('.drop-before, .drop-after')
+        .forEach((x) => x.classList.remove('drop-before', 'drop-after'));
+    if (!d.active) return;
+
+    // The click that follows a drag must not toggle the task
+    suppressClick = true;
+    setTimeout(() => { suppressClick = false; }, 0);
+    if (cancel) return;
+
+    const from = tasks.findIndex((t) => t.id === d.id);
+    if (from < 0) return;
+    const [moved] = tasks.splice(from, 1);
+    tasks.splice(d.index, 0, moved);
+    renderTasks();
+    pushSettings();
+}
+
+document.addEventListener('pointerup', () => endDrag(false));
+document.addEventListener('pointercancel', () => endDrag(true));
+todoList.addEventListener('click', (e) => {
+    if (suppressClick) { e.preventDefault(); e.stopPropagation(); }
+}, true);
 
 // ---------- Cloud sync (Supabase) ----------
 const SUPABASE_URL = 'https://bdlrjmcrmlaqwuzynvtz.supabase.co';
@@ -380,10 +590,11 @@ function cloudDelete(ids) {
     if (sb && user && ids.length) track(sb.from('tasks').delete().in('id', ids));
 }
 function pushSettings() {
-    if (sb && user) track(sb.from('user_settings').upsert({ user_id: user.id, data: { timer: settings, ui } }));
+    if (sb && user) track(sb.from('user_settings').upsert({ user_id: user.id, data: { timer: settings, ui, order: tasks.map((t) => t.id), focus: focusLog } }));
 }
 
 function applyRemoteSettings(data) {
+    if (data.focus) mergeFocus(data.focus);
     if (data.timer) {
         settings.focus = clamp(data.timer.focus, 1, 180);
         settings.brk = clamp(data.timer.brk, 1, 60);
@@ -426,10 +637,15 @@ async function loadCloud() {
             tasks = remote.map(fromRow);
         }
         if (!user || user.id !== uid) return;
-        renderTasks();
 
         const { data: s, error: e3 } = await sb.from('user_settings').select('data').maybeSingle();
         if (e3) throw e3;
+        if (s && s.data && Array.isArray(s.data.order)) {
+            const pos = new Map(s.data.order.map((id, i) => [Number(id), i]));
+            const rank = (t) => (pos.has(t.id) ? pos.get(t.id) : Infinity);
+            tasks.sort((a, b) => (rank(a) === rank(b) ? a.id - b.id : rank(a) - rank(b)));
+        }
+        renderTasks();
         if (s && s.data) applyRemoteSettings(s.data);
         else pushSettings();
         setSync('Synced');
@@ -487,3 +703,4 @@ breakInput.value = settings.brk;
 markPreset();
 render();
 renderTasks();
+updateStats();
