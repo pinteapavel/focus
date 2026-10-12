@@ -20,6 +20,8 @@ const today = () => new Date().toDateString();
 const focusBtn = $('focus-btn');
 const todoBtn = $('todo-btn');
 const clockTabBtn = $('clock-btn');
+const statsBtn = $('stats-btn');
+const statsContainer = $('stats-container');
 const realtimeEl = $('realtime');
 const rtMain = $('rt-main');
 const rtSec = $('rt-sec');
@@ -47,16 +49,21 @@ function showTab(tab) {
     clockTabBtn.classList.toggle('active', isClock);
     focusBtn.classList.toggle('active', tab === 'focus');
     todoBtn.classList.toggle('active', tab === 'todo');
-    // The current-time clock replaces the timer display on its own tab
+    statsBtn.classList.toggle('active', tab === 'stats');
+    // The timer display is shown on Focus and To do; Clock and Stats have their own content
+    const showTimer = tab === 'focus' || tab === 'todo';
     realtimeEl.style.display = isClock ? 'block' : 'none';
-    clockEl.style.display = isClock ? 'none' : 'block';
-    progressEl.style.display = isClock ? 'none' : 'block';
+    clockEl.style.display = showTimer ? 'block' : 'none';
+    progressEl.style.display = showTimer ? 'block' : 'none';
+    statsContainer.style.display = tab === 'stats' ? 'block' : 'none';
+    if (tab === 'stats') renderStats();
     focusContainer.style.display = tab === 'focus' ? 'block' : 'none';
     todoContainer.style.display = tab === 'todo' ? 'block' : 'none';
 }
 clockTabBtn.addEventListener('click', () => showTab('clock'));
 focusBtn.addEventListener('click', () => showTab('focus'));
 todoBtn.addEventListener('click', () => showTab('todo'));
+statsBtn.addEventListener('click', () => showTab('stats'));
 
 // ---------- Appearance settings ----------
 const ui = Object.assign({ theme: 'dark', format: '24', seconds: true, font: 'mono' }, store.get('ui', {}));
@@ -266,6 +273,7 @@ function updateStats() {
     }
     statToday.textContent = `Today: ${fmtDuration(t)}`;
     statWeek.textContent = `This week: ${fmtDuration(w)}`;
+    if (document.body.dataset.tab === 'stats') renderStatsSoon();
 }
 
 function pruneFocus() {
@@ -315,6 +323,127 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 window.addEventListener('pagehide', accrueFocus);
+
+// ---------- Stats dashboard ----------
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const rangeBtns = document.querySelectorAll('.range-btn');
+let statsRange = 'week';
+let statsTimer = null;
+
+// n days before today, at noon (avoids daylight-saving edge cases)
+function dateAgo(n) {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - n);
+    return d;
+}
+
+function totalsByDay() {
+    const totals = {};
+    for (const days of Object.values(focusLog)) {
+        for (const [day, ms] of Object.entries(days)) totals[day] = (totals[day] || 0) + ms;
+    }
+    return totals;
+}
+
+function shortDuration(ms) {
+    const total = Math.floor(ms / 60000);
+    if (!total) return '0';
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    return h ? (m ? `${h}h${pad2(m)}` : `${h}h`) : `${m}m`;
+}
+
+function makeEl(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+}
+
+function renderStatsSoon() {
+    if (statsTimer) return;
+    statsTimer = setTimeout(() => { statsTimer = null; renderStats(); }, 1000);
+}
+
+function renderStats() {
+    const totals = totalsByDay();
+    const ms = (d) => totals[dayKey(d)] || 0;
+    const now = dateAgo(0);
+    const month = statsRange === 'month';
+
+    // Cards
+    const today = ms(now);
+    const diff = today - ms(dateAgo(1));
+    $('sc-today').textContent = fmtDuration(today);
+    $('sc-today-sub').textContent = !today && !ms(dateAgo(1)) ? 'No focus yet'
+        : Math.abs(diff) < 60000 ? 'Same as yesterday'
+        : `${diff > 0 ? '+' : '-'}${fmtDuration(Math.abs(diff))} vs yesterday`;
+
+    const elapsed = month ? now.getDate() : ((now.getDay() + 6) % 7) + 1;
+    const periodDays = [];
+    let sum = 0;
+    for (let i = 0; i < elapsed; i++) {
+        const d = dateAgo(i);
+        periodDays.push(d);
+        sum += ms(d);
+    }
+    $('sc-period-label').textContent = month ? 'This month' : 'This week';
+    $('sc-period').textContent = fmtDuration(sum);
+    $('sc-period-sub').textContent = `avg ${fmtDuration(sum / elapsed)} / day`;
+
+    // Chart: last 7 or 30 days
+    const span = month ? 30 : 7;
+    const bars = [];
+    for (let i = span - 1; i >= 0; i--) {
+        const d = dateAgo(i);
+        bars.push({ d, v: ms(d), today: i === 0 });
+    }
+    const maxV = Math.max(...bars.map((b) => b.v), 3600000);
+    const chart = $('chart');
+    chart.replaceChildren();
+    chart.classList.toggle('month', month);
+    bars.forEach((b, idx) => {
+        const col = makeEl('div', 'chart-col' + (b.today ? ' today' : ''));
+        col.append(makeEl('span', 'chart-val', shortDuration(b.v)));
+        const bar = makeEl('div', 'chart-bar');
+        bar.style.height = Math.max(3, Math.round((b.v / maxV) * 110)) + 'px';
+        col.append(bar);
+        const label = month ? (idx % 5 === 4 ? String(b.d.getDate()) : '') : DAY_NAMES[b.d.getDay()];
+        col.append(makeEl('span', 'chart-lbl', label));
+        chart.append(col);
+    });
+    $('chart-title').textContent = month ? 'Last 30 days' : 'Last 7 days';
+    const best = bars.reduce((a, b) => (b.v > a.v ? b : a), bars[0]);
+    const bestDay = month ? `${best.d.getDate()} ${MONTH_NAMES[best.d.getMonth()]}` : DAY_NAMES[best.d.getDay()];
+    $('chart-best').textContent = best.v >= 60000 ? `Best: ${bestDay} ${fmtDuration(best.v)}` : '';
+
+    // Day by day (newest first; the month view hides empty days)
+    const rows = periodDays.filter((d, i) => !month || i === 0 || ms(d) > 0);
+    const listMax = Math.max(...rows.map(ms), 3600000);
+    const list = $('day-list');
+    list.replaceChildren();
+    rows.forEach((d) => {
+        const isToday = dayKey(d) === dayKey(now);
+        const li = makeEl('li', 'day-row' + (isToday ? ' today' : ''));
+        li.append(makeEl('span', 'day-name',
+            `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}${isToday ? ' · today' : ''}`));
+        const track = makeEl('div', 'day-track');
+        const fill = makeEl('div', 'day-fill');
+        fill.style.width = `${(ms(d) / listMax) * 100}%`;
+        track.append(fill);
+        li.append(track);
+        li.append(makeEl('span', 'day-time', ms(d) ? fmtDuration(ms(d)) : '–'));
+        list.append(li);
+    });
+}
+
+rangeBtns.forEach((b) => b.addEventListener('click', () => {
+    statsRange = b.dataset.range;
+    rangeBtns.forEach((x) => x.classList.toggle('active', x === b));
+    renderStats();
+}));
 
 // ---------- Custom duration ----------
 function markPreset() {
@@ -524,7 +653,7 @@ document.addEventListener('keydown', (e) => {
     if (settingsPanel.classList.contains('open')) return;
 
     const key = e.key.toLowerCase();
-    const onTimerTab = document.body.dataset.tab !== 'clock';
+    const onTimerTab = ['focus', 'todo'].includes(document.body.dataset.tab);
 
     if (e.key === ' ' && onTimerTab) {
         e.preventDefault();

@@ -9,13 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200;300;400&family=Inter:wght@700&display=swap" rel="stylesheet">
     <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');document.documentElement.dataset.theme=u.theme||'dark';document.documentElement.dataset.font=u.font||'mono';}catch(e){}</script>
     <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' (line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
-    <link rel="stylesheet" href="styles.css?v=7">
+    <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body data-mode="focus" data-tab="focus">
     <div class="nav">
         <button class="nav-button" id="clock-btn">Clock</button>
         <button class="nav-button active" id="focus-btn">Focus</button>
         <button class="nav-button" id="todo-btn">To do</button>
+        <button class="nav-button" id="stats-btn">Stats</button>
     </div>
 
     <div class="stage">
@@ -54,6 +55,36 @@
                 <button class="btn primary" id="add-btn">Add</button>
             </div>
             <ul class="todo-list" id="todo-list"></ul>
+        </div>
+
+        <div class="stats-container" id="stats-container">
+            <div class="stats-head">
+                <span class="stats-title">Your focus</span>
+                <div class="stats-range">
+                    <button class="range-btn active" data-range="week">Week</button>
+                    <button class="range-btn" data-range="month">Month</button>
+                </div>
+            </div>
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="stat-label">Today</div>
+                    <div class="stat-value" id="sc-today">0m</div>
+                    <div class="stat-sub" id="sc-today-sub"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" id="sc-period-label">This week</div>
+                    <div class="stat-value" id="sc-period">0m</div>
+                    <div class="stat-sub" id="sc-period-sub"></div>
+                </div>
+            </div>
+            <div class="stat-panel">
+                <div class="stat-panel-head"><span id="chart-title">Last 7 days</span><span id="chart-best"></span></div>
+                <div class="chart" id="chart"></div>
+            </div>
+            <div class="stat-panel">
+                <div class="stat-panel-head"><span>Day by day</span></div>
+                <ul class="day-list" id="day-list"></ul>
+            </div>
         </div>
     </div>
 
@@ -125,10 +156,10 @@
             <div class="setting-row"><span>Clear all data</span>
                 <button class="preset" disabled>Clear</button></div>
         </section>
-        <p class="panel-note" id="build-info">Version 7</p>
+        <p class="panel-note" id="build-info">Version 8</p>
     </aside>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <script src="script.js?v=7"></script>
+    <script src="script.js?v=8"></script>
 </body>
 </html>
