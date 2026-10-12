@@ -32,6 +32,7 @@ const statusEl = $('status');
 const startBtn = $('start-btn');
 const pauseBtn = $('pause-btn');
 const resetBtn = $('reset-btn');
+const skipBtn = $('skip-btn');
 const focusInput = $('focus-input');
 const breakInput = $('break-input');
 const presets = document.querySelectorAll('.preset');
@@ -131,6 +132,7 @@ function render() {
     document.body.dataset.mode = mode;
     startBtn.disabled = running;
     pauseBtn.disabled = !running;
+    skipBtn.hidden = mode !== 'break';
 }
 
 function beep() {
@@ -207,6 +209,18 @@ function update() {
 startBtn.addEventListener('click', startTimer);
 pauseBtn.addEventListener('click', pauseTimer);
 resetBtn.addEventListener('click', resetTimer);
+
+// Ends the break right away; focus is ready and waits for Start (like a break that ends on its own)
+function skipBreak() {
+    if (mode !== 'break') return;
+    clearInterval(tick);
+    running = false;
+    paused = false;
+    mode = 'focus';
+    remaining = duration();
+    render();
+}
+skipBtn.addEventListener('click', skipBreak);
 
 // ---------- Focus time tracking ----------
 // Stored as { deviceId: { 'YYYY-MM-DD': milliseconds } }. Each device only ever
@@ -343,6 +357,7 @@ function renderTasks() {
         tasks = tasks.filter((t) => !stale.includes(t));
         cloudDelete(stale.map((t) => t.id));
     }
+    tasks = [...tasks.filter((t) => !t.done), ...tasks.filter((t) => t.done)];
     saveTasks();
     todoList.replaceChildren();
 
@@ -378,9 +393,47 @@ function renderTasks() {
         handle.title = 'Drag to reorder';
         handle.setAttribute('aria-hidden', 'true');
 
-        li.append(handle, label, del);
+        const edit = document.createElement('button');
+        edit.className = 'edit-btn';
+        edit.textContent = 'Edit';
+        edit.setAttribute('aria-label', `Edit ${t.text}`);
+
+        li.append(handle, label, edit, del);
         todoList.append(li);
     });
+}
+
+function startEdit(li, t) {
+    const label = li.querySelector('label');
+    if (!label) return;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'edit-input';
+    input.maxLength = 120;
+    input.value = t.text;
+    input.setAttribute('aria-label', 'Edit task');
+    label.replaceWith(input);
+    input.focus();
+    input.select();
+
+    let finished = false;
+    const finish = (save) => {
+        if (finished) return;
+        finished = true;
+        const value = input.value.trim();
+        if (save && value && value !== t.text) {
+            t.text = value;
+            renderTasks();
+            cloudUpsert(t);
+        } else {
+            renderTasks();
+        }
+    };
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+        else if (e.key === 'Escape') { e.stopPropagation(); finish(false); }
+    });
+    input.addEventListener('blur', () => finish(true));
 }
 
 function addTask() {
@@ -400,11 +453,23 @@ todoList.addEventListener('change', (e) => {
     if (!t) return;
     t.done = e.target.checked;
     t.doneOn = t.done ? today() : null;
+    if (t.done) {
+        // Completed: goes to the very bottom of the list
+        tasks = tasks.filter((x) => x !== t);
+        tasks.push(t);
+    }
     renderTasks();
     cloudUpsert(t);
+    pushSettings();
 });
 
 todoList.addEventListener('click', (e) => {
+    if (e.target.classList.contains('edit-btn')) {
+        const li = e.target.closest('li');
+        const t = tasks.find((x) => x.id === Number(li.dataset.id));
+        if (t) startEdit(li, t);
+        return;
+    }
     if (!e.target.classList.contains('delete-btn')) return;
     const id = Number(e.target.closest('li').dataset.id);
     tasks = tasks.filter((x) => x.id !== id);

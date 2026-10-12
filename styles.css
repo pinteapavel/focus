@@ -169,6 +169,7 @@ body[data-tab="clock"] .stage { width: auto; max-width: 100%; }
 
 .controls {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 10px;
 }
@@ -348,7 +349,8 @@ body[data-tab="clock"] .stage { width: auto; max-width: 100%; }
     color: var(--muted);
 }
 
-.delete-btn {
+.delete-btn,
+.edit-btn {
     background: transparent;
     color: var(--muted);
     border: 0;
@@ -357,7 +359,8 @@ body[data-tab="clock"] .stage { width: auto; max-width: 100%; }
     transition: color 0.2s;
 }
 
-.delete-btn:hover { color: var(--text); }
+.delete-btn:hover,
+.edit-btn:hover { color: var(--text); }
 
 .todo-empty {
     padding: 24px 0;
@@ -567,3 +570,23 @@ kbd {
 
 .account-stats { margin-bottom: 12px; }
 .account-stats .account-email:last-child { margin-bottom: 0; }
+
+/* ---------- Inline task editing ---------- */
+.edit-input {
+    flex: 1;
+    min-width: 0;
+    padding: 2px 0;
+    background: transparent;
+    color: var(--text);
+    border: 0;
+    border-bottom: 1px solid var(--line-strong);
+    border-radius: 0;
+    font: inherit;
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+.edit-input:focus-visible {
+    outline: none;
+    border-bottom-color: var(--text);
+}
