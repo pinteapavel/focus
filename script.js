@@ -56,7 +56,11 @@ function showTab(tab) {
     clockEl.style.display = showTimer ? 'block' : 'none';
     progressEl.style.display = showTimer ? 'block' : 'none';
     statsContainer.style.display = tab === 'stats' ? 'block' : 'none';
-    if (tab === 'stats') renderStats();
+    if (tab === 'stats') {
+        renderStats();
+        mapTip.hidden = true;
+        mapWrap.scrollLeft = mapWrap.scrollWidth; // narrow screens: start at the latest weeks
+    }
     focusContainer.style.display = tab === 'focus' ? 'block' : 'none';
     todoContainer.style.display = tab === 'todo' ? 'block' : 'none';
 }
@@ -66,12 +70,24 @@ todoBtn.addEventListener('click', () => showTab('todo'));
 statsBtn.addEventListener('click', () => showTab('stats'));
 
 // ---------- Appearance settings ----------
-const ui = Object.assign({ theme: 'dark', format: '24', seconds: true, font: 'mono' }, store.get('ui', {}));
+const DEFAULT_ACCENT = '#5b21b6';
+const ui = Object.assign({ theme: 'dark', format: '24', seconds: true, font: 'mono', accent: DEFAULT_ACCENT }, store.get('ui', {}));
+if (!/^#[0-9a-f]{6}$/i.test(ui.accent)) ui.accent = DEFAULT_ACCENT;
 const themeSelect = $('theme-select');
 const formatSelect = $('format-select');
 const secondsSwitch = $('seconds-switch');
 const fontSelect = $('font-select');
 const rtAmpm = $('rt-ampm');
+const swatchBtns = document.querySelectorAll('.swatch[data-color]');
+const customSwatch = $('swatch-custom');
+const accentCustom = $('accent-custom');
+
+// 5 even steps from white (0h) to the accent color (4h+)
+function paletteFor(hex) {
+    const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    return [0, 1, 2, 3, 4].map((k) =>
+        '#' + rgb.map((c) => Math.round(255 - (255 - c) * (k / 4)).toString(16).padStart(2, '0')).join(''));
+}
 
 function applyUi() {
     document.documentElement.dataset.theme = ui.theme;
@@ -80,6 +96,17 @@ function applyUi() {
     formatSelect.value = ui.format;
     secondsSwitch.checked = ui.seconds;
     fontSelect.value = ui.font;
+    paletteFor(ui.accent).forEach((c, i) => document.documentElement.style.setProperty(`--p${i}`, c));
+    let isPreset = false;
+    swatchBtns.forEach((b) => {
+        const on = b.dataset.color.toLowerCase() === ui.accent.toLowerCase();
+        b.classList.toggle('active', on);
+        if (on) isPreset = true;
+    });
+    customSwatch.classList.toggle('active', !isPreset);
+    customSwatch.classList.toggle('has-color', !isPreset);
+    customSwatch.style.setProperty('--c', ui.accent);
+    accentCustom.value = ui.accent;
     updateRealtime();
 }
 
@@ -94,6 +121,9 @@ themeSelect.addEventListener('change', () => changeUi('theme', themeSelect.value
 formatSelect.addEventListener('change', () => changeUi('format', formatSelect.value));
 secondsSwitch.addEventListener('change', () => changeUi('seconds', secondsSwitch.checked));
 fontSelect.addEventListener('change', () => changeUi('font', fontSelect.value));
+swatchBtns.forEach((b) => b.addEventListener('click', () => changeUi('accent', b.dataset.color)));
+accentCustom.addEventListener('input', () => { ui.accent = accentCustom.value; applyUi(); }); // live preview
+accentCustom.addEventListener('change', () => changeUi('accent', accentCustom.value));
 
 // ---------- Current time ----------
 function updateRealtime() {
@@ -277,7 +307,7 @@ function updateStats() {
 }
 
 function pruneFocus() {
-    const cutoff = dayKey(new Date(Date.now() - 120 * 86400000));
+    const cutoff = dayKey(new Date(Date.now() - 400 * 86400000));
     for (const days of Object.values(focusLog)) {
         for (const day of Object.keys(days)) if (day < cutoff) delete days[day];
     }
@@ -419,6 +449,8 @@ function renderStats() {
     const bestDay = month ? `${best.d.getDate()} ${MONTH_NAMES[best.d.getMonth()]}` : DAY_NAMES[best.d.getDay()];
     $('chart-best').textContent = best.v >= 60000 ? `Best: ${bestDay} ${fmtDuration(best.v)}` : '';
 
+    renderMap(totals, now);
+
     // Day by day (newest first; the month view hides empty days)
     const rows = periodDays.filter((d, i) => !month || i === 0 || ms(d) > 0);
     const listMax = Math.max(...rows.map(ms), 3600000);
@@ -438,6 +470,78 @@ function renderStats() {
         list.append(li);
     });
 }
+
+// ---- Focus map: one square per day, 52 weeks + this week, Monday first ----
+const mapGrid = $('map-grid');
+const mapMonths = $('map-months');
+const mapWrap = $('map-wrap');
+const mapTip = $('map-tip');
+
+function renderMap(totals, now) {
+    const offset = (now.getDay() + 6) % 7;      // days since Monday
+    const count = 364 + offset + 1;
+    if (mapGrid.children.length !== count) {    // build once, then only update colors
+        mapGrid.replaceChildren();
+        for (let i = 0; i < count; i++) mapGrid.append(makeEl('i', 'map-cell l0'));
+        const labels = [];
+        let prev = -1;
+        for (let c = 0; c < 53; c++) {
+            const monday = dateAgo(offset + 364 - c * 7);
+            if (monday.getMonth() !== prev) {
+                prev = monday.getMonth();
+                labels.push({ c, name: MONTH_NAMES[prev] });
+            }
+        }
+        if (labels.length > 1 && labels[1].c - labels[0].c < 3) labels.shift(); // avoid overlap
+        mapMonths.replaceChildren();
+        labels.forEach(({ c, name }) => {
+            const s = makeEl('span', '', name);
+            s.style.left = `${c * 13}px`;
+            mapMonths.append(s);
+        });
+    }
+    let total = 0;
+    [...mapGrid.children].forEach((cell, i) => {
+        const d = dateAgo(offset + 364 - i);
+        const ms = totals[dayKey(d)] || 0;
+        total += ms;
+        cell.className = `map-cell l${Math.min(4, Math.floor(ms / 3600000))}`;
+        cell.dataset.ms = ms;
+        cell.dataset.label = `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`
+            + (d.getFullYear() !== now.getFullYear() ? ` ${d.getFullYear()}` : '');
+    });
+    $('map-total').textContent =
+        `${total >= 3600000 ? Math.floor(total / 3600000) + 'h' : fmtDuration(total)} in the last 12 months`;
+}
+
+function showTip(cell) {
+    const ms = Number(cell.dataset.ms);
+    mapTip.textContent = `${cell.dataset.label} · ${ms ? fmtDuration(ms) : 'No focus'}`;
+    mapTip.hidden = false;
+    const box = mapTip.parentElement.getBoundingClientRect();
+    const c = cell.getBoundingClientRect();
+    const tw = mapTip.offsetWidth;
+    const th = mapTip.offsetHeight;
+    const center = c.left - box.left + c.width / 2;
+    const left = Math.max(0, Math.min(box.width - tw, center - tw / 2));
+    mapTip.style.left = `${left}px`;
+    mapTip.style.top = `${c.top - box.top - th - 8}px`;
+    mapTip.style.setProperty('--arrow', `${Math.max(8, Math.min(tw - 8, center - left))}px`);
+}
+
+mapGrid.addEventListener('mouseover', (e) => {
+    const cell = e.target.closest('.map-cell');
+    if (cell) showTip(cell);
+});
+mapGrid.addEventListener('click', (e) => {
+    const cell = e.target.closest('.map-cell');
+    if (cell) showTip(cell);
+});
+mapGrid.addEventListener('mouseleave', () => { mapTip.hidden = true; });
+mapWrap.addEventListener('scroll', () => { mapTip.hidden = true; });
+document.addEventListener('pointerdown', (e) => {
+    if (!e.target.closest('.map-cell')) mapTip.hidden = true;
+});
 
 rangeBtns.forEach((b) => b.addEventListener('click', () => {
     statsRange = b.dataset.range;
@@ -805,6 +909,7 @@ function applyRemoteSettings(data) {
         ui.format = data.ui.format === '12' ? '12' : '24';
         ui.seconds = data.ui.seconds !== false;
         ui.font = data.ui.font === 'inter' ? 'inter' : 'mono';
+        if (/^#[0-9a-f]{6}$/i.test(data.ui.accent)) ui.accent = data.ui.accent;
         store.set('ui', ui);
         applyUi();
     }

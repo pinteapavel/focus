@@ -9,6 +9,11 @@
     --field: #000;
     --hover: rgba(255, 255, 255, 0.1);
     --mono: 'JetBrains Mono', 'Courier New', monospace;
+    --p0: #ffffff;
+    --p1: #d6c8ed;
+    --p2: #ad90da;
+    --p3: #8458c8;
+    --p4: #5b21b6;
     color-scheme: dark;
 }
 
@@ -597,7 +602,7 @@ kbd {
 /* ---------- Stats dashboard ---------- */
 .stats-container {
     display: none;
-    width: min(100%, 560px);
+    width: min(100%, 760px);
     margin-top: 36px;
     text-align: left;
 }
@@ -736,4 +741,164 @@ kbd {
     .stat-card, .stat-panel { padding: 16px; }
     .day-row { gap: 10px; }
     .day-name { width: 8.5em; }
+}
+
+/* ---------- Focus map (heatmap) ---------- */
+.l0 { background: var(--p0); }
+.l1 { background: var(--p1); }
+.l2 { background: var(--p2); }
+.l3 { background: var(--p3); }
+.l4 { background: var(--p4); }
+:root[data-theme="light"] .l0 { box-shadow: inset 0 0 0 1px var(--line-strong); }
+
+.map-box { position: relative; margin-top: 16px; }
+.map-wrap { overflow-x: auto; padding-bottom: 4px; }
+.map-inner { display: flex; gap: 6px; width: max-content; }
+
+.map-days {
+    width: 28px;
+    padding-top: 17px;
+    display: grid;
+    grid-template-rows: repeat(7, 13px);
+    font-size: 0.65rem;
+    line-height: 13px;
+    color: var(--muted);
+}
+
+.map-main { position: relative; }
+
+.map-months {
+    position: relative;
+    width: 686px;
+    height: 17px;
+    font-size: 0.65rem;
+    color: var(--muted);
+}
+
+.map-months span { position: absolute; top: 0; }
+
+.map-grid {
+    display: grid;
+    grid-template-rows: repeat(7, 10px);
+    grid-auto-flow: column;
+    grid-auto-columns: 10px;
+    gap: 3px;
+}
+
+.map-cell,
+.map-legend i {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
+.map-cell:hover { outline: 1px solid var(--text); outline-offset: 1px; }
+
+.map-legend {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    font-size: 0.65rem;
+    color: var(--muted);
+}
+
+.map-tip {
+    position: absolute;
+    z-index: 3;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--text);
+    color: var(--on-text);
+    font-size: 0.7rem;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.map-tip[hidden] { display: none; }
+
+.map-tip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: var(--arrow, 50%);
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--text);
+}
+
+/* ---------- Accent color setting ---------- */
+.setting-block {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.85rem;
+}
+
+.setting-top { display: flex; justify-content: space-between; align-items: center; }
+
+.new-badge {
+    padding: 2px 8px;
+    border: 1px solid var(--text);
+    border-radius: 999px;
+    font-size: 0.65rem;
+}
+
+.swatches { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 4px 6px; }
+
+.swatch {
+    position: relative;
+    display: block;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--c);
+}
+
+.swatch.active { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--text); }
+
+.swatch-custom {
+    border: 1px dashed var(--muted);
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 22px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.swatch-custom.has-color {
+    border-color: transparent;
+    background: var(--c);
+    color: transparent;
+}
+
+.swatch-custom input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.palette-preview { display: flex; justify-content: space-between; margin-top: 12px; }
+
+.palette-preview div {
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--muted);
+}
+
+.palette-preview span {
+    display: block;
+    width: 30px;
+    height: 30px;
+    margin-bottom: 4px;
+    border-radius: 6px;
 }

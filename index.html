@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200;300;400&family=Inter:wght@700&display=swap" rel="stylesheet">
     <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');document.documentElement.dataset.theme=u.theme||'dark';document.documentElement.dataset.font=u.font||'mono';}catch(e){}</script>
     <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' (line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
-    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body data-mode="focus" data-tab="focus">
     <div class="nav">
@@ -78,6 +78,22 @@
                 </div>
             </div>
             <div class="stat-panel">
+                <div class="stat-panel-head"><span>Focus map</span><span id="map-total"></span></div>
+                <div class="map-box">
+                    <div class="map-wrap" id="map-wrap">
+                        <div class="map-inner">
+                            <div class="map-days"><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span></span></div>
+                            <div class="map-main">
+                                <div class="map-months" id="map-months"></div>
+                                <div class="map-grid" id="map-grid" role="img" aria-label="Focus map for the last 12 months"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="map-tip" id="map-tip" hidden></div>
+                </div>
+                <div class="map-legend"><span>0h</span><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>4h+</span></div>
+            </div>
+            <div class="stat-panel">
                 <div class="stat-panel-head"><span id="chart-title">Last 7 days</span><span id="chart-best"></span></div>
                 <div class="chart" id="chart"></div>
             </div>
@@ -131,6 +147,26 @@
                 <input type="checkbox" class="switch" id="seconds-switch" checked></div>
             <div class="setting-row"><span>Clock font</span>
                 <select id="font-select"><option value="mono">Mono</option><option value="inter">Inter (Bold)</option></select></div>
+            <div class="setting-block">
+                <div class="setting-top"><span>Accent color</span><span class="new-badge">New</span></div>
+                <div class="swatches">
+                    <button class="swatch" data-color="#5b21b6" style="--c:#5b21b6" aria-label="Violet"></button>
+                    <button class="swatch" data-color="#1d4ed8" style="--c:#1d4ed8" aria-label="Blue"></button>
+                    <button class="swatch" data-color="#15803d" style="--c:#15803d" aria-label="Green"></button>
+                    <button class="swatch" data-color="#c2410c" style="--c:#c2410c" aria-label="Orange"></button>
+                    <button class="swatch" data-color="#be123c" style="--c:#be123c" aria-label="Rose"></button>
+                    <button class="swatch" data-color="#0f766e" style="--c:#0f766e" aria-label="Teal"></button>
+                    <label class="swatch swatch-custom" id="swatch-custom" title="Custom color">+<input type="color" id="accent-custom" aria-label="Custom accent color"></label>
+                </div>
+                <p class="panel-note">Changes the colors of your Focus map</p>
+                <div class="palette-preview">
+                    <div><span class="l0"></span>0h</div>
+                    <div><span class="l1"></span>1h</div>
+                    <div><span class="l2"></span>2h</div>
+                    <div><span class="l3"></span>3h</div>
+                    <div><span class="l4"></span>4h+</div>
+                </div>
+            </div>
         </section>
 
         <section class="panel-section">
@@ -156,10 +192,10 @@
             <div class="setting-row"><span>Clear all data</span>
                 <button class="preset" disabled>Clear</button></div>
         </section>
-        <p class="panel-note" id="build-info">Version 8</p>
+        <p class="panel-note" id="build-info">Version 9</p>
     </aside>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <script src="script.js?v=8"></script>
+    <script src="script.js?v=9"></script>
 </body>
 </html>
