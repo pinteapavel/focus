@@ -165,7 +165,7 @@ function render() {
     clockEl.textContent = time;
     bar.style.width = `${Math.max(0, Math.min(100, (remaining / duration()) * 100))}%`;
     statusEl.textContent = label;
-    document.title = running ? `${time} · ${label}` : 'Focus';
+    document.title = running ? `${time} · ${label}` : 'Clockus';
     document.body.dataset.mode = mode;
     startBtn.disabled = running;
     pauseBtn.disabled = !running;
@@ -1055,3 +1055,4 @@ markPreset();
 render();
 renderTasks();
 updateStats();
+showTab('clock'); // the app opens on the Clock tab

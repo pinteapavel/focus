@@ -968,3 +968,9 @@ kbd {
 @media (max-width: 700px) {
     .stat-value { font-size: clamp(1.6rem, 5.2vw, 2.75rem); }
 }
+
+/* The app opens on the Clock tab: keep the timer parts hidden until the script runs */
+body[data-tab="clock"] .clock,
+body[data-tab="clock"] .progress,
+body[data-tab="clock"] .focus-container { display: none; }
+body[data-tab="clock"] .realtime { display: block; }
