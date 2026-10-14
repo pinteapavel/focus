@@ -625,6 +625,7 @@ kbd {
 
 .stat-cards {
     display: flex;
+    flex-wrap: wrap;
     gap: 16px;
     margin-bottom: 20px;
 }
@@ -636,7 +637,7 @@ kbd {
     padding: 20px;
 }
 
-.stat-card { flex: 1; min-width: 0; }
+.stat-card { flex: 1 1 150px; min-width: 0; }
 .stat-panel { margin-bottom: 20px; }
 
 .stat-label,
@@ -901,4 +902,69 @@ kbd {
     height: 30px;
     margin-bottom: 4px;
     border-radius: 6px;
+}
+
+/* ---------- Streak ---------- */
+.streak-card {
+    display: flex;
+    flex-direction: column;
+    border-color: var(--p3);
+}
+
+.streak-card.out { border-color: var(--line); }
+
+.stat-top { display: flex; justify-content: space-between; align-items: center; }
+
+.stat-unit {
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0;
+    color: var(--muted);
+}
+
+.flame { flex: none; fill: var(--p3); stroke: var(--p1); }
+.flame.risk { fill: none; stroke: var(--p3); stroke-dasharray: 3 2.5; }
+.flame.out { fill: none; stroke: var(--line-strong); }
+:root[data-theme="light"] .flame { stroke: var(--p4); }
+:root[data-theme="light"] .flame.risk { stroke: var(--p3); }
+:root[data-theme="light"] .flame.out { stroke: var(--line-strong); }
+
+.streak-dots {
+    display: flex;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 14px;
+}
+
+.streak-day {
+    text-align: center;
+    font-size: 0.625rem;
+    color: var(--muted);
+}
+
+.streak-dot {
+    display: block;
+    width: 10px;
+    height: 10px;
+    margin: 0 auto 4px;
+    box-sizing: border-box;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+}
+
+.streak-dot.on { background: var(--p3); border-color: var(--p3); }
+.streak-dot.today { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--text); }
+
+.map-cell.s { box-shadow: 0 0 0 1.5px var(--text); }
+
+.map-legend .s-key {
+    background: transparent;
+    box-shadow: 0 0 0 1.5px var(--text);
+    margin-right: 4px;
+}
+
+.s-label { margin-right: 14px; }
+
+@media (max-width: 700px) {
+    .stat-value { font-size: clamp(1.6rem, 5.2vw, 2.75rem); }
 }

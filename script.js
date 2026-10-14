@@ -397,6 +397,53 @@ function renderStatsSoon() {
     statsTimer = setTimeout(() => { statsTimer = null; renderStats(); }, 1000);
 }
 
+const HOUR_MS = 3600000;
+
+// Streak = consecutive days with 1h+ of focus. If today has not reached 1h yet,
+// the streak is still alive and counts back from yesterday ("at risk" until midnight).
+function renderStreak(ms) {
+    const todayCounted = ms(dateAgo(0)) >= HOUR_MS;
+    const startOffset = todayCounted ? 0 : 1;
+    let n = 0;
+    while (n < 400 && ms(dateAgo(startOffset + n)) >= HOUR_MS) n++;
+
+    let best = 0;
+    let run = 0;
+    for (let i = 400; i >= 0; i--) {
+        if (ms(dateAgo(i)) >= HOUR_MS) { run++; best = Math.max(best, run); } else run = 0;
+    }
+    const savedBest = store.get('bestStreak', 0);
+    best = Math.max(best, savedBest, n);
+    if (best > savedBest) store.set('bestStreak', best);
+
+    const state = n > 0 ? (todayCounted ? 'lit' : 'risk') : 'out';
+    $('streak-n').textContent = n;
+    $('streak-unit').textContent = n === 1 ? ' day' : ' days';
+    $('streak-best').textContent = `Best: ${best} ${best === 1 ? 'day' : 'days'}`;
+    $('streak-note').textContent = state === 'lit' ? 'Today counted'
+        : state === 'risk' ? 'Focus 1h today to keep it'
+        : best > 0 ? 'Streak ended. Start a new one' : 'Focus 1h to start a streak';
+    $('streak-flame').setAttribute('class', `flame ${state === 'lit' ? '' : state}`.trim());
+    $('streak-card').classList.toggle('out', state === 'out');
+
+    // This week, Monday first: filled = counted, ring = today
+    const offset = (dateAgo(0).getDay() + 6) % 7;
+    const dots = $('streak-dots');
+    dots.replaceChildren();
+    'MTWTFSS'.split('').forEach((letter, i) => {
+        const d = dateAgo(offset - i);
+        const day = makeEl('div', 'streak-day');
+        day.append(makeEl('span', 'streak-dot' + (ms(d) >= HOUR_MS ? ' on' : '') + (i === offset ? ' today' : '')));
+        day.append(document.createTextNode(letter));
+        dots.append(day);
+    });
+
+    // day -> position inside the current streak (1 = first day), for the map
+    const map = {};
+    for (let k = 0; k < n; k++) map[dayKey(dateAgo(startOffset + k))] = n - k;
+    return map;
+}
+
 function renderStats() {
     const totals = totalsByDay();
     const ms = (d) => totals[dayKey(d)] || 0;
@@ -422,6 +469,7 @@ function renderStats() {
     $('sc-period-label').textContent = month ? 'This month' : 'This week';
     $('sc-period').textContent = fmtDuration(sum);
     $('sc-period-sub').textContent = `avg ${fmtDuration(sum / elapsed)} / day`;
+    const streakMap = renderStreak(ms);
 
     // Chart: last 7 or 30 days
     const span = month ? 30 : 7;
@@ -449,7 +497,7 @@ function renderStats() {
     const bestDay = month ? `${best.d.getDate()} ${MONTH_NAMES[best.d.getMonth()]}` : DAY_NAMES[best.d.getDay()];
     $('chart-best').textContent = best.v >= 60000 ? `Best: ${bestDay} ${fmtDuration(best.v)}` : '';
 
-    renderMap(totals, now);
+    renderMap(totals, now, streakMap);
 
     // Day by day (newest first; the month view hides empty days)
     const rows = periodDays.filter((d, i) => !month || i === 0 || ms(d) > 0);
@@ -477,7 +525,7 @@ const mapMonths = $('map-months');
 const mapWrap = $('map-wrap');
 const mapTip = $('map-tip');
 
-function renderMap(totals, now) {
+function renderMap(totals, now, streakMap) {
     const offset = (now.getDay() + 6) % 7;      // days since Monday
     const count = 364 + offset + 1;
     if (mapGrid.children.length !== count) {    // build once, then only update colors
@@ -505,8 +553,10 @@ function renderMap(totals, now) {
         const d = dateAgo(offset + 364 - i);
         const ms = totals[dayKey(d)] || 0;
         total += ms;
-        cell.className = `map-cell l${Math.min(4, Math.floor(ms / 3600000))}`;
+        const streakDay = streakMap[dayKey(d)];
+        cell.className = `map-cell l${Math.min(4, Math.floor(ms / 3600000))}` + (streakDay ? ' s' : '');
         cell.dataset.ms = ms;
+        cell.dataset.streak = streakDay || '';
         cell.dataset.label = `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`
             + (d.getFullYear() !== now.getFullYear() ? ` ${d.getFullYear()}` : '');
     });
@@ -516,7 +566,8 @@ function renderMap(totals, now) {
 
 function showTip(cell) {
     const ms = Number(cell.dataset.ms);
-    mapTip.textContent = `${cell.dataset.label} · ${ms ? fmtDuration(ms) : 'No focus'}`;
+    mapTip.textContent = `${cell.dataset.label} · ${ms ? fmtDuration(ms) : 'No focus'}`
+        + (cell.dataset.streak ? ` · streak day ${cell.dataset.streak}` : '');
     mapTip.hidden = false;
     const box = mapTip.parentElement.getBoundingClientRect();
     const c = cell.getBoundingClientRect();

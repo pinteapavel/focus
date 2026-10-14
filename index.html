@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200;300;400&family=Inter:wght@700&display=swap" rel="stylesheet">
     <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');document.documentElement.dataset.theme=u.theme||'dark';document.documentElement.dataset.font=u.font||'mono';}catch(e){}</script>
     <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' (line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
-    <link rel="stylesheet" href="styles.css?v=9">
+    <link rel="stylesheet" href="styles.css?v=10">
 </head>
 <body data-mode="focus" data-tab="focus">
     <div class="nav">
@@ -76,6 +76,16 @@
                     <div class="stat-value" id="sc-period">0m</div>
                     <div class="stat-sub" id="sc-period-sub"></div>
                 </div>
+                <div class="stat-card streak-card" id="streak-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Streak</span>
+                        <svg class="flame" id="streak-flame" width="30" height="30" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                    </div>
+                    <div class="stat-value"><span id="streak-n">0</span><span class="stat-unit" id="streak-unit"> days</span></div>
+                    <div class="stat-sub" id="streak-best"></div>
+                    <div class="stat-sub" id="streak-note"></div>
+                    <div class="streak-dots" id="streak-dots"></div>
+                </div>
             </div>
             <div class="stat-panel">
                 <div class="stat-panel-head"><span>Focus map</span><span id="map-total"></span></div>
@@ -91,7 +101,7 @@
                     </div>
                     <div class="map-tip" id="map-tip" hidden></div>
                 </div>
-                <div class="map-legend"><span>0h</span><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>4h+</span></div>
+                <div class="map-legend"><i class="s-key"></i><span class="s-label">Current streak</span><span>0h</span><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>4h+</span></div>
             </div>
             <div class="stat-panel">
                 <div class="stat-panel-head"><span id="chart-title">Last 7 days</span><span id="chart-best"></span></div>
@@ -192,10 +202,10 @@
             <div class="setting-row"><span>Clear all data</span>
                 <button class="preset" disabled>Clear</button></div>
         </section>
-        <p class="panel-note" id="build-info">Version 9</p>
+        <p class="panel-note" id="build-info">Version 10</p>
     </aside>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <script src="script.js?v=9"></script>
+    <script src="script.js?v=10"></script>
 </body>
 </html>
