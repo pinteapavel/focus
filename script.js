@@ -195,6 +195,7 @@ function startTimer() {
     running = true;
     paused = false;
     tick = setInterval(update, 250);
+    saveTimer();
     render();
 }
 
@@ -205,6 +206,7 @@ function pauseTimer() {
     clearInterval(tick);
     running = false;
     paused = true;
+    saveTimer();
     render();
     pushSettings();
 }
@@ -215,6 +217,7 @@ function resetTimer() {
     running = false;
     paused = false;
     remaining = duration();
+    saveTimer();
     render();
     pushSettings();
 }
@@ -231,6 +234,7 @@ function update() {
         pushSettings();
         remaining = duration();
         endTime = Date.now() + remaining;
+        saveTimer();
         render();
     } else {
         // Break done: back to focus, waiting for Start
@@ -239,6 +243,7 @@ function update() {
         running = false;
         paused = false;
         remaining = duration();
+        saveTimer();
         render();
     }
 }
@@ -255,6 +260,7 @@ function skipBreak() {
     paused = false;
     mode = 'focus';
     remaining = duration();
+    saveTimer();
     render();
 }
 skipBtn.addEventListener('click', skipBreak);
@@ -262,8 +268,6 @@ skipBtn.addEventListener('click', skipBreak);
 // ---------- Focus time tracking ----------
 // Stored as { deviceId: { 'YYYY-MM-DD': milliseconds } }. Each device only ever
 // increases its own numbers, so merging devices with "max" never loses time.
-const statToday = $('stat-today');
-const statWeek = $('stat-week');
 const focusLog = store.get('focus', {});
 const deviceId = store.get('deviceId', null) || (() => {
     const id = Math.random().toString(36).slice(2, 10);
@@ -276,12 +280,6 @@ let lastFocusPush = 0;
 const pad2 = (n) => String(n).padStart(2, '0');
 const dayKey = (d = new Date()) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
-function weekStartKey() {
-    const d = new Date();
-    d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // Monday
-    return dayKey(d);
-}
-
 function fmtDuration(ms) {
     const total = Math.floor(ms / 60000);
     const h = Math.floor(total / 60);
@@ -289,20 +287,8 @@ function fmtDuration(ms) {
     return h > 0 ? `${h}h ${pad2(m)}m` : `${m}m`;
 }
 
+// Refreshes the Stats tab while it is open (e.g. when the timer is running)
 function updateStats() {
-    if (!statToday || !statWeek) return;
-    const today = dayKey();
-    const start = weekStartKey();
-    let t = 0;
-    let w = 0;
-    for (const days of Object.values(focusLog)) {
-        for (const [day, ms] of Object.entries(days)) {
-            if (day === today) t += ms;
-            if (day >= start && day <= today) w += ms;
-        }
-    }
-    statToday.textContent = `Today: ${fmtDuration(t)}`;
-    statWeek.textContent = `This week: ${fmtDuration(w)}`;
     if (document.body.dataset.tab === 'stats') renderStatsSoon();
 }
 
@@ -313,6 +299,13 @@ function pruneFocus() {
     }
 }
 
+function addFocusMs(ms, when = Date.now()) {
+    const mine = focusLog[deviceId] || (focusLog[deviceId] = {});
+    const day = dayKey(new Date(when));
+    mine[day] = Math.round((mine[day] || 0) + ms);
+    store.set('focus', focusLog);
+}
+
 // Adds the time that passed since the last tick, only while a focus session runs
 function accrueFocus() {
     if (!running || mode !== 'focus' || lastTickAt === null) return;
@@ -320,15 +313,67 @@ function accrueFocus() {
     const ms = now - lastTickAt;
     if (ms <= 0) return;
     lastTickAt = now;
-    const mine = focusLog[deviceId] || (focusLog[deviceId] = {});
-    const day = dayKey();
-    mine[day] = Math.round((mine[day] || 0) + ms);
-    store.set('focus', focusLog);
+    addFocusMs(ms);
+    saveTimer();
     updateStats();
     if (Date.now() - lastFocusPush > 60000) {
         lastFocusPush = Date.now();
         pushSettings();
     }
+}
+
+// The running or paused timer survives a reload, a closed tab or a discarded background tab
+function saveTimer() {
+    store.set('timer', running || paused
+        ? { mode, running, paused, endTime, remaining, tickAt: lastTickAt }
+        : null);
+}
+
+function restoreTimer() {
+    const s = store.get('timer', null);
+    if (!s || typeof s !== 'object' || (s.mode !== 'focus' && s.mode !== 'break')) return;
+    mode = s.mode;
+
+    if (!s.running) {
+        if (s.paused) {
+            remaining = Math.max(0, Number(s.remaining)) || duration();
+            paused = true;
+        } else {
+            mode = 'focus';
+        }
+        return;
+    }
+
+    let end = Number(s.endTime);
+    let from = Number(s.tickAt) || null;
+    if (!Number.isFinite(end)) { mode = 'focus'; return; }
+    const now = Date.now();
+
+    // Catch up on what happened while the page was closed
+    while (end <= now) {
+        if (mode === 'focus') {
+            if (from && end > from) addFocusMs(end - from, end);   // focus time up to the end of the session
+            mode = 'break';                                         // the break started on its own
+            from = null;
+            end += settings.brk * 60000;
+        } else {
+            mode = 'focus';                                         // break over: ready for the next session
+            remaining = duration();
+            saveTimer();
+            updateStats();
+            return;
+        }
+    }
+
+    if (mode === 'focus' && from && now > from) addFocusMs(now - from, now);
+    endTime = end;
+    remaining = end - now;
+    running = true;
+    paused = false;
+    lastTickAt = now;
+    tick = setInterval(update, 250);
+    saveTimer();
+    updateStats();
 }
 
 function mergeFocus(remote) {
@@ -785,7 +830,6 @@ function setPanel(open) {
     overlay.classList.toggle('open', open);
     settingsPanel.setAttribute('aria-hidden', String(!open));
     settingsBtn.setAttribute('aria-expanded', String(open));
-    if (open) updateStats();
     (open ? settingsClose : settingsBtn).focus();
 }
 
@@ -946,12 +990,15 @@ function pushSettings() {
 function applyRemoteSettings(data) {
     if (data.focus) mergeFocus(data.focus);
     if (data.timer) {
-        settings.focus = clamp(data.timer.focus, 1, 180);
-        settings.brk = clamp(data.timer.brk, 1, 60);
+        const newFocus = clamp(data.timer.focus, 1, 180);
+        const newBreak = clamp(data.timer.brk, 1, 60);
+        const changed = newFocus !== settings.focus || newBreak !== settings.brk;
+        settings.focus = newFocus;
+        settings.brk = newBreak;
         store.set('settings', settings);
         focusInput.value = settings.focus;
         breakInput.value = settings.brk;
-        if (!running) { paused = false; remaining = duration(); }
+        if (changed && !running && !paused) remaining = duration();
         markPreset();
         render();
     }
@@ -1052,6 +1099,7 @@ updateAccountUi();
 focusInput.value = settings.focus;
 breakInput.value = settings.brk;
 markPreset();
+restoreTimer();
 render();
 renderTasks();
 updateStats();

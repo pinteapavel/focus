@@ -528,7 +528,7 @@ body[data-tab="clock"] .stage { width: auto; max-width: 100%; }
 }
 
 .account-email {
-    margin: 0 0 6px;
+    margin: 0 0 12px;
     font-size: 0.85rem;
     overflow-wrap: anywhere;
 }
@@ -576,8 +576,6 @@ kbd {
     padding: 2px 8px;
 }
 
-.account-stats { margin-bottom: 12px; }
-.account-stats .account-email:last-child { margin-bottom: 0; }
 
 /* ---------- Inline task editing ---------- */
 .edit-input {
