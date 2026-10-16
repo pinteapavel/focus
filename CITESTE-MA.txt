@@ -1,0 +1,28 @@
+CLOCKUS - cum pui site-ul in GitHub (fara foldere)
+
+Zip-ul are 5 fisiere, toate la acelasi nivel, fara niciun folder:
+
+  index.html     <- pagina de prezentare (clockus.live)
+  app.html       <- aplicatia (clockus.live/app)
+  welcome.css    <- stilul paginii de prezentare
+  styles.css     <- stilul aplicatiei
+  script.js      <- codul aplicatiei
+
+PASI
+1. Dezarhiveaza zip-ul (click dreapta, "Extract All").
+2. Intra in repository-ul de pe GitHub: Add file > Upload files.
+3. Selecteaza cele 5 fisiere si trage-le in fereastra GitHub.
+   Fisierele cu acelasi nume se inlocuiesc singure.
+4. Apasa "Commit changes".
+5. STERGE folderul "app" din repository (nu mai e folosit):
+   intra in "app", deschide "index.html", apasa cele trei puncte din
+   dreapta sus, apoi "Delete file", apoi "Commit changes".
+   Cand stergi ultimul fisier, folderul dispare singur.
+6. Asteapta ~1 minut, apoi deschide clockus.live cu Ctrl+Shift+R.
+
+NU atinge fisierul CNAME (tine domeniul clockus.live).
+
+SUPABASE (o singura data): Authentication > URL Configuration > Redirect URLs:
+adauga  https://clockus.live/**  (se potriveste cu orice pagina de pe site).
+
+VERIFICARE: in setari (piulita), jos, trebuie sa scrie "Version 15".

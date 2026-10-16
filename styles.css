@@ -103,7 +103,7 @@ body[data-mode="break"] .clock { color: var(--muted); }
 
 .realtime {
     display: none;
-    font-size: clamp(2.6rem, 15vw, 7.5rem);
+    font-size: clamp(3rem, 15vw, 11rem);
     font-weight: 200;
     letter-spacing: -0.04em;
     font-variant-numeric: tabular-nums;
@@ -135,8 +135,9 @@ body[data-mode="break"] .clock { color: var(--muted); }
     justify-content: center;
 }
 
-/* Clock tab only: current time centered on the screen */
-body[data-tab="clock"] {
+/* Clock and Focus tabs: the clock sits in the middle of the screen */
+body[data-tab="clock"],
+body[data-tab="focus"] {
     height: 100vh;
     height: 100dvh;
     padding: 0 20px;
@@ -146,8 +147,10 @@ body[data-tab="clock"] {
     justify-items: center;
 }
 
-body[data-tab="clock"] .nav { align-self: start; }
-body[data-tab="clock"] .stage { width: auto; max-width: 100%; }
+body[data-tab="clock"] .nav,
+body[data-tab="focus"] .nav { align-self: start; }
+body[data-tab="clock"] .stage,
+body[data-tab="focus"] .stage { width: auto; max-width: 100%; }
 
 .progress {
     width: min(100%, 520px);
@@ -213,8 +216,6 @@ body[data-tab="clock"] .stage { width: auto; max-width: 100%; }
     color: var(--muted);
     font-size: 0.85rem;
 }
-
-.presets { display: flex; gap: 8px; }
 
 .preset,
 .range-btn {
@@ -600,7 +601,7 @@ kbd {
 /* ---------- Stats dashboard ---------- */
 .stats-container {
     display: none;
-    width: min(100%, 760px);
+    width: min(100%, 820px);
     margin-top: 36px;
     text-align: left;
 }
@@ -692,54 +693,8 @@ kbd {
 .chart-col.today { color: var(--text); }
 .chart-col.today .chart-bar { background: var(--text); }
 
-.day-list { list-style: none; margin: 0; padding: 0; }
-
-.day-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--line);
-    font-size: 0.8rem;
-    color: var(--muted);
-}
-
-.day-row:last-child { border-bottom: 0; }
-.day-row.today { color: var(--text); }
-
-.day-name {
-    flex: none;
-    width: 10.5em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.day-track {
-    flex: 1;
-    height: 4px;
-    background: var(--line);
-    border-radius: 2px;
-}
-
-.day-fill {
-    height: 100%;
-    background: var(--line-strong);
-    border-radius: 2px;
-}
-
-.day-row.today .day-fill { background: var(--text); }
-
-.day-time {
-    flex: none;
-    width: 5.5em;
-    text-align: right;
-}
-
 @media (max-width: 420px) {
     .stat-card, .stat-panel { padding: 16px; }
-    .day-row { gap: 10px; }
-    .day-name { width: 8.5em; }
 }
 
 /* ---------- Focus map (heatmap) ---------- */
@@ -752,39 +707,33 @@ kbd {
 
 .map-box { position: relative; margin-top: 16px; }
 .map-wrap { overflow-x: auto; padding-bottom: 4px; }
-.map-inner { display: flex; gap: 6px; width: max-content; }
-
-.map-days {
-    width: 28px;
-    padding-top: 17px;
-    display: grid;
-    grid-template-rows: repeat(7, 13px);
-    font-size: 0.65rem;
-    line-height: 13px;
-    color: var(--muted);
-}
-
-.map-main { position: relative; }
-
-.map-months {
-    position: relative;
-    width: 686px;
-    height: 17px;
-    font-size: 0.65rem;
-    color: var(--muted);
-}
-
-.map-months span { position: absolute; top: 0; }
-
+/* The squares stretch to fill the card, so desktop needs no scrollbar; narrow screens still scroll */
 .map-grid {
     display: grid;
-    grid-template-rows: repeat(7, 10px);
-    grid-auto-flow: column;
-    grid-auto-columns: 10px;
+    grid-template-columns: 28px repeat(53, minmax(0, 1fr));
     gap: 3px;
+    align-items: center;
+    min-width: 700px;
 }
 
-.map-cell,
+.map-month {
+    grid-row: 1;
+    padding-bottom: 3px;
+    font-size: 0.65rem;
+    line-height: 1;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.map-dow {
+    grid-column: 1;
+    font-size: 0.65rem;
+    line-height: 1;
+    color: var(--muted);
+}
+
+.map-cell { width: 100%; aspect-ratio: 1; border-radius: 2px; }
+
 .map-legend i {
     display: block;
     width: 10px;
@@ -972,3 +921,20 @@ body[data-tab="clock"] .clock,
 body[data-tab="clock"] .progress,
 body[data-tab="clock"] .focus-container { display: none; }
 body[data-tab="clock"] .realtime { display: block; }
+
+/* ---------- Focus tab: big clock in the middle, controls right below ---------- */
+body[data-tab="focus"] .clock {
+    font-size: clamp(5rem, 24vw, 14rem);
+    margin: 0 0 28px;
+}
+
+body[data-tab="clock"] .below,
+body[data-tab="focus"] .below {
+    min-height: 0;
+    align-items: flex-start;
+    padding: 28px 0 16px;
+    overflow-y: auto;
+}
+
+body[data-tab="focus"] .status { margin: 0 0 20px; }
+body[data-tab="focus"] .settings { margin-top: 28px; }

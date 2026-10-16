@@ -37,13 +37,42 @@ const resetBtn = $('reset-btn');
 const skipBtn = $('skip-btn');
 const focusInput = $('focus-input');
 const breakInput = $('break-input');
-const presets = document.querySelectorAll('.preset');
 const taskInput = $('task-input');
 const addBtn = $('add-btn');
 const todoList = $('todo-list');
 
 // ---------- Navigation ----------
+const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+// Focus <-> To do: the clock (and its line) glide to the new position instead of jumping
+function floatClock(first, tab) {
+    [clockEl, progressEl].forEach((el, i) => {
+        if (!el.animate) return;
+        const last = el.getBoundingClientRect();
+        if (!last.width || !last.height) return;
+        const f = first[i];
+        el.animate([
+            {
+                transformOrigin: 'top left',
+                transform: `translate(${f.left - last.left}px, ${f.top - last.top}px) scale(${f.width / last.width}, ${f.height / last.height})`
+            },
+            { transformOrigin: 'top left', transform: 'none' }
+        ], { duration: 550, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+    });
+    const incoming = tab === 'focus' ? focusContainer : todoContainer;
+    if (incoming.animate) incoming.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, easing: 'ease-out' });
+}
+
 function showTab(tab) {
+    const prev = document.body.dataset.tab;
+    const floating = !reduceMotion && ((prev === 'focus' && tab === 'todo') || (prev === 'todo' && tab === 'focus'));
+    if (floating && window.scrollY > 0) window.scrollTo(0, 0);
+    // Where the clock is right now (also correct if a previous glide is still running)
+    const first = floating ? [clockEl, progressEl].map((el) => el.getBoundingClientRect()) : null;
+    if (floating) {
+        [clockEl, progressEl].forEach((el) => el.getAnimations && el.getAnimations().forEach((a) => a.cancel()));
+    }
+
     const isClock = tab === 'clock';
     document.body.dataset.tab = tab;
     clockTabBtn.classList.toggle('active', isClock);
@@ -63,6 +92,8 @@ function showTab(tab) {
     }
     focusContainer.style.display = tab === 'focus' ? 'block' : 'none';
     todoContainer.style.display = tab === 'todo' ? 'block' : 'none';
+
+    if (first) floatClock(first, tab);
 }
 clockTabBtn.addEventListener('click', () => showTab('clock'));
 focusBtn.addEventListener('click', () => showTab('focus'));
@@ -292,11 +323,13 @@ function updateStats() {
     if (document.body.dataset.tab === 'stats') renderStatsSoon();
 }
 
+// Keep only the last 365 days (today + the 364 days before it)
 function pruneFocus() {
-    const cutoff = dayKey(new Date(Date.now() - 400 * 86400000));
+    const cutoff = dayKey(dateAgo(364));
     for (const days of Object.values(focusLog)) {
         for (const day of Object.keys(days)) if (day < cutoff) delete days[day];
     }
+    store.set('focus', focusLog);
 }
 
 function addFocusMs(ms, when = Date.now()) {
@@ -450,11 +483,11 @@ function renderStreak(ms) {
     const todayCounted = ms(dateAgo(0)) >= HOUR_MS;
     const startOffset = todayCounted ? 0 : 1;
     let n = 0;
-    while (n < 400 && ms(dateAgo(startOffset + n)) >= HOUR_MS) n++;
+    while (n < 365 && ms(dateAgo(startOffset + n)) >= HOUR_MS) n++;
 
     let best = 0;
     let run = 0;
-    for (let i = 400; i >= 0; i--) {
+    for (let i = 364; i >= 0; i--) {
         if (ms(dateAgo(i)) >= HOUR_MS) { run++; best = Math.max(best, run); } else run = 0;
     }
     const savedBest = store.get('bestStreak', 0);
@@ -504,13 +537,8 @@ function renderStats() {
         : `${diff > 0 ? '+' : '-'}${fmtDuration(Math.abs(diff))} vs yesterday`;
 
     const elapsed = month ? now.getDate() : ((now.getDay() + 6) % 7) + 1;
-    const periodDays = [];
     let sum = 0;
-    for (let i = 0; i < elapsed; i++) {
-        const d = dateAgo(i);
-        periodDays.push(d);
-        sum += ms(d);
-    }
+    for (let i = 0; i < elapsed; i++) sum += ms(dateAgo(i));
     $('sc-period-label').textContent = month ? 'This month' : 'This week';
     $('sc-period').textContent = fmtDuration(sum);
     $('sc-period-sub').textContent = `avg ${fmtDuration(sum / elapsed)} / day`;
@@ -543,39 +571,19 @@ function renderStats() {
     $('chart-best').textContent = best.v >= 60000 ? `Best: ${bestDay} ${fmtDuration(best.v)}` : '';
 
     renderMap(totals, now, streakMap);
-
-    // Day by day (newest first; the month view hides empty days)
-    const rows = periodDays.filter((d, i) => !month || i === 0 || ms(d) > 0);
-    const listMax = Math.max(...rows.map(ms), 3600000);
-    const list = $('day-list');
-    list.replaceChildren();
-    rows.forEach((d) => {
-        const isToday = dayKey(d) === dayKey(now);
-        const li = makeEl('li', 'day-row' + (isToday ? ' today' : ''));
-        li.append(makeEl('span', 'day-name',
-            `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}${isToday ? ' · today' : ''}`));
-        const track = makeEl('div', 'day-track');
-        const fill = makeEl('div', 'day-fill');
-        fill.style.width = `${(ms(d) / listMax) * 100}%`;
-        track.append(fill);
-        li.append(track);
-        li.append(makeEl('span', 'day-time', ms(d) ? fmtDuration(ms(d)) : '–'));
-        list.append(li);
-    });
 }
 
 // ---- Focus map: one square per day, 52 weeks + this week, Monday first ----
 const mapGrid = $('map-grid');
-const mapMonths = $('map-months');
 const mapWrap = $('map-wrap');
 const mapTip = $('map-tip');
 
 function renderMap(totals, now, streakMap) {
     const offset = (now.getDay() + 6) % 7;      // days since Monday
     const count = 364 + offset + 1;
-    if (mapGrid.children.length !== count) {    // build once, then only update colors
+    if (mapGrid.dataset.count !== String(count)) {   // build once, then only update colors
         mapGrid.replaceChildren();
-        for (let i = 0; i < count; i++) mapGrid.append(makeEl('i', 'map-cell l0'));
+        // month labels: one where a column's Monday starts a new month
         const labels = [];
         let prev = -1;
         for (let c = 0; c < 53; c++) {
@@ -586,15 +594,26 @@ function renderMap(totals, now, streakMap) {
             }
         }
         if (labels.length > 1 && labels[1].c - labels[0].c < 3) labels.shift(); // avoid overlap
-        mapMonths.replaceChildren();
         labels.forEach(({ c, name }) => {
-            const s = makeEl('span', '', name);
-            s.style.left = `${c * 13}px`;
-            mapMonths.append(s);
+            const s = makeEl('span', 'map-month', name);
+            s.style.gridColumn = String(c + 2);
+            mapGrid.append(s);
         });
+        [['Mon', 2], ['Wed', 4], ['Fri', 6]].forEach(([name, row]) => {
+            const s = makeEl('span', 'map-dow', name);
+            s.style.gridRow = String(row);
+            mapGrid.append(s);
+        });
+        for (let i = 0; i < count; i++) {
+            const cell = makeEl('i', 'map-cell l0');
+            cell.style.gridColumn = String(Math.floor(i / 7) + 2);
+            cell.style.gridRow = String((i % 7) + 2);
+            mapGrid.append(cell);
+        }
+        mapGrid.dataset.count = String(count);
     }
     let total = 0;
-    [...mapGrid.children].forEach((cell, i) => {
+    mapGrid.querySelectorAll('.map-cell').forEach((cell, i) => {
         const d = dateAgo(offset + 364 - i);
         const ms = totals[dayKey(d)] || 0;
         total += ms;
@@ -646,10 +665,6 @@ rangeBtns.forEach((b) => b.addEventListener('click', () => {
 }));
 
 // ---------- Custom duration ----------
-function markPreset() {
-    presets.forEach((p) => p.classList.toggle('active', Number(p.dataset.min) === settings.focus));
-}
-
 function applySettings() {
     settings.focus = clamp(focusInput.value, 1, 180);
     settings.brk = clamp(breakInput.value, 1, 60);
@@ -662,14 +677,9 @@ function applySettings() {
         paused = false;
         remaining = duration();
     }
-    markPreset();
     render();
 }
 
-presets.forEach((p) => p.addEventListener('click', () => {
-    focusInput.value = p.dataset.min;
-    applySettings();
-}));
 focusInput.addEventListener('change', applySettings);
 breakInput.addEventListener('change', applySettings);
 
@@ -999,7 +1009,6 @@ function applyRemoteSettings(data) {
         focusInput.value = settings.focus;
         breakInput.value = settings.brk;
         if (changed && !running && !paused) remaining = duration();
-        markPreset();
         render();
     }
     if (data.ui) {
@@ -1098,7 +1107,7 @@ updateAccountUi();
 // ---------- Init ----------
 focusInput.value = settings.focus;
 breakInput.value = settings.brk;
-markPreset();
+pruneFocus();
 restoreTimer();
 render();
 renderTasks();

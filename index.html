@@ -9,7 +9,7 @@
     <script>
         // After a Google sign-in the browser can come back here; pass the login on to the app
         if (/access_token=|refresh_token=|[?&]code=|error_description=/.test(location.hash + location.search)) {
-            location.replace('app/' + location.search + location.hash);
+            location.replace('app' + location.search + location.hash);
         }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,7 +24,7 @@
             <nav class="nav-links" aria-label="Main">
                 <a class="link" href="#features">Features</a>
                 <a class="link" href="#progress">Progress</a>
-                <a class="btn primary small" href="app/">Open Clockus</a>
+                <a class="btn primary small" href="app">Open Clockus</a>
             </nav>
         </div>
     </header>
@@ -36,7 +36,7 @@
                 <h1>Focus, without the noise.</h1>
                 <p class="lead">A timer, a clock and a to-do list in one calm page. Track your focus, keep your streak and watch your progress grow.</p>
                 <div class="actions">
-                    <a class="btn primary" href="app/">Open Clockus</a>
+                    <a class="btn primary" href="app">Open Clockus</a>
                     <a class="btn" href="#features">See features</a>
                 </div>
                 <p class="note">No account needed. Works right in your browser.</p>
@@ -128,7 +128,7 @@
             <div class="cta">
                 <h2>Ready to focus?</h2>
                 <p>Start in one click. Sign in with Google whenever you want to sync.</p>
-                <a class="btn primary big" href="app/">Open Clockus</a>
+                <a class="btn primary big" href="app">Open Clockus</a>
             </div>
         </section>
     </main>
