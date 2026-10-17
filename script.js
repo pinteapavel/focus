@@ -42,8 +42,6 @@ const addBtn = $('add-btn');
 const todoList = $('todo-list');
 
 // ---------- Navigation ----------
-const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-
 // Focus <-> To do: the clock (and its line) glide to the new position instead of jumping
 function floatClock(first, tab) {
     [clockEl, progressEl].forEach((el, i) => {
@@ -63,15 +61,44 @@ function floatClock(first, tab) {
     if (incoming.animate) incoming.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, easing: 'ease-out' });
 }
 
+// A visual copy of something that is about to disappear, so it can fade out in place
+function ghostOf(el) {
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return null;
+    const cs = getComputedStyle(el);
+    const g = el.cloneNode(true);
+    g.removeAttribute('id');
+    g.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+    Object.assign(g.style, {
+        position: 'fixed', left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`,
+        margin: '0', display: 'block', zIndex: '5', pointerEvents: 'none',
+        fontSize: cs.fontSize, fontFamily: cs.fontFamily, fontWeight: cs.fontWeight,
+        letterSpacing: cs.letterSpacing, lineHeight: cs.lineHeight, color: cs.color, textAlign: cs.textAlign
+    });
+    g.setAttribute('aria-hidden', 'true');
+    g.inert = true;
+    document.body.append(g);
+    return g;
+}
+
+function fadeOutAndRemove(g) {
+    if (g.animate) g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: 'ease-out', fill: 'forwards' });
+    setTimeout(() => g.remove(), 320);
+}
+
 function showTab(tab) {
     const prev = document.body.dataset.tab;
-    const floating = !reduceMotion && ((prev === 'focus' && tab === 'todo') || (prev === 'todo' && tab === 'focus'));
-    if (floating && window.scrollY > 0) window.scrollTo(0, 0);
-    // Where the clock is right now (also correct if a previous glide is still running)
+    const floating = ui.animations && ((prev === 'focus' && tab === 'todo') || (prev === 'todo' && tab === 'focus'));
+    const crossfade = ui.animations && ((prev === 'clock' && tab === 'focus') || (prev === 'focus' && tab === 'clock'));
+    if ((floating || crossfade) && window.scrollY > 0) window.scrollTo(0, 0);
+
+    // Where things are right now (also correct if a previous glide is still running)
     const first = floating ? [clockEl, progressEl].map((el) => el.getBoundingClientRect()) : null;
     if (floating) {
         [clockEl, progressEl].forEach((el) => el.getAnimations && el.getAnimations().forEach((a) => a.cancel()));
     }
+    const leaving = prev === 'clock' ? [realtimeEl] : [clockEl, progressEl, focusContainer];
+    const ghosts = crossfade ? leaving.map(ghostOf).filter(Boolean) : [];
 
     const isClock = tab === 'clock';
     document.body.dataset.tab = tab;
@@ -94,6 +121,12 @@ function showTab(tab) {
     todoContainer.style.display = tab === 'todo' ? 'block' : 'none';
 
     if (first) floatClock(first, tab);
+    if (crossfade) {
+        // Clock <-> Focus: the old content fades out while the new one fades in
+        ghosts.forEach(fadeOutAndRemove);
+        const entering = tab === 'clock' ? [realtimeEl] : [clockEl, progressEl, focusContainer];
+        entering.forEach((el) => el.animate && el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 450, easing: 'ease-out' }));
+    }
 }
 clockTabBtn.addEventListener('click', () => showTab('clock'));
 focusBtn.addEventListener('click', () => showTab('focus'));
@@ -102,12 +135,34 @@ statsBtn.addEventListener('click', () => showTab('stats'));
 
 // ---------- Appearance settings ----------
 const DEFAULT_ACCENT = '#5b21b6';
-const ui = Object.assign({ theme: 'dark', format: '24', seconds: true, font: 'mono', accent: DEFAULT_ACCENT }, store.get('ui', {}));
+const WEIGHT_NAMES = { 100: 'Thin', 200: 'ExtraLight', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold', 800: 'ExtraBold', 900: 'Black', 1000: 'ExtraBlack' };
+const FONT_WEIGHTS = {
+    inter: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+    dmsans: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+};
+const DEFAULT_WEIGHTS = { inter: 700, dmsans: 400 };
+const ui = Object.assign({
+    theme: 'dark', format: '24', seconds: true, font: 'mono', accent: DEFAULT_ACCENT,
+    // Animations follow the system setting for reduced motion until the user chooses
+    animations: !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+}, store.get('ui', {}));
+if (typeof ui.animations !== 'boolean') ui.animations = true;
+if (!['mono', 'inter', 'dmsans'].includes(ui.font)) ui.font = 'mono';
+ui.weights = { ...DEFAULT_WEIGHTS, ...(ui.weights || {}) };
+for (const f of Object.keys(FONT_WEIGHTS)) {
+    if (!FONT_WEIGHTS[f].includes(Number(ui.weights[f]))) ui.weights[f] = DEFAULT_WEIGHTS[f];
+    ui.weights[f] = Number(ui.weights[f]);
+}
 if (!/^#[0-9a-f]{6}$/i.test(ui.accent)) ui.accent = DEFAULT_ACCENT;
 const themeSelect = $('theme-select');
 const formatSelect = $('format-select');
 const secondsSwitch = $('seconds-switch');
 const fontSelect = $('font-select');
+const weightRow = $('weight-row');
+const weightSelect = $('weight-select');
+const animationsSwitch = $('animations-switch');
+const motionNote = $('motion-note');
+const systemReducesMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 const rtAmpm = $('rt-ampm');
 const swatchBtns = document.querySelectorAll('.swatch[data-color]');
 const customSwatch = $('swatch-custom');
@@ -127,6 +182,18 @@ function applyUi() {
     formatSelect.value = ui.format;
     secondsSwitch.checked = ui.seconds;
     fontSelect.value = ui.font;
+    const weights = FONT_WEIGHTS[ui.font];
+    weightRow.hidden = !weights;
+    if (weights) {
+        if (weightSelect.dataset.font !== ui.font) {   // list every variant of the chosen font
+            weightSelect.replaceChildren(...weights.map((w) => new Option(`${WEIGHT_NAMES[w]} (${w})`, String(w))));
+            weightSelect.dataset.font = ui.font;
+        }
+        weightSelect.value = String(ui.weights[ui.font]);
+        document.documentElement.style.setProperty('--clock-weight', String(ui.weights[ui.font]));
+    }
+    animationsSwitch.checked = ui.animations;
+    motionNote.hidden = !systemReducesMotion;
     paletteFor(ui.accent).forEach((c, i) => document.documentElement.style.setProperty(`--p${i}`, c));
     let isPreset = false;
     swatchBtns.forEach((b) => {
@@ -152,6 +219,8 @@ themeSelect.addEventListener('change', () => changeUi('theme', themeSelect.value
 formatSelect.addEventListener('change', () => changeUi('format', formatSelect.value));
 secondsSwitch.addEventListener('change', () => changeUi('seconds', secondsSwitch.checked));
 fontSelect.addEventListener('change', () => changeUi('font', fontSelect.value));
+weightSelect.addEventListener('change', () => changeUi('weights', { ...ui.weights, [ui.font]: Number(weightSelect.value) }));
+animationsSwitch.addEventListener('change', () => changeUi('animations', animationsSwitch.checked));
 swatchBtns.forEach((b) => b.addEventListener('click', () => changeUi('accent', b.dataset.color)));
 accentCustom.addEventListener('input', () => { ui.accent = accentCustom.value; applyUi(); }); // live preview
 accentCustom.addEventListener('change', () => changeUi('accent', accentCustom.value));
@@ -1015,7 +1084,12 @@ function applyRemoteSettings(data) {
         ui.theme = data.ui.theme === 'light' ? 'light' : 'dark';
         ui.format = data.ui.format === '12' ? '12' : '24';
         ui.seconds = data.ui.seconds !== false;
-        ui.font = data.ui.font === 'inter' ? 'inter' : 'mono';
+        ui.font = ['inter', 'dmsans'].includes(data.ui.font) ? data.ui.font : 'mono';
+        for (const f of Object.keys(FONT_WEIGHTS)) {
+            const w = Number(data.ui.weights && data.ui.weights[f]);
+            if (FONT_WEIGHTS[f].includes(w)) ui.weights[f] = w;
+        }
+        if (typeof data.ui.animations === 'boolean') ui.animations = data.ui.animations;
         if (/^#[0-9a-f]{6}$/i.test(data.ui.accent)) ui.accent = data.ui.accent;
         store.set('ui', ui);
         applyUi();

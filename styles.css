@@ -33,7 +33,14 @@
 :root[data-font="inter"] .clock,
 :root[data-font="inter"] .realtime {
     font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-    font-weight: 700;
+    font-weight: var(--clock-weight, 700);
+    letter-spacing: -0.03em;
+}
+
+:root[data-font="dmsans"] .clock,
+:root[data-font="dmsans"] .realtime {
+    font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: var(--clock-weight, 400);
     letter-spacing: -0.03em;
 }
 
@@ -938,3 +945,5 @@ body[data-tab="focus"] .below {
 
 body[data-tab="focus"] .status { margin: 0 0 20px; }
 body[data-tab="focus"] .settings { margin-top: 28px; }
+
+[hidden] { display: none !important; }
