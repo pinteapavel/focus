@@ -193,6 +193,8 @@ function applyUi() {
         document.documentElement.style.setProperty('--clock-weight', String(ui.weights[ui.font]));
     }
     animationsSwitch.checked = ui.animations;
+    // How many digits the clock shows decides how large it can be on a narrow screen
+    realtimeEl.style.setProperty('--fit', String((ui.seconds ? 5.4 : 3.4) + (ui.format === '12' ? 0.45 : 0)));
     motionNote.hidden = !systemReducesMotion;
     paletteFor(ui.accent).forEach((c, i) => document.documentElement.style.setProperty(`--p${i}`, c));
     let isPreset = false;

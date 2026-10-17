@@ -25,4 +25,4 @@ NU atinge fisierul CNAME (tine domeniul clockus.live).
 SUPABASE (o singura data): Authentication > URL Configuration > Redirect URLs:
 adauga  https://clockus.live/**  (se potriveste cu orice pagina de pe site).
 
-VERIFICARE: in setari (piulita), jos, trebuie sa scrie "Version 16".
+VERIFICARE: in setari (piulita), jos, trebuie sa scrie "Version 17".

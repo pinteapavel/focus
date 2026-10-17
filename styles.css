@@ -110,7 +110,7 @@ body[data-mode="break"] .clock { color: var(--muted); }
 
 .realtime {
     display: none;
-    font-size: clamp(3rem, 15vw, 11rem);
+    font-size: max(3rem, min(14rem, calc((100vw - 40px) / var(--fit, 5.4))));
     font-weight: 200;
     letter-spacing: -0.04em;
     font-variant-numeric: tabular-nums;
