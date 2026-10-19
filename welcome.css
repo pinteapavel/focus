@@ -48,7 +48,8 @@ ul { padding: 0; list-style: none; }
 }
 
 .topbar-inner { display: flex; justify-content: space-between; align-items: center; padding-top: 18px; padding-bottom: 18px; }
-.logo { font-size: 1.125rem; font-weight: 400; }
+.logo { display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 300; letter-spacing: -0.03em; line-height: 1; }
+.logo svg { flex: none; width: 26px; height: 26px; }
 .nav-links { display: flex; align-items: center; gap: 32px; font-size: 0.8125rem; }
 .nav-links .link { color: var(--muted); transition: color 0.2s; }
 .nav-links .link:hover { color: var(--text); }

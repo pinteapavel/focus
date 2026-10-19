@@ -1,28 +1,21 @@
-CLOCKUS - cum pui site-ul in GitHub (fara foldere)
+CLOCKUS - pachetul de logo si identitate
 
-Zip-ul are 5 fisiere, toate la acelasi nivel, fara niciun folder:
+Conceptul: un ceas linistit. Inelul = fata ceasului, deschiderea = zgomotul
+scos (si formeaza litera C), punctul = tu, chiar acum.
 
-  index.html     <- pagina de prezentare (clockus.live)
-  app.html       <- aplicatia (clockus.live/app)
-  welcome.css    <- stilul paginii de prezentare
-  styles.css     <- stilul aplicatiei
-  script.js      <- codul aplicatiei
+Culori: Void #000000 · Paper #f2f2f2 · Mute #7d7d7d · Hairline #2b2b2b
+Accent (mov): #ffffff #d6c8ed #ad90da #8458c8 #5b21b6
+Font: JetBrains Mono (ExtraLight 200 pentru ore, Light 300 si Regular 400 pentru interfata)
+Slogan: Focus, without the noise.
 
-PASI
-1. Dezarhiveaza zip-ul (click dreapta, "Extract All").
-2. Intra in repository-ul de pe GitHub: Add file > Upload files.
-3. Selecteaza cele 5 fisiere si trage-le in fereastra GitHub.
-   Fisierele cu acelasi nume se inlocuiesc singure.
-4. Apasa "Commit changes".
-5. STERGE folderul "app" din repository (nu mai e folosit):
-   intra in "app", deschide "index.html", apasa cele trei puncte din
-   dreapta sus, apoi "Delete file", apoi "Commit changes".
-   Cand stergi ultimul fisier, folderul dispare singur.
-6. Asteapta ~1 minut, apoi deschide clockus.live cu Ctrl+Shift+R.
+FISIERE
+  clockus-mark-white.svg          simbolul, pentru fundal INCHIS (vectorial)
+  clockus-mark-black.svg          simbolul, pentru fundal DESCHIS (vectorial)
+  clockus-lockup-white.png        simbolul + cuvantul "clockus", pentru fundal inchis (transparent)
+  clockus-lockup-black.png        simbolul + cuvantul "clockus", pentru fundal deschis (transparent)
+  clockus-app-icon-1024.png       iconita de aplicatie, 1024x1024
+  clockus-share-image-1200x630.png  imaginea pentru partajarea linkului
+  favicon.svg                     iconita mica din tab
 
-NU atinge fisierul CNAME (tine domeniul clockus.live).
-
-SUPABASE (o singura data): Authentication > URL Configuration > Redirect URLs:
-adauga  https://clockus.live/**  (se potriveste cu orice pagina de pe site).
-
-VERIFICARE: in setari (piulita), jos, trebuie sa scrie "Version 17".
+Reguli simple: pastreaza spatiu liber in jurul logo-ului egal cu inaltimea punctului,
+nu il intinde si nu schimba culorile cu altele in afara de accentul ales.
