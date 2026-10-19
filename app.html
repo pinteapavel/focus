@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@1000&display=swap" rel="stylesheet">
     <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');document.documentElement.dataset.theme=u.theme||'dark';var f=(u.font==='inter'||u.font==='dmsans')?u.font:'mono';document.documentElement.dataset.font=f;var w=u.weights&&u.weights[f];if(w)document.documentElement.style.setProperty('--clock-weight',w);}catch(e){}</script>
     <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' (line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
-    <link rel="stylesheet" href="styles.css?v=18">
+    <link rel="stylesheet" href="styles.css?v=19">
 </head>
 <body data-mode="focus" data-tab="clock">
     <div class="nav">
@@ -36,6 +36,7 @@
     <div class="below">
         <div class="focus-container" id="focus-container">
             <div class="status" id="status">Focus Time</div>
+            <button class="current-line" id="current-line" type="button"></button>
             <div class="controls">
                 <button class="btn primary" id="start-btn">Start</button>
                 <button class="btn" id="pause-btn">Pause</button>
@@ -114,6 +115,11 @@
         </svg>
     </button>
 
+    <!-- Clean mode -->
+    <button class="icon-btn clean-btn" id="clean-btn" aria-label="Clean mode (F)" title="Clean mode (F)" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    </button>
+
     <div class="overlay" id="overlay"></div>
 
     <aside class="panel" id="settings-panel" aria-hidden="true" aria-label="Settings">
@@ -185,6 +191,7 @@
             <div class="setting-row"><span>Start / Pause</span><kbd>Space</kbd></div>
             <div class="setting-row"><span>Reset timer</span><kbd>R</kbd></div>
             <div class="setting-row"><span>New task</span><kbd>N</kbd></div>
+            <div class="setting-row"><span>Clean mode</span><kbd>F</kbd></div>
             <div class="setting-row"><span>Close menu</span><kbd>Esc</kbd></div>
         </section>
 
@@ -195,10 +202,10 @@
             <div class="setting-row"><span>Clear all data</span>
                 <button class="preset" disabled>Clear</button></div>
         </section>
-        <p class="panel-note" id="build-info">Version 18</p>
+        <p class="panel-note" id="build-info">Version 19</p>
     </aside>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <script src="script.js?v=18"></script>
+    <script src="script.js?v=19"></script>
 </body>
 </html>

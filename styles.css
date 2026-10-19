@@ -947,3 +947,70 @@ body[data-tab="focus"] .status { margin: 0 0 20px; }
 body[data-tab="focus"] .settings { margin-top: 28px; }
 
 [hidden] { display: none !important; }
+
+/* ---------- Current task ---------- */
+.current-line {
+    display: block;
+    max-width: min(80vw, 480px);
+    margin: -8px auto 20px;
+    padding: 0;
+    background: none;
+    border: 0;
+    overflow: hidden;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.current-line b { font-weight: 400; color: var(--text); }
+.current-line:hover { color: var(--text); }
+
+.cur-btn {
+    flex: none;
+    display: grid;
+    place-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.cur-btn svg { width: 20px; height: 20px; }
+.cur-btn path { stroke: var(--line-strong); transition: stroke 0.2s; }
+.cur-btn circle { fill: var(--line-strong); transition: fill 0.2s; }
+.cur-btn:hover:not(:disabled) path { stroke: var(--text); }
+.cur-btn:disabled { opacity: 0.25; cursor: default; }
+.todo-item.current .cur-btn path { stroke: var(--text); }
+.todo-item.current .cur-btn circle { fill: var(--p3); }
+.todo-item.current label span { font-weight: 400; }
+
+/* ---------- Clean mode ---------- */
+.nav, #settings-btn, .below { transition: opacity 0.35s ease; }
+
+body.clean .nav,
+body.clean #settings-btn,
+body.clean .below {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.35s ease, visibility 0s 0.35s;
+}
+
+.icon-btn.clean-btn {
+    top: auto;
+    bottom: 24px;
+    opacity: 0.6;
+    transition: opacity 0.3s, color 0.2s, border-color 0.2s;
+}
+
+.icon-btn.clean-btn:hover { opacity: 1; }
+body:not([data-tab="clock"]):not([data-tab="focus"]) .clean-btn { display: none; }
+body.clean .clean-btn { opacity: 0; pointer-events: none; }
+body.clean.show-exit .clean-btn { opacity: 0.85; pointer-events: auto; }

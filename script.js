@@ -87,6 +87,7 @@ function fadeOutAndRemove(g) {
 }
 
 function showTab(tab) {
+    if (tab !== 'clock' && tab !== 'focus') setClean(false);
     const prev = document.body.dataset.tab;
     const floating = ui.animations && ((prev === 'focus' && tab === 'todo') || (prev === 'todo' && tab === 'focus'));
     const crossfade = ui.animations && ((prev === 'clock' && tab === 'focus') || (prev === 'focus' && tab === 'clock'));
@@ -758,6 +759,29 @@ breakInput.addEventListener('change', applySettings);
 let tasks = store.get('tasks', []);
 let lastDay = today();
 
+// The task you are working on right now (shown under the timer on the Focus tab)
+let currentTaskId = store.get('currentTask', null);
+const currentLine = $('current-line');
+const CUR_ICON = '<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M51.92 48.71A26 26 0 1 1 51.92 15.29" stroke-width="5" stroke-linecap="round"/><circle cx="58" cy="32" r="6"/></svg>';
+
+function updateCurrentLine() {
+    const t = tasks.find((x) => x.id === currentTaskId && !x.done);
+    currentLine.replaceChildren();
+    if (t) {
+        currentLine.append('Working on: ', makeEl('b', '', t.text));
+        currentLine.title = 'Change the task';
+    } else {
+        currentLine.textContent = 'Pick a task to work on';
+        currentLine.title = 'Open your to-do list';
+    }
+}
+
+function setCurrentTask(id) {
+    currentTaskId = id;
+    store.set('currentTask', id);
+    renderTasks();
+}
+
 function saveTasks() { store.set('tasks', tasks); }
 
 function renderTasks() {
@@ -769,6 +793,12 @@ function renderTasks() {
     }
     tasks = [...tasks.filter((t) => !t.done), ...tasks.filter((t) => t.done)];
     saveTasks();
+    // A finished or deleted task can no longer be the current one
+    if (currentTaskId !== null && !tasks.some((t) => t.id === currentTaskId && !t.done)) {
+        currentTaskId = null;
+        store.set('currentTask', null);
+    }
+    updateCurrentLine();
     todoList.replaceChildren();
 
     if (!tasks.length) {
@@ -781,7 +811,7 @@ function renderTasks() {
 
     tasks.forEach((t) => {
         const li = document.createElement('li');
-        li.className = 'todo-item' + (t.done ? ' done' : '');
+        li.className = 'todo-item' + (t.done ? ' done' : '') + (t.id === currentTaskId ? ' current' : '');
         li.dataset.id = t.id;
 
         const label = document.createElement('label');
@@ -808,7 +838,15 @@ function renderTasks() {
         edit.textContent = 'Edit';
         edit.setAttribute('aria-label', `Edit ${t.text}`);
 
-        li.append(handle, label, edit, del);
+        const cur = document.createElement('button');
+        cur.className = 'cur-btn';
+        cur.innerHTML = CUR_ICON;   // fixed markup, no user text
+        cur.disabled = t.done;
+        cur.setAttribute('aria-pressed', String(t.id === currentTaskId));
+        cur.setAttribute('aria-label', t.id === currentTaskId ? `Stop working on ${t.text}` : `Work on ${t.text}`);
+        cur.title = t.id === currentTaskId ? 'Current task' : 'Work on this task';
+
+        li.append(handle, label, cur, edit, del);
         todoList.append(li);
     });
 }
@@ -874,6 +912,12 @@ todoList.addEventListener('change', (e) => {
 });
 
 todoList.addEventListener('click', (e) => {
+    const curBtn = e.target.closest('.cur-btn');
+    if (curBtn) {
+        const id = Number(curBtn.closest('li').dataset.id);
+        setCurrentTask(currentTaskId === id ? null : id);
+        return;
+    }
     if (e.target.classList.contains('edit-btn')) {
         const li = e.target.closest('li');
         const t = tasks.find((x) => x.id === Number(li.dataset.id));
@@ -887,6 +931,7 @@ todoList.addEventListener('click', (e) => {
     cloudDelete([id]);
 });
 
+currentLine.addEventListener('click', () => showTab('todo'));
 addBtn.addEventListener('click', addTask);
 taskInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') addTask();
@@ -918,12 +963,49 @@ settingsBtn.addEventListener('click', () => setPanel(true));
 settingsClose.addEventListener('click', () => setPanel(false));
 overlay.addEventListener('click', () => setPanel(false));
 
+// ---------- Clean mode: only the big digits and the progress line ----------
+const cleanBtn = $('clean-btn');
+let cleanTimer = null;
+
+function revealCleanBtn() {
+    document.body.classList.add('show-exit');
+    clearTimeout(cleanTimer);
+    cleanTimer = setTimeout(() => document.body.classList.remove('show-exit'), 2500);
+}
+
+function setClean(on) {
+    if (on && !['clock', 'focus'].includes(document.body.dataset.tab)) return;
+    document.body.classList.toggle('clean', on);
+    document.body.classList.remove('show-exit');
+    const label = on ? 'Exit clean mode (F)' : 'Clean mode (F)';
+    cleanBtn.setAttribute('aria-label', label);
+    cleanBtn.title = label;
+    cleanBtn.setAttribute('aria-pressed', String(on));
+    if (on) {
+        if (settingsPanel.classList.contains('open')) setPanel(false);
+        revealCleanBtn();
+    }
+}
+
+cleanBtn.addEventListener('click', () => setClean(!document.body.classList.contains('clean')));
+// Moving the mouse or touching the screen shows the exit button for a moment
+['pointermove', 'pointerdown'].forEach((type) => document.addEventListener(type, () => {
+    if (document.body.classList.contains('clean')) revealCleanBtn();
+}));
+// Double click / double tap on the digits starts or pauses the timer while the controls are hidden
+clockEl.addEventListener('dblclick', () => {
+    if (!document.body.classList.contains('clean') || document.body.dataset.tab !== 'focus') return;
+    if (running) pauseTimer();
+    else startTimer();
+});
+
 // ---------- Keyboard shortcuts ----------
 let swallowSpaceUp = false;
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        if (settingsPanel.classList.contains('open')) setPanel(false);
+        if (document.body.classList.contains('clean')) setClean(false);
+        else if (settingsPanel.classList.contains('open')) setPanel(false);
         else if (document.activeElement === taskInput) taskInput.blur();
         return;
     }
@@ -942,6 +1024,8 @@ document.addEventListener('keydown', (e) => {
         else startTimer();
     } else if (key === 'r' && onTimerTab) {
         resetTimer();
+    } else if (key === 'f' && ['clock', 'focus'].includes(document.body.dataset.tab)) {
+        setClean(!document.body.classList.contains('clean'));
     } else if (key === 'n') {
         e.preventDefault();
         showTab('todo');
