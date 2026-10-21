@@ -11,13 +11,14 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200;300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@1000&display=swap" rel="stylesheet">
-    <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');document.documentElement.dataset.theme=u.theme||'dark';var f=(u.font==='inter'||u.font==='dmsans')?u.font:'mono';document.documentElement.dataset.font=f;var w=u.weights&&u.weights[f];if(w)document.documentElement.style.setProperty('--clock-weight',w);}catch(e){}</script>
+    <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');var r=document.documentElement;r.dataset.theme=u.theme||'dark';var f=['sora','mono','inter','dmsans'].indexOf(u.font)>-1?u.font:'sora';if(u.v!==2&&u.font==='mono')f='sora';r.dataset.font=f;var w=u.weights&&u.weights[f];if(w)r.style.setProperty('--clock-weight',w);if(u.textWeight)r.style.setProperty('--w',u.textWeight);}catch(e){}</script>
     <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' (line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
-    <link rel="stylesheet" href="styles.css?v=19">
+    <link rel="stylesheet" href="styles.css?v=20">
 </head>
 <body data-mode="focus" data-tab="clock">
     <div class="nav">
@@ -149,9 +150,11 @@
                 <select id="format-select"><option value="24">24h</option><option value="12">12h</option></select></div>
             <div class="setting-row"><span>Show seconds</span>
                 <input type="checkbox" class="switch" id="seconds-switch" checked></div>
+            <div class="setting-row"><span>Text weight</span>
+                <select id="text-weight-select"></select></div>
             <div class="setting-row"><span>Clock font</span>
-                <select id="font-select"><option value="mono">Mono</option><option value="inter">Inter</option><option value="dmsans">DM Sans</option></select></div>
-            <div class="setting-row" id="weight-row" hidden><span>Weight</span>
+                <select id="font-select"><option value="sora">Sora</option><option value="mono">Mono</option><option value="inter">Inter</option><option value="dmsans">DM Sans</option></select></div>
+            <div class="setting-row" id="weight-row" hidden><span>Clock weight</span>
                 <select id="weight-select"></select></div>
             <div class="setting-row"><span>Animations</span>
                 <input type="checkbox" class="switch" id="animations-switch" checked></div>
@@ -202,10 +205,10 @@
             <div class="setting-row"><span>Clear all data</span>
                 <button class="preset" disabled>Clear</button></div>
         </section>
-        <p class="panel-note" id="build-info">Version 19</p>
+        <p class="panel-note" id="build-info">Version 20</p>
     </aside>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <script src="script.js?v=19"></script>
+    <script src="script.js?v=20"></script>
 </body>
 </html>

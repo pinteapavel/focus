@@ -8,7 +8,10 @@
     --panel: #0a0a0a;
     --field: #000;
     --hover: rgba(255, 255, 255, 0.1);
-    --mono: 'JetBrains Mono', 'Courier New', monospace;
+    --font: 'Sora', 'Helvetica Neue', Arial, sans-serif;
+    --w: 300;                                  /* general text weight, set from the settings */
+    --w-lo: clamp(100, calc(var(--w) - 100), 800);
+    --w-hi: clamp(100, calc(var(--w) + 100), 800);
     --p0: #ffffff;
     --p1: #d6c8ed;
     --p2: #ad90da;
@@ -28,6 +31,13 @@
     --field: #fff;
     --hover: rgba(0, 0, 0, 0.06);
     color-scheme: light;
+}
+
+:root[data-font="mono"] .clock,
+:root[data-font="mono"] .realtime {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-weight: 200;
+    letter-spacing: -0.04em;
 }
 
 :root[data-font="inter"] .clock,
@@ -53,8 +63,8 @@ body {
     padding: 0 20px 48px;
     background: var(--bg);
     color: var(--text);
-    font-family: var(--mono);
-    font-weight: 300;
+    font-family: var(--font);
+    font-weight: var(--w);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -66,7 +76,8 @@ body {
     outline-offset: 3px;
 }
 
-button { font-family: var(--mono); cursor: pointer; }
+button { font-family: var(--font); cursor: pointer; }
+button, input, select { font-weight: inherit; }
 
 /* ---------- Nav ---------- */
 .nav {
@@ -98,8 +109,8 @@ button { font-family: var(--mono); cursor: pointer; }
 /* ---------- Clock ---------- */
 .clock {
     font-size: clamp(4.5rem, 22vw, 10rem);
-    font-weight: 200;
-    letter-spacing: -0.04em;
+    font-weight: var(--clock-weight, 500);
+    letter-spacing: -0.045em;
     font-variant-numeric: tabular-nums;
     line-height: 1;
     margin: clamp(36px, 9vh, 80px) 0 28px;
@@ -111,8 +122,8 @@ body[data-mode="break"] .clock { color: var(--muted); }
 .realtime {
     display: none;
     font-size: max(3rem, min(14rem, calc((100vw - 40px) / var(--fit, 5.4))));
-    font-weight: 200;
-    letter-spacing: -0.04em;
+    font-weight: var(--clock-weight, 500);
+    letter-spacing: -0.045em;
     font-variant-numeric: tabular-nums;
     line-height: 1;
 }
@@ -122,7 +133,7 @@ body[data-mode="break"] .clock { color: var(--muted); }
 .rt-ampm {
     margin-left: 0.6em;
     font-size: 0.2em;
-    font-weight: 400;
+    font-weight: var(--w-hi);
     letter-spacing: 0;
     color: var(--muted);
 }
@@ -461,14 +472,14 @@ body[data-tab="focus"] .stage { width: auto; max-width: 100%; }
     margin-bottom: 28px;
 }
 
-.panel h2 { margin: 0; font-size: 1rem; font-weight: 400; }
+.panel h2 { margin: 0; font-size: 1rem; font-weight: var(--w-hi); }
 
 .panel-section { margin-bottom: 28px; }
 
 .panel-section h3 {
     margin: 0 0 12px;
     font-size: 0.75rem;
-    font-weight: 400;
+    font-weight: var(--w-hi);
     letter-spacing: 0.08em;
     color: var(--muted);
 }
@@ -656,7 +667,7 @@ kbd {
 .stat-value {
     margin: 6px 0;
     font-size: clamp(1.6rem, 7vw, 2.75rem);
-    font-weight: 200;
+    font-weight: var(--w-lo);
     letter-spacing: -0.04em;
     white-space: nowrap;
 }
@@ -871,7 +882,7 @@ kbd {
 
 .stat-unit {
     font-size: 0.875rem;
-    font-weight: 300;
+    font-weight: var(--w);
     letter-spacing: 0;
     color: var(--muted);
 }
@@ -966,7 +977,7 @@ body[data-tab="focus"] .settings { margin-top: 28px; }
     transition: color 0.2s;
 }
 
-.current-line b { font-weight: 400; color: var(--text); }
+.current-line b { font-weight: var(--w-hi); color: var(--text); }
 .current-line:hover { color: var(--text); }
 
 .cur-btn {
@@ -989,7 +1000,7 @@ body[data-tab="focus"] .settings { margin-top: 28px; }
 .cur-btn:disabled { opacity: 0.25; cursor: default; }
 .todo-item.current .cur-btn path { stroke: var(--text); }
 .todo-item.current .cur-btn circle { fill: var(--p3); }
-.todo-item.current label span { font-weight: 400; }
+.todo-item.current label span { font-weight: var(--w-hi); }
 
 /* ---------- Clean mode ---------- */
 .nav, #settings-btn, .below { transition: opacity 0.35s ease; }

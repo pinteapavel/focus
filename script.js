@@ -137,18 +137,27 @@ statsBtn.addEventListener('click', () => showTab('stats'));
 // ---------- Appearance settings ----------
 const DEFAULT_ACCENT = '#5b21b6';
 const WEIGHT_NAMES = { 100: 'Thin', 200: 'ExtraLight', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold', 800: 'ExtraBold', 900: 'Black', 1000: 'ExtraBlack' };
+const TEXT_WEIGHTS = [100, 200, 300, 400, 500, 600, 700, 800];
 const FONT_WEIGHTS = {
+    sora: [100, 200, 300, 400, 500, 600, 700, 800],
     inter: [100, 200, 300, 400, 500, 600, 700, 800, 900],
     dmsans: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
 };
-const DEFAULT_WEIGHTS = { inter: 700, dmsans: 400 };
+const DEFAULT_WEIGHTS = { sora: 500, inter: 700, dmsans: 400 };
+const savedUi = store.get('ui', {});
+if (savedUi.v !== 2) {                      // Sora is the new main font: the old default clock font moves to it
+    if (savedUi.font === 'mono') savedUi.font = 'sora';
+    savedUi.v = 2;
+}
 const ui = Object.assign({
-    theme: 'dark', format: '24', seconds: true, font: 'mono', accent: DEFAULT_ACCENT,
+    theme: 'dark', format: '24', seconds: true, font: 'sora', accent: DEFAULT_ACCENT, textWeight: 300, v: 2,
     // Animations follow the system setting for reduced motion until the user chooses
     animations: !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-}, store.get('ui', {}));
+}, savedUi);
 if (typeof ui.animations !== 'boolean') ui.animations = true;
-if (!['mono', 'inter', 'dmsans'].includes(ui.font)) ui.font = 'mono';
+if (!['sora', 'mono', 'inter', 'dmsans'].includes(ui.font)) ui.font = 'sora';
+if (!TEXT_WEIGHTS.includes(Number(ui.textWeight))) ui.textWeight = 300;
+ui.textWeight = Number(ui.textWeight);
 ui.weights = { ...DEFAULT_WEIGHTS, ...(ui.weights || {}) };
 for (const f of Object.keys(FONT_WEIGHTS)) {
     if (!FONT_WEIGHTS[f].includes(Number(ui.weights[f]))) ui.weights[f] = DEFAULT_WEIGHTS[f];
@@ -159,6 +168,8 @@ const themeSelect = $('theme-select');
 const formatSelect = $('format-select');
 const secondsSwitch = $('seconds-switch');
 const fontSelect = $('font-select');
+const textWeightSelect = $('text-weight-select');
+textWeightSelect.replaceChildren(...TEXT_WEIGHTS.map((w) => new Option(`${WEIGHT_NAMES[w]} (${w})`, String(w))));
 const weightRow = $('weight-row');
 const weightSelect = $('weight-select');
 const animationsSwitch = $('animations-switch');
@@ -183,6 +194,8 @@ function applyUi() {
     formatSelect.value = ui.format;
     secondsSwitch.checked = ui.seconds;
     fontSelect.value = ui.font;
+    textWeightSelect.value = String(ui.textWeight);
+    document.documentElement.style.setProperty('--w', String(ui.textWeight));
     const weights = FONT_WEIGHTS[ui.font];
     weightRow.hidden = !weights;
     if (weights) {
@@ -222,6 +235,7 @@ themeSelect.addEventListener('change', () => changeUi('theme', themeSelect.value
 formatSelect.addEventListener('change', () => changeUi('format', formatSelect.value));
 secondsSwitch.addEventListener('change', () => changeUi('seconds', secondsSwitch.checked));
 fontSelect.addEventListener('change', () => changeUi('font', fontSelect.value));
+textWeightSelect.addEventListener('change', () => changeUi('textWeight', Number(textWeightSelect.value)));
 weightSelect.addEventListener('change', () => changeUi('weights', { ...ui.weights, [ui.font]: Number(weightSelect.value) }));
 animationsSwitch.addEventListener('change', () => changeUi('animations', animationsSwitch.checked));
 swatchBtns.forEach((b) => b.addEventListener('click', () => changeUi('accent', b.dataset.color)));
@@ -1170,7 +1184,10 @@ function applyRemoteSettings(data) {
         ui.theme = data.ui.theme === 'light' ? 'light' : 'dark';
         ui.format = data.ui.format === '12' ? '12' : '24';
         ui.seconds = data.ui.seconds !== false;
-        ui.font = ['inter', 'dmsans'].includes(data.ui.font) ? data.ui.font : 'mono';
+        // saves from before Sora still carry the old default clock font: treat that as the new default
+        const remoteFont = (data.ui.v !== 2 && data.ui.font === 'mono') ? 'sora' : data.ui.font;
+        ui.font = ['sora', 'mono', 'inter', 'dmsans'].includes(remoteFont) ? remoteFont : 'sora';
+        if (TEXT_WEIGHTS.includes(Number(data.ui.textWeight))) ui.textWeight = Number(data.ui.textWeight);
         for (const f of Object.keys(FONT_WEIGHTS)) {
             const w = Number(data.ui.weights && data.ui.weights[f]);
             if (FONT_WEIGHTS[f].includes(w)) ui.weights[f] = w;

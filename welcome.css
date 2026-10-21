@@ -6,7 +6,7 @@
     --line: #2b2b2b;
     --line-soft: #1c1c1c;
     --line-strong: #5a5a5a;
-    --mono: 'JetBrains Mono', 'Courier New', monospace;
+    --font: 'Sora', 'Helvetica Neue', Arial, sans-serif;
     --p0: #ffffff;
     --p1: #d6c8ed;
     --p2: #ad90da;
@@ -22,7 +22,7 @@ body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: var(--mono);
+    font-family: var(--font);
     font-weight: 300;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -48,7 +48,7 @@ ul { padding: 0; list-style: none; }
 }
 
 .topbar-inner { display: flex; justify-content: space-between; align-items: center; padding-top: 18px; padding-bottom: 18px; }
-.logo { display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 300; letter-spacing: -0.03em; line-height: 1; }
+.logo { display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.04em; line-height: 1; }
 .logo svg { flex: none; width: 26px; height: 26px; }
 .nav-links { display: flex; align-items: center; gap: 32px; font-size: 0.8125rem; }
 .nav-links .link { color: var(--muted); transition: color 0.2s; }
@@ -88,7 +88,7 @@ ul { padding: 0; list-style: none; }
 h1 {
     margin: 24px 0;
     font-size: clamp(2.6rem, 8vw, 4rem);
-    font-weight: 200;
+    font-weight: 300;
     letter-spacing: -0.04em;
     line-height: 1.05;
 }
@@ -123,8 +123,8 @@ h1 {
 .timer-clock {
     margin: 44px 0 28px;
     font-size: clamp(4.2rem, 20vw, 6.5rem);
-    font-weight: 200;
-    letter-spacing: -0.04em;
+    font-weight: 500;
+    letter-spacing: -0.045em;
     line-height: 1;
 }
 
@@ -149,7 +149,7 @@ h2 {
     margin: 16px 0 40px;
     max-width: 700px;
     font-size: clamp(1.8rem, 5vw, 2.25rem);
-    font-weight: 200;
+    font-weight: 300;
     letter-spacing: -0.03em;
     line-height: 1.2;
 }
@@ -178,7 +178,7 @@ h2 {
     border-radius: 16px;
 }
 
-.streak-n { font-size: 1.625rem; font-weight: 200; letter-spacing: -0.03em; }
+.streak-n { font-size: 1.625rem; font-weight: 400; letter-spacing: -0.03em; }
 .streak-sub { margin-top: 2px; font-size: 0.75rem; color: var(--muted); }
 
 .map-card {
