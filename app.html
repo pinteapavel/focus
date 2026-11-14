@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clockus</title>
+    <meta name="theme-color" content="#000000">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" sizes="48x48">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@1000&display=swap" rel="stylesheet">
+    <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');var r=document.documentElement;var t=u.theme||'dark';if(t==='system')t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';r.dataset.theme=t;var b=u.bg||'solid',p=b==='photo'?localStorage.getItem('bgPhoto'):null;if(b==='photo'&&!p)b='solid';if(p)r.style.setProperty('--bg-photo','url("'+p+'")');r.dataset.bg=b;var f=['sora','mono','inter','dmsans'].indexOf(u.font)>-1?u.font:'sora';if(u.v!==2&&u.font==='mono')f='sora';r.dataset.font=f;var w=u.weights&&u.weights[f];if(w)r.style.setProperty('--clock-weight',w);if(u.textWeight)r.style.setProperty('--w',u.textWeight);}catch(e){}</script>
+    <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' ('+String(e.filename||'').split('/').pop().split('?')[0]+' line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
+    <link rel="stylesheet" href="css/app.css?v=29">
+</head>
+<body data-mode="focus" data-tab="clock">
+    <header class="topbar">
+        <div class="brand">
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M51.92 48.71A26 26 0 1 1 51.92 15.29" stroke-width="4" stroke-linecap="round"/><circle cx="58" cy="32" r="5"/></svg>
+            <span class="brand-name">Clockus</span>
+        </div>
+        <nav class="nav" aria-label="Main">
+            <button class="nav-button active" id="clock-btn" type="button" title="Clock" aria-label="Clock">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="nav-label">Clock</span>
+            </button>
+            <button class="nav-button" id="focus-btn" type="button" title="Focus" aria-label="Focus">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/></svg><span class="nav-label">Focus</span>
+            </button>
+            <button class="nav-button" id="todo-btn" type="button" title="To do" aria-label="To do">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.5 1.5L7 5M3.5 12l1.5 1.5L7 11M3.5 18l1.5 1.5L7 17"/></svg><span class="nav-label">To do</span>
+            </button>
+            <button class="nav-button" id="cal-btn" type="button" title="Calendar" aria-label="Calendar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span class="nav-label">Calendar</span>
+            </button>
+            <button class="nav-button" id="stats-btn" type="button" title="Stats" aria-label="Stats">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-7"/></svg><span class="nav-label">Stats</span>
+            </button>
+            <button class="nav-button" id="settings-tab-btn" type="button" title="Settings" aria-label="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg><span class="nav-label">Settings</span>
+            </button>
+        </nav>
+        <div class="topbar-right">
+            <button class="avatar-btn" id="avatar-btn" type="button" title="Account" aria-label="Account" aria-haspopup="dialog" aria-expanded="false" aria-controls="account-menu">
+                <span id="avatar-initial"></span>
+                <svg class="avatar-person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.2-3.6 3.9-5.5 7-5.5s5.8 1.9 7 5.5"/></svg>
+            </button>
+            <div class="account-menu" id="account-menu" role="dialog" aria-label="Account" hidden>
+                <div class="am-who" id="am-who"></div>
+                <p class="am-note" id="am-note"></p>
+                <div class="am-sync" id="am-sync">
+                    <span class="sync-pill" id="am-pill"><i aria-hidden="true"></i><span id="am-status"></span></span>
+                    <span class="am-when" id="am-when"></span>
+                </div>
+                <button class="btn primary am-action" id="am-signin" type="button">Continue with Google</button>
+                <button class="btn am-action" id="am-signout" type="button">Sign out</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="stage">
+        <div class="realtime" id="realtime"><span id="rt-main">00:00</span><span class="rt-seconds" id="rt-sec">:00</span><span class="rt-ampm" id="rt-ampm"></span></div>
+        <div class="clock" id="clock">25:00</div>
+        <div class="progress" id="progress"><div class="progress-bar" id="progress-bar"></div></div>
+    </div>
+
+    <div class="below">
+        <div class="focus-container" id="focus-container">
+            <div class="status" id="status">Focus Time</div>
+            <button class="current-line" id="current-line" type="button"></button>
+            <div class="controls">
+                <button class="btn primary" id="start-btn">Start</button>
+                <button class="btn" id="pause-btn">Pause</button>
+                <button class="btn" id="reset-btn">Reset</button>
+                <button class="btn" id="skip-btn" hidden>Skip break</button>
+            </div>
+
+            <button class="goal-line" id="goal-line" type="button" hidden>
+                <span class="goal-line-label" id="goal-line-label">Today</span>
+                <span class="goal-line-track"><span class="goal-line-fill" id="goal-line-fill"></span></span>
+                <span class="goal-line-nums"><span id="goal-line-done"></span><span id="goal-line-goal"></span></span>
+            </button>
+
+            <div class="settings">
+                <div class="custom">
+                    <label>Focus <input type="number" id="focus-input" min="1" max="180" value="25"> min</label>
+                    <label>Break <input type="number" id="break-input" min="1" max="60" value="5"> min</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="todo-container" id="todo-container">
+            <div class="todo-input">
+                <input type="text" id="task-input" placeholder="Add a task for today..." maxlength="120">
+                <button class="btn primary" id="add-btn">Add</button>
+            </div>
+            <ul class="todo-list" id="todo-list"></ul>
+            <button class="todo-note" id="todo-note" type="button" hidden></button>
+        </div>
+
+        <div class="cal-container" id="cal-container">
+            <div class="cal-head">
+                <div class="cal-nav">
+                    <h2 class="cal-title" id="cal-title" aria-live="polite">Calendar</h2>
+                    <button class="cal-arrow" id="cal-prev" type="button" aria-label="Previous month">&lsaquo;</button>
+                    <button class="cal-arrow" id="cal-next" type="button" aria-label="Next month">&rsaquo;</button>
+                    <button class="range-btn" id="cal-today" type="button">Today</button>
+                </div>
+                <div class="stats-range">
+                    <button class="range-btn" data-cal-view="month" type="button">Month</button>
+                    <button class="range-btn" data-cal-view="week" type="button">Week</button>
+                </div>
+            </div>
+
+            <div class="cal-overdue" id="cal-overdue" hidden>
+                <span id="cal-overdue-text"></span>
+                <button class="range-btn" id="cal-overdue-btn" type="button">Move all to today</button>
+            </div>
+
+            <div class="cal-layout">
+                <div class="cal-main">
+                    <div class="stat-panel cal-month" id="cal-month">
+                        <div class="cal-dow" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+                        <div class="cal-grid" id="cal-grid"></div>
+                        <div class="cal-foot">
+                            <span id="cal-month-total"></span>
+                            <span class="cal-legend"><i class="dot done"></i>done <i class="dot"></i>open <i class="dot late"></i>overdue <i class="cal-bar l2"></i>focus time <i class="cal-goal"></i>goal reached</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-panel cal-week" id="cal-week" hidden>
+                        <div class="cal-week-head">
+                            <span class="cal-sub">Plan your focus blocks</span>
+                            <span class="cal-legend"><i class="wk-key done"></i>done <i class="wk-key"></i>planned <i class="wk-key session"></i>focus session</span>
+                            <button class="range-btn" id="plan-block" type="button">+ Plan a block</button>
+                        </div>
+                        <div class="week-wrap" id="week-wrap"><div class="week-grid" id="week-grid"></div></div>
+                        <div class="cal-foot">
+                            <span>Drag a task onto the grid to give it a time. Drag the bottom edge of a block to change its length. Click an empty slot to plan a block there.</span>
+                            <span id="week-total"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cal-side">
+                    <div class="stat-panel cal-day">
+                        <div class="day-head">
+                            <div class="day-head-text">
+                                <div class="cal-sub" id="day-label">Today</div>
+                                <h3 class="day-title" id="day-title"></h3>
+                            </div>
+                            <div class="day-arrows">
+                                <button class="cal-arrow" id="day-prev" type="button" aria-label="Previous day">&lsaquo;</button>
+                                <button class="cal-arrow" id="day-next" type="button" aria-label="Next day">&rsaquo;</button>
+                            </div>
+                        </div>
+                        <div class="day-stats" id="day-stats"></div>
+
+                        <div class="day-section-head">
+                            <span class="cal-sub">Tasks</span>
+                            <button class="day-free" id="day-free" type="button" hidden></button>
+                        </div>
+                        <ul class="todo-list day-tasks" id="day-tasks"></ul>
+                        <form class="day-add" id="day-add">
+                            <input type="text" id="day-input" placeholder="Add a task for this day..." maxlength="120" aria-label="New task for this day">
+                            <div class="day-add-row">
+                                <button class="when-btn" id="day-when" type="button"></button>
+                                <button class="btn primary day-add-btn" type="submit">Add</button>
+                            </div>
+                        </form>
+
+                        <div class="day-section-head">
+                            <span class="cal-sub">Your day</span>
+                            <span class="cal-legend"><i class="wk-key"></i>planned <i class="wk-key session"></i>focus</span>
+                        </div>
+                        <div class="day-line" id="day-line" role="img"></div>
+
+                        <div class="day-section-head">
+                            <span class="cal-sub">Focus sessions</span>
+                            <span class="day-hint">logged automatically</span>
+                        </div>
+                        <ul class="day-sessions" id="day-sessions"></ul>
+                    </div>
+
+                    <div class="stat-panel">
+                        <div class="day-section-head">
+                            <span class="cal-sub">Not scheduled <span class="un-count" id="un-count"></span></span>
+                            <span class="day-hint">drag onto a day</span>
+                        </div>
+                        <ul class="un-list" id="cal-unscheduled"></ul>
+                    </div>
+
+                    <button class="range-btn cal-export" id="cal-export" type="button">Export to Google / Apple Calendar (.ics)</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-container" id="stats-container">
+            <section class="goals" aria-labelledby="goals-title">
+                <div class="goals-head">
+                    <h2 class="goals-title" id="goals-title">Goals</h2>
+                    <button class="range-btn" id="goals-edit" type="button" hidden>Edit goals</button>
+                </div>
+                <div class="stat-panel goals-empty" id="goals-empty">
+                    <div>
+                        <div class="goal-label">Not set</div>
+                        <p>A daily focus goal, a few tasks a day, and the days you want to count. Small and steady beats big and abandoned.</p>
+                    </div>
+                    <button class="btn primary" id="goals-set" type="button">+ Set a goal</button>
+                </div>
+                <div id="goals-body" hidden>
+                    <div class="goal-rings" id="goal-rings"></div>
+                    <div class="goal-week-row">
+                        <div class="stat-panel goal-week" id="goal-week"></div>
+                        <div class="goal-side">
+                            <div class="stat-panel goal-small" id="goal-days"></div>
+                            <div class="stat-panel goal-small" id="goal-tasks-week"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="stats-head">
+                <span class="stats-title">Your focus</span>
+                <div class="stats-range">
+                    <button class="range-btn active" data-range="week">Week</button>
+                    <button class="range-btn" data-range="month">Month</button>
+                </div>
+            </div>
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="stat-label">Today</div>
+                    <div class="stat-value" id="sc-today">0m</div>
+                    <div class="stat-sub" id="sc-today-sub"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" id="sc-period-label">This week</div>
+                    <div class="stat-value" id="sc-period">0m</div>
+                    <div class="stat-sub" id="sc-period-sub"></div>
+                </div>
+                <div class="stat-card streak-card" id="streak-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Streak</span>
+                        <svg class="flame" id="streak-flame" width="30" height="30" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                    </div>
+                    <div class="stat-value"><span id="streak-n">0</span><span class="stat-unit" id="streak-unit"> days</span></div>
+                    <div class="stat-sub" id="streak-best"></div>
+                    <div class="stat-sub" id="streak-note"></div>
+                    <div class="streak-dots" id="streak-dots"></div>
+                </div>
+            </div>
+            <section class="records" aria-labelledby="records-title">
+                <div class="records-head">
+                    <h2 class="records-title" id="records-title">Records</h2>
+                    <span>updated live as you focus</span>
+                </div>
+                <div class="records-grid">
+                    <div class="stat-card rec-card" id="rec-day">
+                        <div class="stat-top"><span class="stat-label">Best day</span><span class="rec-new">NEW</span></div>
+                        <div class="stat-value" id="rec-day-v">0m</div>
+                        <div class="stat-sub" id="rec-day-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-week">
+                        <div class="stat-top"><span class="stat-label">Best week</span><span class="rec-new">NEW</span></div>
+                        <div class="stat-value" id="rec-week-v">0m</div>
+                        <div class="stat-sub" id="rec-week-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-streak">
+                        <div class="stat-top"><span class="stat-label">Longest streak</span><span class="rec-new">NEW</span></div>
+                        <div class="stat-value" id="rec-streak-v">0</div>
+                        <div class="stat-sub" id="rec-streak-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-session">
+                        <div class="stat-top"><span class="stat-label">Longest session</span><span class="rec-new">NEW</span></div>
+                        <div class="stat-value" id="rec-session-v">0m</div>
+                        <div class="stat-sub" id="rec-session-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-avg">
+                        <div class="stat-label"><span class="rec-long">Average per active day</span><span class="rec-short">Avg / active day</span></div>
+                        <div class="stat-value" id="rec-avg-v">0m</div>
+                        <div class="stat-sub" id="rec-avg-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-days">
+                        <div class="stat-label">Days with focus</div>
+                        <div class="stat-value" id="rec-days-v">0</div>
+                        <div class="stat-sub" id="rec-days-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-all">
+                        <div class="stat-label">All time</div>
+                        <div class="stat-value" id="rec-all-v">0m</div>
+                        <div class="stat-sub" id="rec-all-sub"></div>
+                    </div>
+                    <div class="stat-card rec-more">More records appear<br>as you keep going</div>
+                </div>
+            </section>
+            <div class="stat-panel">
+                <div class="stat-panel-head"><span>Focus map</span><span id="map-total"></span></div>
+                <div class="map-box">
+                    <div class="map-wrap" id="map-wrap">
+                        <div class="map-grid" id="map-grid" role="img" aria-label="Focus map for the last 12 months"></div>
+                    </div>
+                    <div class="map-tip" id="map-tip" hidden></div>
+                </div>
+                <div class="map-legend"><i class="s-key"></i><span class="s-label">Current streak</span><span>0h</span><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>4h+</span></div>
+            </div>
+            <div class="stat-panel">
+                <div class="stat-panel-head"><span id="chart-title">Last 7 days</span><span id="chart-best"></span></div>
+                <div class="chart" id="chart"></div>
+            </div>
+        </div>
+
+        <div class="settings-container" id="settings-container">
+            <div class="set-layout">
+                <nav class="set-nav" aria-label="Settings categories">
+                    <h2 class="set-title">Settings</h2>
+                    <button class="set-nav-item" type="button" data-sec="appearance"><span>Appearance</span><span class="set-nav-sum" id="sum-appearance"></span></button>
+                    <button class="set-nav-item" type="button" data-sec="clock"><span>Clock and time</span><span class="set-nav-sum" id="sum-clock"></span></button>
+                    <button class="set-nav-item" type="button" data-sec="shortcuts"><span>Shortcuts</span><span class="set-nav-sum"></span></button>
+                    <button class="set-nav-item" type="button" data-sec="account"><span>Account and data</span><span class="set-nav-sum" id="sum-account"></span></button>
+                    <p class="set-version">Clockus · <span id="build-info">Version 29</span></p>
+                </nav>
+
+                <div class="set-main">
+                    <!-- Appearance -->
+                    <section class="set-card" id="set-appearance" data-sec="appearance" aria-labelledby="set-h-appearance">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-appearance">Appearance</h3><span>how Clockus looks</span></div>
+
+                        <div class="set-label" id="theme-label">Theme</div>
+                        <div class="set-tiles" role="group" aria-labelledby="theme-label">
+                            <button class="set-tile" type="button" data-theme-choice="dark"><span class="set-prev prev-dark">12:34</span><span class="set-tile-name">Dark</span></button>
+                            <button class="set-tile" type="button" data-theme-choice="light"><span class="set-prev prev-light">12:34</span><span class="set-tile-name">Light</span></button>
+                            <button class="set-tile" type="button" data-theme-choice="system"><span class="set-prev prev-system">12:34</span><span class="set-tile-name">System</span></button>
+                            <button class="set-tile" type="button" data-theme-choice="graphite"><span class="set-prev prev-graphite">12:34</span><span class="set-tile-name">Graphite</span></button>
+                            <button class="set-tile" type="button" data-theme-choice="paper"><span class="set-prev prev-paper">12:34</span><span class="set-tile-name">Paper</span></button>
+                        </div>
+
+                        <div class="set-label" id="bg-label">Background <span class="new-badge">New</span></div>
+                        <div class="set-tiles" role="group" aria-labelledby="bg-label">
+                            <button class="set-tile" type="button" data-bg-choice="solid"><span class="set-prev prev-solid">12:34</span><span class="set-tile-name">Solid</span></button>
+                            <button class="set-tile" type="button" data-bg-choice="midnight"><span class="set-prev prev-midnight">12:34</span><span class="set-tile-name">Midnight</span></button>
+                            <button class="set-tile" type="button" data-bg-choice="glow"><span class="set-prev prev-glow">12:34</span><span class="set-tile-name">Glow</span></button>
+                            <button class="set-tile" type="button" data-bg-choice="dots"><span class="set-prev prev-dots">12:34</span><span class="set-tile-name">Dots</span></button>
+                            <button class="set-tile" type="button" data-bg-choice="photo" id="bg-photo-tile"><span class="set-prev prev-photo" id="bg-photo-prev">+ Photo</span><span class="set-tile-name">Your image</span></button>
+                            <input type="file" id="bg-photo-input" accept="image/*" hidden>
+                        </div>
+                        <p class="set-note" id="bg-photo-note" hidden></p>
+
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Accent color</div><p>Used for the streak, progress and highlights.</p></div>
+                            <div class="swatches">
+                                <button class="swatch" type="button" data-color="#5b21b6" aria-label="Violet"></button>
+                                <button class="swatch" type="button" data-color="#1d4ed8" aria-label="Blue"></button>
+                                <button class="swatch" type="button" data-color="#0f766e" aria-label="Teal"></button>
+                                <button class="swatch" type="button" data-color="#15803d" aria-label="Green"></button>
+                                <button class="swatch" type="button" data-color="#c2410c" aria-label="Orange"></button>
+                                <button class="swatch" type="button" data-color="#be123c" aria-label="Rose"></button>
+                                <label class="swatch swatch-custom" id="swatch-custom" title="Custom color">+<input type="color" id="accent-custom" aria-label="Custom accent color"></label>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="text-weight-range">Text weight</label><p>Thickness of all text on the site.</p></div>
+                            <div class="set-range">
+                                <input type="range" id="text-weight-range" min="0" max="7" step="1">
+                                <div class="set-range-ends"><span>Thin</span><span>Bold</span></div>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="animations-switch">Animations</label><p>Fades between tabs and the floating clock.</p>
+                                <p id="motion-note" hidden>Your system asks for reduced motion, so animations start off.</p></div>
+                            <input type="checkbox" class="set-toggle" id="animations-switch">
+                        </div>
+                    </section>
+
+                    <!-- Clock and time -->
+                    <section class="set-card" id="set-clock" data-sec="clock" aria-labelledby="set-h-clock">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-clock">Clock and time</h3><span>the main clock</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div id="font-label">Clock font</div><p>Bold variants are marked in the picker.</p></div>
+                            <div class="font-tiles" role="group" aria-labelledby="font-label">
+                                <button class="font-tile" type="button" data-font-choice="sora"><span class="font-prev f-sora">12:34</span><span>Sora</span></button>
+                                <button class="font-tile" type="button" data-font-choice="mono"><span class="font-prev f-mono">12:34</span><span>Mono</span></button>
+                                <button class="font-tile" type="button" data-font-choice="inter"><span class="font-prev f-inter">12:34</span><span>Inter</span></button>
+                                <button class="font-tile" type="button" data-font-choice="dmsans"><span class="font-prev f-dmsans">12:34</span><span>DM Sans</span></button>
+                            </div>
+                        </div>
+                        <div class="set-row" id="weight-row">
+                            <div class="set-row-text"><label for="weight-range">Clock weight</label><p id="weight-name"></p></div>
+                            <div class="set-range">
+                                <input type="range" id="weight-range" min="0" max="7" step="1">
+                                <div class="set-range-ends"><span>Thin</span><span>Bold</span></div>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div id="format-label">Time format</div></div>
+                            <div class="seg" role="group" aria-labelledby="format-label">
+                                <button type="button" data-format-choice="12">12h</button>
+                                <button type="button" data-format-choice="24">24h</button>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="seconds-switch">Show seconds</label></div>
+                            <input type="checkbox" class="set-toggle" id="seconds-switch">
+                        </div>
+                    </section>
+
+                    <!-- Shortcuts -->
+                    <section class="set-card" id="set-shortcuts" data-sec="shortcuts" aria-labelledby="set-h-shortcuts">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-shortcuts">Shortcuts</h3><span>keyboard</span></div>
+                        <dl class="set-keys">
+                            <div><dt>Start / pause</dt><dd><kbd>Space</kbd></dd></div>
+                            <div><dt>Clean mode</dt><dd><kbd>F</kbd></dd></div>
+                            <div><dt>Reset</dt><dd><kbd>R</kbd></dd></div>
+                            <div><dt>Close</dt><dd><kbd>Esc</kbd></dd></div>
+                            <div><dt>New task</dt><dd><kbd>N</kbd></dd></div>
+                            <div><dt>Skip pause</dt><dd><kbd>S</kbd></dd></div>
+                        </dl>
+                    </section>
+
+                    <!-- Account and data -->
+                    <section class="set-card" id="set-account" data-sec="account" aria-labelledby="set-h-account">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-account">Account and data</h3><span>sync and backup</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text">
+                                <div>Google account</div>
+                                <p id="account-note">Sign in to keep your timer, tasks and focus time synced across devices.</p>
+                            </div>
+                            <div id="account-out"><button class="btn" id="google-btn" type="button">Continue with Google</button></div>
+                            <div class="set-account" id="account-in" hidden>
+                                <span class="set-avatar" id="account-email" role="img"></span>
+                                <button class="btn" id="signout-btn" type="button">Sign out</button>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Sync status</div><p id="sync-when">Sign in to sync.</p></div>
+                            <span class="sync-pill" id="sync-pill"><i aria-hidden="true"></i><span id="sync-status">Not signed in</span></span>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Export my data <span class="new-badge">New</span></div><p>Download tasks and focus history as one file.</p></div>
+                            <button class="btn" id="export-btn" type="button">Export</button>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Reset on this device</div><p>Clears local data only. Your cloud copy stays.</p></div>
+                            <button class="btn set-muted-btn" id="reset-btn-local" type="button">Reset</button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals editor -->
+    <div class="goals-modal" id="goals-modal" hidden>
+        <div class="ge-card" role="dialog" aria-modal="true" aria-labelledby="ge-title">
+            <h2 class="ge-title" id="ge-title">Set your goals</h2>
+            <p class="ge-intro">Small and steady beats big and abandoned.</p>
+
+            <div class="ge-sec">Daily focus</div>
+            <div class="pk-chips" id="ge-presets"></div>
+            <div class="ge-row">
+                <span>Focus per day<small id="ge-focus-sub"></small></span>
+                <span class="ge-step">
+                    <button type="button" data-step="focus" data-d="-15" aria-label="15 minutes less">&minus;</button>
+                    <output id="ge-focus" aria-live="polite"></output>
+                    <button type="button" data-step="focus" data-d="15" aria-label="15 minutes more">+</button>
+                </span>
+            </div>
+            <div class="ge-row">
+                <span>Tasks per day<small>tasks you tick off, from To do or Calendar</small></span>
+                <span class="ge-step">
+                    <button type="button" data-step="tasks" data-d="-1" aria-label="One task less">&minus;</button>
+                    <output id="ge-tasks" aria-live="polite"></output>
+                    <button type="button" data-step="tasks" data-d="1" aria-label="One task more">+</button>
+                </span>
+            </div>
+
+            <div class="ge-sec">Active days</div>
+            <div class="ge-days" id="ge-days"></div>
+            <p class="ge-note">Rest days do not count against you. They are skipped by the weekly maths.</p>
+
+            <div class="ge-week">
+                <span>Weekly goal<small id="ge-week-sub"></small></span>
+                <b id="ge-week"></b>
+            </div>
+
+            <div class="ge-actions">
+                <button class="ge-off" id="ge-off" type="button">Turn goals off</button>
+                <span class="ge-actions-right">
+                    <button class="btn" id="ge-cancel" type="button">Cancel</button>
+                    <button class="btn primary" id="ge-save" type="button">Save</button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Clean mode -->
+    <button class="icon-btn clean-btn" id="clean-btn" aria-label="Clean mode (F)" title="Clean mode (F)" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    </button>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <!-- App code, split by feature. Classic scripts sharing one global scope: the ORDER matters. -->
+    <script src="js/core/helpers.js?v=29"></script>
+    <script src="js/core/dom.js?v=29"></script>
+    <script src="js/features/navigation.js?v=29"></script>
+    <script src="js/features/appearance.js?v=29"></script>
+    <script src="js/features/clock.js?v=29"></script>
+    <script src="js/features/timer.js?v=29"></script>
+    <script src="js/features/focus-log.js?v=29"></script>
+    <script src="js/features/stats.js?v=29"></script>
+    <script src="js/features/tasks.js?v=29"></script>
+    <script src="js/features/task-reorder.js?v=29"></script>
+    <script src="js/features/calendar.js?v=29"></script>
+    <script src="js/features/date-picker.js?v=29"></script>
+    <script src="js/features/goals.js?v=29"></script>
+    <script src="js/features/settings.js?v=29"></script>
+    <script src="js/features/clean-mode.js?v=29"></script>
+    <script src="js/features/shortcuts.js?v=29"></script>
+    <script src="js/services/sync.js?v=29"></script>
+    <script src="js/services/auth.js?v=29"></script>
+    <script src="js/main.js?v=29"></script>
+</body>
+</html>
