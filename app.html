@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@1000&display=swap" rel="stylesheet">
     <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');var r=document.documentElement;var t=u.theme||'dark';if(t==='system')t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';r.dataset.theme=t;var b=u.bg||'solid',p=b==='photo'?localStorage.getItem('bgPhoto'):null;if(b==='photo'&&!p)b='solid';if(p)r.style.setProperty('--bg-photo','url("'+p+'")');r.dataset.bg=b;var f=['sora','mono','inter','dmsans'].indexOf(u.font)>-1?u.font:'sora';if(u.v!==2&&u.font==='mono')f='sora';r.dataset.font=f;var w=u.weights&&u.weights[f];if(w)r.style.setProperty('--clock-weight',w);if(u.textWeight)r.style.setProperty('--w',u.textWeight);}catch(e){}</script>
     <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' ('+String(e.filename||'').split('/').pop().split('?')[0]+' line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
-    <link rel="stylesheet" href="css/app.css?v=29">
+    <link rel="stylesheet" href="css/app.css?v=31">
 </head>
 <body data-mode="focus" data-tab="clock">
     <header class="topbar">
@@ -66,6 +66,14 @@
 
     <div class="stage">
         <div class="realtime" id="realtime"><span id="rt-main">00:00</span><span class="rt-seconds" id="rt-sec">:00</span><span class="rt-ampm" id="rt-ampm"></span></div>
+        <div class="mode-pills" id="mode-pills">
+            <button class="mode-pill" id="clean-pill" type="button" aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Clean mode <kbd>F</kbd>
+            </button>
+            <button class="mode-pill aes-pill" id="aes-pill" type="button" aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4l1.6 4.4L16 10l-4.4 1.6L10 16l-1.6-4.4L4 10l4.4-1.6z"/><path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z"/></svg>Aesthetic mode <kbd>A</kbd>
+            </button>
+        </div>
         <div class="clock" id="clock">25:00</div>
         <div class="progress" id="progress"><div class="progress-bar" id="progress-bar"></div></div>
     </div>
@@ -97,107 +105,62 @@
 
         <div class="todo-container" id="todo-container">
             <div class="todo-input">
-                <input type="text" id="task-input" placeholder="Add a task for today..." maxlength="120">
+                <input type="text" id="task-input" placeholder="Add a task..." maxlength="120">
                 <button class="btn primary" id="add-btn">Add</button>
             </div>
             <ul class="todo-list" id="todo-list"></ul>
-            <button class="todo-note" id="todo-note" type="button" hidden></button>
         </div>
 
         <div class="cal-container" id="cal-container">
-            <div class="cal-head">
-                <div class="cal-nav">
-                    <h2 class="cal-title" id="cal-title" aria-live="polite">Calendar</h2>
-                    <button class="cal-arrow" id="cal-prev" type="button" aria-label="Previous month">&lsaquo;</button>
-                    <button class="cal-arrow" id="cal-next" type="button" aria-label="Next month">&rsaquo;</button>
-                    <button class="range-btn" id="cal-today" type="button">Today</button>
-                </div>
-                <div class="stats-range">
-                    <button class="range-btn" data-cal-view="month" type="button">Month</button>
-                    <button class="range-btn" data-cal-view="week" type="button">Week</button>
-                </div>
-            </div>
-
-            <div class="cal-overdue" id="cal-overdue" hidden>
-                <span id="cal-overdue-text"></span>
-                <button class="range-btn" id="cal-overdue-btn" type="button">Move all to today</button>
-            </div>
-
-            <div class="cal-layout">
-                <div class="cal-main">
-                    <div class="stat-panel cal-month" id="cal-month">
-                        <div class="cal-dow" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
-                        <div class="cal-grid" id="cal-grid"></div>
-                        <div class="cal-foot">
-                            <span id="cal-month-total"></span>
-                            <span class="cal-legend"><i class="dot done"></i>done <i class="dot"></i>open <i class="dot late"></i>overdue <i class="cal-bar l2"></i>focus time <i class="cal-goal"></i>goal reached</span>
+            <div class="cal-card">
+                <section class="cal-month" aria-label="Month">
+                    <div class="cal-head">
+                        <h2 class="cal-title" id="cal-title" aria-live="polite">Calendar</h2>
+                        <div class="cal-nav">
+                            <button class="range-btn cal-today" id="cal-today" type="button">Today</button>
+                            <button class="cal-arrow" id="cal-prev" type="button" aria-label="Previous month">&lsaquo;</button>
+                            <button class="cal-arrow" id="cal-next" type="button" aria-label="Next month">&rsaquo;</button>
                         </div>
                     </div>
+                    <div class="cal-dow" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+                    <div class="cal-grid" id="cal-grid"></div>
+                </section>
 
-                    <div class="stat-panel cal-week" id="cal-week" hidden>
-                        <div class="cal-week-head">
-                            <span class="cal-sub">Plan your focus blocks</span>
-                            <span class="cal-legend"><i class="wk-key done"></i>done <i class="wk-key"></i>planned <i class="wk-key session"></i>focus session</span>
-                            <button class="range-btn" id="plan-block" type="button">+ Plan a block</button>
-                        </div>
-                        <div class="week-wrap" id="week-wrap"><div class="week-grid" id="week-grid"></div></div>
-                        <div class="cal-foot">
-                            <span>Drag a task onto the grid to give it a time. Drag the bottom edge of a block to change its length. Click an empty slot to plan a block there.</span>
-                            <span id="week-total"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="cal-side">
-                    <div class="stat-panel cal-day">
-                        <div class="day-head">
-                            <div class="day-head-text">
-                                <div class="cal-sub" id="day-label">Today</div>
-                                <h3 class="day-title" id="day-title"></h3>
-                            </div>
-                            <div class="day-arrows">
-                                <button class="cal-arrow" id="day-prev" type="button" aria-label="Previous day">&lsaquo;</button>
-                                <button class="cal-arrow" id="day-next" type="button" aria-label="Next day">&rsaquo;</button>
-                            </div>
-                        </div>
-                        <div class="day-stats" id="day-stats"></div>
-
-                        <div class="day-section-head">
-                            <span class="cal-sub">Tasks</span>
-                            <button class="day-free" id="day-free" type="button" hidden></button>
-                        </div>
-                        <ul class="todo-list day-tasks" id="day-tasks"></ul>
-                        <form class="day-add" id="day-add">
-                            <input type="text" id="day-input" placeholder="Add a task for this day..." maxlength="120" aria-label="New task for this day">
-                            <div class="day-add-row">
-                                <button class="when-btn" id="day-when" type="button"></button>
-                                <button class="btn primary day-add-btn" type="submit">Add</button>
-                            </div>
-                        </form>
-
-                        <div class="day-section-head">
-                            <span class="cal-sub">Your day</span>
-                            <span class="cal-legend"><i class="wk-key"></i>planned <i class="wk-key session"></i>focus</span>
-                        </div>
-                        <div class="day-line" id="day-line" role="img"></div>
-
-                        <div class="day-section-head">
-                            <span class="cal-sub">Focus sessions</span>
-                            <span class="day-hint">logged automatically</span>
-                        </div>
-                        <ul class="day-sessions" id="day-sessions"></ul>
+                <section class="cal-day" aria-labelledby="day-title">
+                    <div class="day-head">
+                        <h3 class="day-title" id="day-title">Today</h3>
+                        <span class="day-date" id="day-date"></span>
                     </div>
 
-                    <div class="stat-panel">
-                        <div class="day-section-head">
-                            <span class="cal-sub">Not scheduled <span class="un-count" id="un-count"></span></span>
-                            <span class="day-hint">drag onto a day</span>
+                    <div class="cal-overdue" id="cal-overdue" hidden>
+                        <div class="cal-overdue-head">
+                            <span id="cal-overdue-text"></span>
+                            <button class="cal-link" id="cal-overdue-btn" type="button">Move to today</button>
                         </div>
-                        <ul class="un-list" id="cal-unscheduled"></ul>
+                        <ul class="day-tasks" id="cal-overdue-list"></ul>
                     </div>
 
-                    <button class="range-btn cal-export" id="cal-export" type="button">Export to Google / Apple Calendar (.ics)</button>
-                </div>
+                    <p class="day-empty" id="day-empty" hidden></p>
+                    <ul class="day-tasks" id="day-tasks"></ul>
+
+                    <form class="day-add" id="day-add">
+                        <span class="day-add-plus" aria-hidden="true">+</span>
+                        <input type="text" id="day-input" placeholder="Add a task for this day" maxlength="120" aria-label="New task for this day">
+                    </form>
+
+                    <button class="day-pick-btn" id="day-pick-btn" type="button" aria-expanded="false" aria-controls="day-pick">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>
+                        Pick from your To do list
+                    </button>
+                    <div class="day-pick" id="day-pick" hidden>
+                        <div class="day-pick-title">Pick from your To do list</div>
+                        <ul class="day-tasks" id="day-pick-list"></ul>
+                        <p class="day-pick-hint">Tap one to put it on this day</p>
+                    </div>
+
+                    <div class="day-spacer" aria-hidden="true"></div>
+                    <p class="day-focus" id="day-focus" hidden></p>
+                </section>
             </div>
         </div>
 
@@ -321,9 +284,11 @@
                     <h2 class="set-title">Settings</h2>
                     <button class="set-nav-item" type="button" data-sec="appearance"><span>Appearance</span><span class="set-nav-sum" id="sum-appearance"></span></button>
                     <button class="set-nav-item" type="button" data-sec="clock"><span>Clock and time</span><span class="set-nav-sum" id="sum-clock"></span></button>
+                    <button class="set-nav-item" type="button" data-sec="timer-alerts"><span>Timer alerts</span><span class="set-nav-sum" id="sum-timer-alerts"></span></button>
+                    <button class="set-nav-item" type="button" data-sec="notifications"><span>Notifications</span><span class="set-nav-sum" id="sum-notifications"></span></button>
                     <button class="set-nav-item" type="button" data-sec="shortcuts"><span>Shortcuts</span><span class="set-nav-sum"></span></button>
                     <button class="set-nav-item" type="button" data-sec="account"><span>Account and data</span><span class="set-nav-sum" id="sum-account"></span></button>
-                    <p class="set-version">Clockus · <span id="build-info">Version 29</span></p>
+                    <p class="set-version">Clockus · <span id="build-info">Version 31</span></p>
                 </nav>
 
                 <div class="set-main">
@@ -339,6 +304,13 @@
                             <button class="set-tile" type="button" data-theme-choice="system"><span class="set-prev prev-system">12:34</span><span class="set-tile-name">System</span></button>
                             <button class="set-tile" type="button" data-theme-choice="graphite"><span class="set-prev prev-graphite">12:34</span><span class="set-tile-name">Graphite</span></button>
                             <button class="set-tile" type="button" data-theme-choice="paper"><span class="set-prev prev-paper">12:34</span><span class="set-tile-name">Paper</span></button>
+                        </div>
+                        <div class="set-tiles set-tiles-more" role="group" aria-labelledby="theme-label">
+                            <button class="set-tile" type="button" data-theme-choice="wine"><span class="set-prev prev-wine">12:34</span><span class="set-tile-name">Wine</span></button>
+                            <button class="set-tile" type="button" data-theme-choice="vanilla"><span class="set-prev prev-vanilla">12:34</span><span class="set-tile-name">Vanilla</span></button>
+                            <button class="set-tile" type="button" data-theme-choice="olive"><span class="set-prev prev-olive">12:34</span><span class="set-tile-name">Olive</span></button>
+                            <button class="set-tile" type="button" data-theme-choice="forest"><span class="set-prev prev-forest">12:34</span><span class="set-tile-name">Forest</span></button>
+                            <button class="set-tile" type="button" data-theme-choice="electric-blue"><span class="set-prev prev-electric-blue">12:34</span><span class="set-tile-name">Electric Blue</span></button>
                         </div>
 
                         <div class="set-label" id="bg-label">Background <span class="new-badge">New</span></div>
@@ -376,6 +348,31 @@
                                 <p id="motion-note" hidden>Your system asks for reduced motion, so animations start off.</p></div>
                             <input type="checkbox" class="set-toggle" id="animations-switch">
                         </div>
+
+                        <div class="set-label" id="aes-label">Aesthetic mode <span class="new-badge">New</span></div>
+                        <div class="set-tiles" role="group" aria-labelledby="aes-label">
+                            <button class="set-tile" type="button" data-aes-choice="autumn"><span class="set-prev prev-autumn"></span><span class="set-tile-name">Autumn</span></button>
+                            <button class="set-tile" type="button" data-aes-choice="winter"><span class="set-prev prev-winter"></span><span class="set-tile-name">Winter</span></button>
+                            <button class="set-tile" type="button" data-aes-choice="cherry-grove"><span class="set-prev prev-cherry-grove"></span><span class="set-tile-name">Minecraft Cherry Grove</span></button>
+                            <button class="set-tile" type="button" data-aes-choice="rainy-garden"><span class="set-prev prev-rainy-garden"></span><span class="set-tile-name">Rainy garden</span></button>
+                            <button class="set-tile" type="button" data-aes-choice="samurai"><span class="set-prev prev-samurai"></span><span class="set-tile-name">Samurai</span></button>
+                            <button class="set-tile" type="button" disabled><span class="set-prev prev-soon">soon</span><span class="set-tile-name">Yours</span></button>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="aes-min-switch">Minimise the widget</label><p>Shrinks to ring and time after 5 seconds.</p></div>
+                            <input type="checkbox" class="set-toggle" id="aes-min-switch">
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="aes-dim">Dim the background</label><p>Keeps the timer readable on bright animations.</p></div>
+                            <div class="set-range">
+                                <input type="range" id="aes-dim" min="0" max="100" step="5">
+                                <div class="set-range-ends"><span>Off</span><span>Dark</span></div>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Enter with a key</div><p>Press A on the Focus tab to switch, A or Esc to leave.</p></div>
+                            <kbd>A</kbd>
+                        </div>
                     </section>
 
                     <!-- Clock and time -->
@@ -411,6 +408,76 @@
                         </div>
                     </section>
 
+                    <!-- Timer alerts -->
+                    <section class="set-card" id="set-timer-alerts" data-sec="timer-alerts" aria-labelledby="set-h-timer-alerts">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-timer-alerts">Timer alerts</h3><span>the tab title and session end</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="ta-title">Show the timer in the tab title</label><p>Time left and what is happening.</p></div>
+                            <input type="checkbox" class="set-toggle" id="ta-title">
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="ta-sound">Sound when a session ends</label><p>The same soft chime as the reminder.</p></div>
+                            <input type="checkbox" class="set-toggle" id="ta-sound">
+                        </div>
+                        <div class="set-row" id="ta-volume-row">
+                            <div class="set-row-text"><label for="ta-volume">Volume</label></div>
+                            <div class="set-range">
+                                <input type="range" id="ta-volume" min="0" max="100" step="5">
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="ta-flash">Flash the title when time is up</label><p>Until you come back to the tab.</p></div>
+                            <input type="checkbox" class="set-toggle" id="ta-flash">
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="ta-notify">Browser notification</label><p id="ta-notify-note">Your browser asks for permission the first time you turn this on.</p></div>
+                            <input type="checkbox" class="set-toggle" id="ta-notify">
+                        </div>
+                    </section>
+
+                    <!-- Notifications -->
+                    <section class="set-card" id="set-notifications" data-sec="notifications" aria-labelledby="set-h-notifications">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-notifications">Notifications</h3><span>reminders while Clockus is open</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="rem-switch">Top priority reminder <span class="new-badge">New</span></label><p>Reminds you of the task while Clockus is open.</p></div>
+                            <input type="checkbox" class="set-toggle" id="rem-switch">
+                        </div>
+                        <div class="set-row rem-dep">
+                            <div class="set-row-text"><div id="rem-every-label">Every</div><p>How often the reminder appears.</p></div>
+                            <div class="seg" role="group" aria-labelledby="rem-every-label">
+                                <button type="button" data-rem-every="30">30 min</button>
+                                <button type="button" data-rem-every="60">1 h</button>
+                                <button type="button" data-rem-every="120">2 h</button>
+                                <button type="button" data-rem-every="180">3 h</button>
+                            </div>
+                        </div>
+                        <div class="set-row rem-dep">
+                            <div class="set-row-text"><label for="rem-wait">Wait during focus sessions</label><p>Holds the reminder until the timer is paused or on a break.</p></div>
+                            <input type="checkbox" class="set-toggle" id="rem-wait">
+                        </div>
+                        <div class="set-row rem-dep">
+                            <div class="set-row-text"><div id="rem-show-label">Show for</div><p>How long the ring takes to fill.</p></div>
+                            <div class="seg" role="group" aria-labelledby="rem-show-label">
+                                <button type="button" data-rem-show="5">5 s</button>
+                                <button type="button" data-rem-show="8">8 s</button>
+                                <button type="button" data-rem-show="12">12 s</button>
+                            </div>
+                        </div>
+                        <div class="set-row rem-dep">
+                            <div class="set-row-text"><label for="rem-sound">Sound</label><p>A short, quiet chime when the reminder appears.</p></div>
+                            <input type="checkbox" class="set-toggle" id="rem-sound">
+                        </div>
+                        <div class="set-row" id="rem-volume-row">
+                            <div class="set-row-text"><label for="rem-volume">Volume</label><p>Plays a preview when you let go.</p></div>
+                            <div class="set-range">
+                                <input type="range" id="rem-volume" min="0" max="100" step="5">
+                                <div class="set-range-ends"><span>Quiet</span><span>Loud</span></div>
+                            </div>
+                        </div>
+                    </section>
+
                     <!-- Shortcuts -->
                     <section class="set-card" id="set-shortcuts" data-sec="shortcuts" aria-labelledby="set-h-shortcuts">
                         <button class="set-back" type="button">&lsaquo; Settings</button>
@@ -418,6 +485,7 @@
                         <dl class="set-keys">
                             <div><dt>Start / pause</dt><dd><kbd>Space</kbd></dd></div>
                             <div><dt>Clean mode</dt><dd><kbd>F</kbd></dd></div>
+                            <div><dt>Aesthetic mode</dt><dd><kbd>A</kbd></dd></div>
                             <div><dt>Reset</dt><dd><kbd>R</kbd></dd></div>
                             <div><dt>Close</dt><dd><kbd>Esc</kbd></dd></div>
                             <div><dt>New task</dt><dd><kbd>N</kbd></dd></div>
@@ -503,32 +571,74 @@
     </div>
 
 
+    <!-- Top priority reminder (top left) -->
+    <div class="prio-toast" id="prio-toast" role="status" hidden>
+        <button class="prio-toast-btn" id="prio-toast-btn" type="button">
+            <svg class="prio-ring" aria-hidden="true"><path class="prio-ring-base"/><path class="prio-ring-fill"/></svg>
+            <span class="prio-toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4M6 4h11l-2.5 4.5L17 13H6"/></svg></span>
+            <span class="prio-toast-text"><span class="prio-toast-label">Top priority</span><span class="prio-toast-task" id="prio-toast-task"></span></span>
+        </button>
+    </div>
+
     <!-- Clean mode -->
     <button class="icon-btn clean-btn" id="clean-btn" aria-label="Clean mode (F)" title="Clean mode (F)" aria-pressed="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
     </button>
 
 
+    <!-- Aesthetic mode: animated background, the timer becomes the widget at the bottom left -->
+    <div class="aes" id="aes" hidden>
+        <div class="aes-bg" id="aes-bg" aria-hidden="true">
+            <video class="aes-video" id="aes-video" muted loop playsinline preload="none" disablepictureinpicture hidden></video>
+        </div>
+        <div class="aes-dim" id="aes-dim-layer" aria-hidden="true"></div>
+        <div class="aes-hint" aria-hidden="true"><span>A or Esc to exit</span><span>Space pause</span></div>
+        <div class="aes-widget" id="aes-widget" role="group" aria-label="Focus timer">
+            <svg class="aes-ring" aria-hidden="true"><path class="aes-ring-base"/><path class="aes-ring-fill"/></svg>
+            <button class="aes-btn" id="aes-play" type="button" aria-label="Pause">
+                <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="5.5" width="3" height="13" rx="1"/><rect x="14" y="5.5" width="3" height="13" rx="1"/></svg>
+                <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/></svg>
+            </button>
+            <div class="aes-info">
+                <span class="aes-label" id="aes-label-text">Focus</span>
+                <span class="aes-time" id="aes-time" aria-live="off">25:00</span>
+            </div>
+            <button class="aes-btn" id="aes-skip" type="button" aria-label="Skip break (S)" title="Skip break (S)" hidden>
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.5 6.3v11.4a.8.8 0 0 0 1.2.7l8.3-5.7a.8.8 0 0 0 0-1.4L7.7 5.6a.8.8 0 0 0-1.2.7z"/><rect x="16.5" y="5.5" width="2.4" height="13" rx="1"/></svg>
+            </button>
+            <button class="aes-btn" id="aes-exit" type="button" aria-label="Exit aesthetic mode (A)" title="Exit (A or Esc)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>
+            </button>
+            <div class="aes-mini" aria-hidden="true">
+                <svg class="aes-mini-ring" viewBox="0 0 24 24"><circle class="aes-mini-base" cx="12" cy="12" r="9"/><circle class="aes-mini-fill" id="aes-mini-fill" cx="12" cy="12" r="9" pathLength="100"/></svg>
+                <span class="aes-time" id="aes-mini-time">25:00</span>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
     <!-- App code, split by feature. Classic scripts sharing one global scope: the ORDER matters. -->
-    <script src="js/core/helpers.js?v=29"></script>
-    <script src="js/core/dom.js?v=29"></script>
-    <script src="js/features/navigation.js?v=29"></script>
-    <script src="js/features/appearance.js?v=29"></script>
-    <script src="js/features/clock.js?v=29"></script>
-    <script src="js/features/timer.js?v=29"></script>
-    <script src="js/features/focus-log.js?v=29"></script>
-    <script src="js/features/stats.js?v=29"></script>
-    <script src="js/features/tasks.js?v=29"></script>
-    <script src="js/features/task-reorder.js?v=29"></script>
-    <script src="js/features/calendar.js?v=29"></script>
-    <script src="js/features/date-picker.js?v=29"></script>
-    <script src="js/features/goals.js?v=29"></script>
-    <script src="js/features/settings.js?v=29"></script>
-    <script src="js/features/clean-mode.js?v=29"></script>
-    <script src="js/features/shortcuts.js?v=29"></script>
-    <script src="js/services/sync.js?v=29"></script>
-    <script src="js/services/auth.js?v=29"></script>
-    <script src="js/main.js?v=29"></script>
+    <script src="js/core/helpers.js?v=31"></script>
+    <script src="js/core/dom.js?v=31"></script>
+    <script src="js/features/navigation.js?v=31"></script>
+    <script src="js/features/appearance.js?v=31"></script>
+    <script src="js/features/clock.js?v=31"></script>
+    <script src="js/features/timer.js?v=31"></script>
+    <script src="js/features/focus-log.js?v=31"></script>
+    <script src="js/features/stats.js?v=31"></script>
+    <script src="js/features/tasks.js?v=31"></script>
+    <script src="js/features/task-reorder.js?v=31"></script>
+    <script src="js/features/calendar.js?v=31"></script>
+    <script src="js/features/date-picker.js?v=31"></script>
+    <script src="js/features/goals.js?v=31"></script>
+    <script src="js/features/settings.js?v=31"></script>
+    <script src="js/features/reminders.js?v=31"></script>
+    <script src="js/features/timer-alerts.js?v=31"></script>
+    <script src="js/features/clean-mode.js?v=31"></script>
+    <script src="js/features/aesthetic-mode.js?v=31"></script>
+    <script src="js/features/shortcuts.js?v=31"></script>
+    <script src="js/services/sync.js?v=31"></script>
+    <script src="js/services/auth.js?v=31"></script>
+    <script src="js/main.js?v=31"></script>
 </body>
 </html>
