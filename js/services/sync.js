@@ -26,8 +26,31 @@ try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch {}
 let user = null;
 let pending = 0;
 
-const toRow = (t) => ({ id: t.id, text: t.text, done: t.done, done_on: t.doneOn });
-const fromRow = (r) => ({ id: Number(r.id), text: r.text, done: r.done, doneOn: r.done_on });
+// due_date: the task's day (a date, no time), or null. Until the column is added in Supabase
+// (docs/sql/tasks-due-date.sql), rows are sent without it and the day travels only in data.plan.
+let dueCol = true;
+const toRow = (t) => {
+    const row = { id: t.id, text: t.text, done: t.done, done_on: t.doneOn };
+    if (dueCol) row.due_date = t.date || null;
+    return row;
+};
+const fromRow = (r) => {
+    const t = { id: Number(r.id), text: r.text, done: r.done, doneOn: r.done_on };
+    const due = typeof r.due_date === 'string' ? r.due_date.slice(0, 10) : null;
+    if (isDayKey(due)) t.date = due;
+    return t;
+};
+const missingDueCol = (error) => !!error && /due_date/.test(`${error.message || ''} ${error.details || ''}`);
+
+// Upserts task rows; if the database has no due_date column yet, sends them again without it
+async function upsertTasks(list) {
+    let res = await sb.from('tasks').upsert(list.map(toRow));
+    if (dueCol && missingDueCol(res.error)) {
+        dueCol = false;
+        res = await sb.from('tasks').upsert(list.map(toRow));
+    }
+    return res;
+}
 
 // Settings › Account and data: a short state ("Up to date") and when the last sync worked
 let lastSyncedAt = 0;
@@ -81,7 +104,7 @@ function cloudUpsert(t) {
     saveDirty();
     if (!sb || !user) return;
     const seq = upSeq[t.id] = (upSeq[t.id] || 0) + 1;
-    track(sb.from('tasks').upsert(toRow(t))).then((ok) => {
+    track(upsertTasks([t])).then((ok) => {
         if (ok && upSeq[t.id] === seq) { dirtyUp.delete(t.id); saveDirty(); }   // only if not changed again meanwhile
     });
 }
@@ -206,11 +229,14 @@ async function loadCloud() {
         if (!user || user.id !== uid) return;
 
         const remoteIds = new Set(remote.map((r) => Number(r.id)));
+        // The rows show whether the due_date column exists yet
+        if (remote.length) dueCol = 'due_date' in remote[0];
+        const rowDue = new Map(remote.map((r) => [Number(r.id), fromRow(r).date || null]));
         // First sign-in on this device: keep the tasks made before signing in. Later: the unsent ones.
         const firstTime = !store.get('synced:' + uid, false);
         const mine = tasks.filter((t) => dirtyUp.has(t.id) || (firstTime && !remoteIds.has(t.id)));
         if (mine.length) {
-            const { error: e2 } = await sb.from('tasks').upsert(mine.map(toRow));
+            const { error: e2 } = await upsertTasks(mine);
             if (e2) throw e2;
             mine.forEach((t) => dirtyUp.delete(t.id));
             saveDirty();
@@ -244,6 +270,8 @@ async function loadCloud() {
         // Saved by a version from before "To do = today": its tasks without a day were meant for now
         if (!(data.planV >= 2)) giveUndatedToday();
         renderTasks();
+        // Fill the due_date column for tasks whose day it does not hold yet (older tasks, or older versions)
+        if (dueCol) tasks.forEach((t) => { if (rowDue.has(t.id) && rowDue.get(t.id) !== (t.date || null)) cloudUpsert(t); });
         setSync('Synced');
     } catch {
         setSync('Sync failed. Working offline.');
