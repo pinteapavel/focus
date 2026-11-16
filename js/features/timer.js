@@ -24,26 +24,11 @@ function render() {
     clockEl.textContent = time;
     bar.style.width = `${Math.max(0, Math.min(100, (remaining / duration()) * 100))}%`;
     statusEl.textContent = label;
-    document.title = running ? `${time} · ${label}` : 'Clockus';
     document.body.dataset.mode = mode;
     startBtn.disabled = running;
     pauseBtn.disabled = !running;
     skipBtn.hidden = mode !== 'break';
-}
-
-function beep() {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 880;
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.8);
-    } catch {}
+    if (typeof renderTabTitle === 'function') renderTabTitle();   // tab title and icon: timer-alerts.js
 }
 
 function startTimer() {
@@ -86,7 +71,7 @@ function update() {
     remaining = endTime - Date.now();
     if (remaining > 0) return render();
 
-    beep();
+    if (typeof onSessionEnd === 'function') onSessionEnd(mode);   // chime, flashing title, notification: timer-alerts.js
     if (mode === 'focus') {
         // Focus done: break starts automatically
         mode = 'break';

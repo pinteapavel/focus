@@ -52,7 +52,8 @@ window.addEventListener('scroll', () => {
 function renderSettingsSummary() {
     const name = (s) => s.charAt(0).toUpperCase() + s.slice(1);
     const swatch = [...document.querySelectorAll('.swatch[data-color]')].find((b) => b.dataset.color.toLowerCase() === ui.accent.toLowerCase());
-    $('sum-appearance').textContent = `${name(ui.theme)} · ${swatch ? swatch.getAttribute('aria-label') : 'Custom'}`;
+    const themeTile = document.querySelector(`[data-theme-choice="${ui.theme}"] .set-tile-name`);
+    $('sum-appearance').textContent = `${themeTile ? themeTile.textContent : name(ui.theme)} · ${swatch ? swatch.getAttribute('aria-label') : 'Custom'}`;
     const font = document.querySelector(`[data-font-choice="${ui.font}"] span:last-child`);
     $('sum-clock').textContent = `${font ? font.textContent : ''} · ${ui.format}h`;
     $('sum-account').textContent = typeof user !== 'undefined' && user ? 'Synced' : 'Signed out';

@@ -31,7 +31,31 @@ for (const f of Object.keys(FONT_WEIGHTS)) {
     ui.weights[f] = Number(ui.weights[f]);
 }
 if (!/^#[0-9a-f]{6}$/i.test(ui.accent)) ui.accent = DEFAULT_ACCENT;
-const THEMES = ['dark', 'light', 'system', 'graphite', 'paper'];
+const THEMES = ['dark', 'light', 'system', 'graphite', 'paper', 'wine', 'vanilla', 'olive', 'forest', 'electric-blue'];
+
+// Colour themes: [background, text]. Their default accent is the text or the background colour,
+// whichever stands out more where the accent is drawn: on the theme's own background (so in practice the text colour).
+const THEME_COLORS = {
+    wine: ['#7f011f', '#f5ebd0'],
+    vanilla: ['#eeebda', '#282b4a'],
+    olive: ['#d2db76', '#2d371d'],
+    forest: ['#064734', '#e0ffc2'],
+    'electric-blue': ['#0246f1', '#edf1f5']
+};
+
+function luminance(hex) {
+    return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+        .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+        .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+}
+const contrast = (a, b) => { const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+
+function themeAccent(theme) {
+    const c = THEME_COLORS[theme];
+    if (!c) return null;
+    const [bg, text] = c;
+    return contrast(text, bg) >= contrast(bg, bg) ? text : bg;
+}
 const BACKGROUNDS = ['solid', 'midnight', 'glow', 'dots', 'photo'];
 if (!THEMES.includes(ui.theme)) ui.theme = 'dark';
 if (!BACKGROUNDS.includes(ui.bg)) ui.bg = 'solid';
@@ -140,7 +164,14 @@ function changeUi(key, value) {
     pushSettings();
 }
 
-themeTiles.forEach((b) => b.addEventListener('click', () => changeUi('theme', b.dataset.themeChoice)));
+// A colour theme brings its own accent. If the accent is still the previous theme's default, it follows the theme;
+// an accent you chose yourself stays.
+themeTiles.forEach((b) => b.addEventListener('click', () => {
+    const next = b.dataset.themeChoice;
+    const wasDefault = (themeAccent(ui.theme) || DEFAULT_ACCENT).toLowerCase();
+    if (ui.accent.toLowerCase() === wasDefault) ui.accent = themeAccent(next) || DEFAULT_ACCENT;
+    changeUi('theme', next);
+}));
 fontTiles.forEach((b) => b.addEventListener('click', () => changeUi('font', b.dataset.fontChoice)));
 formatBtns.forEach((b) => b.addEventListener('click', () => changeUi('format', b.dataset.formatChoice)));
 secondsSwitch.addEventListener('change', () => changeUi('seconds', secondsSwitch.checked));

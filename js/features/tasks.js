@@ -30,16 +30,23 @@ function setCurrentTask(id) {
 
 function saveTasks() { store.set('tasks', tasks); }
 
-const todoNote = $('todo-note');
-todoNote.addEventListener('click', () => showTab('calendar'));
+// The top priority task: only one, pinned first in To do, and the one the reminder shows (reminders.js)
+let topPriorityId = store.get('topPriority', null);
+const FLAG_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4M6 4h11l-2.5 4.5L17 13H6"/></svg>';
+
+function setTopPriority(id) {
+    topPriorityId = id;
+    store.set('topPriority', id);
+    if (typeof onTopPriorityChange === 'function') onTopPriorityChange();
+    renderTasks();
+}
 
 // Done tasks stay (crossed out) for the rest of the day, then leave the list. Those with a day
 // in the calendar are kept (hidden here) for a year, so the calendar still shows them as done.
 const hiddenDone = (t) => t.done && t.doneOn !== today();
 
-// The To do list is TODAY's list: tasks planned for today, plus unfinished ones from earlier days.
-// Tasks for later days, or with no day, live in the Calendar until then.
-const onTodayList = (t) => !!t.date && t.date <= dayKey() && !hiddenDone(t);
+// To do is the one list: every task, with or without a day. A day only puts it in the Calendar too.
+const onTodoList = (t) => !hiddenDone(t);
 
 // Before the Calendar, every task in To do was "for now": give the open ones without a day today's date,
 // once, so they stay in the list. Also used when the cloud holds tasks saved by an older version.
@@ -61,12 +68,19 @@ function renderTasks() {
         tasks = tasks.filter((t) => !stale.includes(t));
         cloudDelete(stale.map((t) => t.id));
     }
-    // Today's list first: open, then done; then everything else
+    // A completed or deleted task loses the top priority flag (and the reminders stop)
+    if (topPriorityId !== null && !tasks.some((t) => t.id === topPriorityId && !t.done)) {
+        topPriorityId = null;
+        store.set('topPriority', null);
+    }
+    // The list: the top priority task, then open, then done; then the hidden done ones
     // (list positions match the array, so drag-to-reorder keeps working)
+    const isTop = (t) => t.id === topPriorityId;
     tasks = [
-        ...tasks.filter((t) => onTodayList(t) && !t.done),
-        ...tasks.filter((t) => onTodayList(t) && t.done),
-        ...tasks.filter((t) => !onTodayList(t))
+        ...tasks.filter((t) => onTodoList(t) && !t.done && isTop(t)),
+        ...tasks.filter((t) => onTodoList(t) && !t.done && !isTop(t)),
+        ...tasks.filter((t) => onTodoList(t) && t.done),
+        ...tasks.filter((t) => !onTodoList(t))
     ];
     saveTasks();
     // A finished or deleted task can no longer be the current one
@@ -79,21 +93,18 @@ function renderTasks() {
     refreshGoals();
     todoList.replaceChildren();
 
-    const visible = tasks.filter(onTodayList);
-    const later = tasks.filter((t) => !t.done && (!t.date || t.date > dayKey())).length;
-    todoNote.hidden = !later;
-    todoNote.textContent = later ? `${later} more ${later === 1 ? 'task is' : 'tasks are'} planned for other days. See Calendar` : '';
+    const visible = tasks.filter(onTodoList);
     if (!visible.length) {
         const li = document.createElement('li');
         li.className = 'todo-empty';
-        li.textContent = 'Nothing for today yet.';
+        li.textContent = 'Nothing to do yet.';
         todoList.append(li);
         return;
     }
 
     visible.forEach((t) => {
         const li = document.createElement('li');
-        li.className = 'todo-item' + (t.done ? ' done' : '') + (t.id === currentTaskId ? ' current' : '');
+        li.className = 'todo-item' + (t.done ? ' done' : '') + (t.id === currentTaskId ? ' current' : '') + (isTop(t) ? ' top' : '');
         li.dataset.id = t.id;
 
         const label = document.createElement('label');
@@ -104,16 +115,14 @@ function renderTasks() {
         text.textContent = t.text;
         label.append(cb, text);
 
-        // When: today's tasks show their time (or a clock to give them one), late ones their day
-        const late = isOverdue(t);
+        // The date chip ("Today", "Fri 20"), or "+ Set date"; done tasks show none
         const due = document.createElement('button');
         due.type = 'button';
-        due.className = 'due-btn' + (t.time || late ? ' set' : '') + (late ? ' late' : '');
-        if (late) due.textContent = `Late · ${dueLabel(t)}`;
-        else if (t.time) due.textContent = `${t.time} · ${fmtLen(t.dur || DEFAULT_DUR)}`;
-        else due.innerHTML = CLOCK_ICON;   // fixed markup, no user text
-        due.title = 'Change day and time';
-        due.setAttribute('aria-label', `Change day and time of ${t.text}` + (t.time ? `, now ${t.time}` : ''));
+        due.className = 'due-btn' + (t.date ? ' set' : ' add');
+        due.hidden = t.done;
+        due.textContent = t.date ? dueLabel(t) : '+ Set date';
+        due.title = t.date ? 'Change the date' : 'Set a date';
+        due.setAttribute('aria-label', t.date ? `Date of ${t.text}: ${dueLabel(t)}. Change` : `Set a date for ${t.text}`);
 
         const del = document.createElement('button');
         del.className = 'delete-btn';
@@ -144,7 +153,18 @@ function renderTasks() {
         main.className = 'todo-main';
         main.append(label, due);
 
-        li.append(handle, main, cur, edit, del);
+        // Top priority: the flag on the current one (click removes it), "Set as top priority" on hover for the others
+        const prio = document.createElement('button');
+        prio.type = 'button';
+        prio.className = 'prio-btn' + (isTop(t) ? ' on' : '');
+        prio.hidden = t.done;
+        prio.innerHTML = FLAG_ICON;   // fixed markup, no user text
+        prio.append(makeEl('span', 'prio-text', isTop(t) ? 'Top priority' : 'Set as top priority'));
+        prio.setAttribute('aria-pressed', String(isTop(t)));
+        prio.setAttribute('aria-label', isTop(t) ? `Remove top priority from ${t.text}` : `Set ${t.text} as top priority`);
+        prio.title = isTop(t) ? 'Remove top priority' : 'Set as top priority';
+
+        li.append(handle, main, prio, cur, edit, del);
         todoList.append(li);
     });
 }
@@ -185,7 +205,7 @@ function startEdit(li, t) {
 function addTask() {
     const text = taskInput.value.trim();
     if (!text) return;
-    const task = { id: Date.now(), text, done: false, doneOn: null, date: dayKey(), pAt: Date.now() };   // To do = today
+    const task = { id: Date.now(), text, done: false, doneOn: null, pAt: Date.now() };   // no date until you set one
     tasks.push(task);
     taskInput.value = '';
     renderTasks();
@@ -218,10 +238,16 @@ todoList.addEventListener('click', (e) => {
     const btn = e.target.closest('.due-btn');
     if (!btn) return;
     const t = tasks.find((x) => x.id === Number(btn.closest('li').dataset.id));
-    if (t) openPlanPicker(btn, { date: t.date, time: t.time, dur: t.dur, excludeId: t.id }, (date, time, dur) => planTask(t, date, time, dur));
+    if (t) openDatePicker(btn, t.date, (date) => planTask(t, date));
 });
 
 todoList.addEventListener('click', (e) => {
+    const prioBtn = e.target.closest('.prio-btn');
+    if (prioBtn) {
+        const id = Number(prioBtn.closest('li').dataset.id);
+        setTopPriority(topPriorityId === id ? null : id);
+        return;
+    }
     const curBtn = e.target.closest('.cur-btn');
     if (curBtn) {
         const id = Number(curBtn.closest('li').dataset.id);

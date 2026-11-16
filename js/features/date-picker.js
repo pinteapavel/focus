@@ -1,19 +1,18 @@
-// Clockus — the "when" picker: day, time and length of a task, in one small window
+// Clockus — the date picker: gives a task a day (or takes it away), in one small window
 // Loaded as a classic script (shared global scope). Load order is set in app.html.
-// Used by the To do list and the Calendar: openPlanPicker(anchor, { date, time, dur, excludeId }, onSave)
-// onSave(date | null, time | null, minutes) is called only when the user presses Save.
+// Used by the To do list: openDatePicker(anchor, date, onPick)
+// onPick('YYYY-MM-DD' | null) is called as soon as a day (or "No date") is chosen. A task has at most a day, no time.
 
-const PICKER_LENGTHS = [15, 25, 30, 45, 60, 90, 120];
 const pkBackdrop = makeEl('div', 'pk-backdrop');
 const pk = makeEl('div', 'pk');
 pk.setAttribute('role', 'dialog');
 pk.setAttribute('aria-modal', 'true');
-pk.setAttribute('aria-label', 'Choose a day and a time');
+pk.setAttribute('aria-label', 'Choose a date');
 pk.hidden = true;
 pkBackdrop.hidden = true;
 document.body.append(pkBackdrop, pk);
 
-let pkState = null;   // { date, time, dur, month, excludeId, onSave, anchor }
+let pkState = null;   // { date, month, onPick, anchor }
 
 const pickerOpen = () => !pk.hidden;
 
@@ -25,33 +24,7 @@ function pkButton(cls, text, action, value) {
     return b;
 }
 
-// "9" "930" "9:30" "21.15" "0915" -> "09:30" etc.
-function parseTime(s) {
-    const m = String(s).trim().match(/^(\d{1,2})(?:[:.\s]?(\d{2}))?$/);
-    if (!m) return null;
-    const h = Number(m[1]);
-    const min = m[2] === undefined ? 0 : Number(m[2]);
-    return h < 24 && min < 60 ? `${pad2(h)}:${pad2(min)}` : null;
-}
-
-// First free slot of the given length on that day (after now if it is today)
-function nextFreeSlot(date, dur, excludeId) {
-    const busy = tasks
-        .filter((t) => t.date === date && t.time && !t.done && t.id !== excludeId)
-        .map((t) => [toMin(t.time), toMin(t.time) + (t.dur || DEFAULT_DUR)]);
-    let start = 8 * 60;
-    if (date === dayKey()) {
-        const n = new Date();
-        start = Math.max(start, Math.ceil((n.getHours() * 60 + n.getMinutes() + 5) / 15) * 15);
-    } else if (date < dayKey()) return null;
-    for (let s = start; s + dur <= 24 * 60; s += 15) {
-        if (!busy.some(([a, b]) => s < b && s + dur > a)) return fromMin(s);
-    }
-    return null;
-}
-
 function pkDayLabel(k) {
-    if (!k) return 'No day';
     const d = keyToDate(k);
     const diff = Math.round((d - keyToDate(dayKey())) / 86400000);
     const base = `${CAL_DOW[(d.getDay() + 6) % 7]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
@@ -63,12 +36,12 @@ function renderPicker() {
     const todayK = dayKey();
     pk.replaceChildren();
 
-    // Quick days
-    const nextMon = addDays(mondayOf(todayK), 7);
+    // Quick choices
     const quick = makeEl('div', 'pk-chips');
-    [['Today', todayK], ['Tomorrow', addDays(todayK, 1)], ['Next week', nextMon], ['No day', '']].forEach(([name, k]) => {
-        const b = pkButton('pk-chip' + ((s.date || '') === k ? ' on' : ''), name, 'day', k);
-        b.setAttribute('aria-pressed', String((s.date || '') === k));
+    [['Today', todayK], ['Tomorrow', addDays(todayK, 1)], ['Next week', addDays(mondayOf(todayK), 7)], ['No date', '']].forEach(([name, k]) => {
+        const on = (s.date || '') === k;
+        const b = pkButton('pk-chip' + (on ? ' on' : ''), name, 'day', k);
+        b.setAttribute('aria-pressed', String(on));
         quick.append(b);
     });
     pk.append(quick);
@@ -98,63 +71,6 @@ function renderPicker() {
         grid.append(b);
     }
     pk.append(grid);
-
-    // Time
-    pk.append(makeEl('div', 'pk-sec', 'Time'));
-    const timeRow = makeEl('div', 'pk-time' + (s.date ? '' : ' off'));
-    const minus = pkButton('pk-step', '−', 'step', '-15');
-    minus.setAttribute('aria-label', '15 minutes earlier');
-    const plus = pkButton('pk-step', '+', 'step', '15');
-    plus.setAttribute('aria-label', '15 minutes later');
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'pk-time-input';
-    input.inputMode = 'numeric';
-    input.maxLength = 5;
-    input.placeholder = '--:--';
-    input.value = s.time || '';
-    input.setAttribute('aria-label', 'Time, for example 9:30');
-    [minus, input, plus].forEach((el) => { el.disabled = !s.date; });
-    timeRow.append(minus, input, plus);
-    pk.append(timeRow);
-
-    const timeChips = makeEl('div', 'pk-chips');
-    const noTime = pkButton('pk-chip' + (!s.time ? ' on' : ''), 'No time', 'time', '');
-    timeChips.append(noTime);
-    const free = s.date ? nextFreeSlot(s.date, s.dur, s.excludeId) : null;
-    if (free) {
-        const b = pkButton('pk-chip pk-free' + (s.time === free ? ' on' : ''), `Next free ${free}`, 'time', free);
-        b.title = `First free ${s.dur} minutes on this day`;
-        timeChips.append(b);
-    }
-    ['09:00', '13:00', '18:00'].forEach((t) => {
-        if (t !== free) timeChips.append(pkButton('pk-chip' + (s.time === t ? ' on' : ''), t, 'time', t));
-    });
-    [...timeChips.children].forEach((b) => { b.disabled = !s.date; });
-    pk.append(timeChips);
-
-    // Length
-    pk.append(makeEl('div', 'pk-sec', 'Length'));
-    const lens = makeEl('div', 'pk-chips');
-    const lengths = [...new Set([...PICKER_LENGTHS, settings.focus])].sort((a, b) => a - b);
-    lengths.forEach((n) => {
-        const label = n < 60 ? `${n}m` : n % 60 ? `${Math.floor(n / 60)}h${pad2(n % 60)}` : `${n / 60}h`;
-        const b = pkButton('pk-chip' + (s.dur === n ? ' on' : ''), label, 'dur', String(n));
-        if (n === settings.focus) b.title = 'One focus session';
-        b.disabled = !s.time;
-        lens.append(b);
-    });
-    pk.append(lens);
-
-    // Summary + actions
-    const sum = makeEl('div', 'pk-summary');
-    sum.textContent = !s.date ? 'Not scheduled' : s.time
-        ? `${pkDayLabel(s.date)} · ${s.time} – ${fromMin(toMin(s.time) + s.dur)}`
-        : `${pkDayLabel(s.date)} · any time`;
-    pk.append(sum);
-    const actions = makeEl('div', 'pk-actions');
-    actions.append(pkButton('btn', 'Cancel', 'cancel'), pkButton('btn primary', 'Save', 'save'));
-    pk.append(actions);
 }
 
 function placePicker() {
@@ -172,14 +88,8 @@ function placePicker() {
     pk.style.top = `${top}px`;
 }
 
-function openPlanPicker(anchor, { date = null, time = null, dur = 0, excludeId = null } = {}, onSave) {
-    pkState = {
-        date: date || null,
-        time: date && time ? time : null,
-        dur: dur || DEFAULT_DUR,
-        month: monthOf(date || dayKey()),
-        excludeId, onSave, anchor
-    };
+function openDatePicker(anchor, date, onPick) {
+    pkState = { date: isDayKey(date) ? date : null, month: monthOf(isDayKey(date) ? date : dayKey()), onPick, anchor };
     renderPicker();
     pk.hidden = false;
     pkBackdrop.hidden = false;
@@ -197,71 +107,30 @@ function closePicker() {
     if (anchor && anchor.isConnected) anchor.focus();
 }
 
-function savePicker() {
-    const s = pkState;
-    if (!s) return;   // already closed (e.g. Enter, then the field's own change event)
-    const input = pk.querySelector('.pk-time-input');
-    if (input && input.value.trim()) s.time = parseTime(input.value) || s.time;
-    else if (input) s.time = null;
-    const cb = s.onSave;
-    const result = [s.date, s.date ? s.time : null, s.time ? s.dur : 0];
-    closePicker();
-    cb(...result);
-}
-
-// Keeps the focused control after a redraw (so keyboard users don't lose their place)
-function rerenderPicker(focusSel) {
-    renderPicker();
-    placePicker();
-    const el = focusSel && pk.querySelector(focusSel);
-    if (el) el.focus();
-}
-
 pk.addEventListener('click', (e) => {
     const b = e.target.closest('button[data-act]');
-    if (!b || b.disabled || !pkState) return;
+    if (!b || !pkState) return;
     const s = pkState;
-    const v = b.dataset.val;
-    switch (b.dataset.act) {
-        case 'day':
-            s.date = v || null;
-            if (!s.date) s.time = null;
-            else s.month = monthOf(s.date);
-            return rerenderPicker(v ? `.pk-day[data-val="${v}"]` : '.pk-chip[data-val=""]');
-        case 'month':
-            s.month = addMonths(s.month, Number(v));
-            return rerenderPicker(`.pk-arrow[data-val="${v}"]`);
-        case 'step': {
-            const typed = parseTime(pk.querySelector('.pk-time-input').value);
-            const base = typed || s.time || nextFreeSlot(s.date, s.dur, s.excludeId) || '09:00';
-            const m = toMin(base) + Number(v);
-            s.time = fromMin(Math.max(0, Math.min(23 * 60 + 45, Math.round(m / 15) * 15)));
-            return rerenderPicker(`.pk-step[data-val="${v}"]`);
-        }
-        case 'time':
-            s.time = v || null;
-            return rerenderPicker(`.pk-chip[data-act="time"][data-val="${v}"]`);
-        case 'dur':
-            s.dur = Number(v);
-            return rerenderPicker(`.pk-chip[data-act="dur"][data-val="${v}"]`);
-        case 'cancel': return closePicker();
-        case 'save': return savePicker();
+    if (b.dataset.act === 'month') {
+        s.month = addMonths(s.month, Number(b.dataset.val));
+        renderPicker();
+        placePicker();
+        const again = pk.querySelector(`.pk-arrow[data-val="${b.dataset.val}"]`);
+        if (again) again.focus();
+        return;
     }
-});
-
-pk.addEventListener('change', (e) => {
-    if (!pkState || !e.target.classList.contains('pk-time-input')) return;
-    const t = parseTime(e.target.value);
-    pkState.time = e.target.value.trim() ? (t || pkState.time) : null;
-    rerenderPicker('.pk-time-input');
+    // A day or a quick choice: saved right away
+    const cb = s.onPick;
+    const date = b.dataset.val || null;
+    closePicker();
+    cb(date);
 });
 
 pk.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closePicker(); return; }
-    if (e.key === 'Enter' && e.target.classList.contains('pk-time-input')) { e.preventDefault(); savePicker(); return; }
     // Keep Tab inside the window
     if (e.key === 'Tab') {
-        const items = [...pk.querySelectorAll('button:not(:disabled), input:not(:disabled)')];
+        const items = [...pk.querySelectorAll('button:not(:disabled)')];
         const i = items.indexOf(document.activeElement);
         if (e.shiftKey && i <= 0) { e.preventDefault(); items[items.length - 1].focus(); }
         else if (!e.shiftKey && i === items.length - 1) { e.preventDefault(); items[0].focus(); }

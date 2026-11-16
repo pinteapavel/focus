@@ -6,7 +6,8 @@ let swallowSpaceUp = false;
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        if (document.body.classList.contains('clean')) setClean(false);
+        if (aesOpen) setAesthetic(false);
+        else if (document.body.classList.contains('clean')) setClean(false);
         else if (settingsContainer.dataset.open) closeSettingsSection();   // phone: back to the Settings list
         else if (document.activeElement === taskInput) taskInput.blur();
         else if (document.activeElement === $('day-input')) $('day-input').blur();
@@ -18,8 +19,12 @@ document.addEventListener('keydown', (e) => {
 
     const key = e.key.toLowerCase();
     const onTimerTab = ['focus', 'todo'].includes(document.body.dataset.tab);
+    // Aesthetic mode: only the timer keys work; A leaves it
+    if (aesOpen && !(e.key === ' ' || ['r', 's', 'a'].includes(key))) return;
 
-    if (e.key === ' ' && onTimerTab) {
+    if (key === 'a' && (aesOpen || document.body.dataset.tab === 'focus')) {
+        setAesthetic(!aesOpen);
+    } else if (e.key === ' ' && onTimerTab) {
         e.preventDefault();
         if (tag === 'BUTTON') swallowSpaceUp = true;
         if (running) pauseTimer();
