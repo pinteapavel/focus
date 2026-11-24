@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clockus</title>
+    <meta name="theme-color" content="#000000">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" sizes="48x48">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@1000&display=swap" rel="stylesheet">
+    <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');var r=document.documentElement;var t=u.theme||'dark';if(t==='wine')t='blush';if(t==='electric-blue')t='deep-sea';if(t==='system')t='dark';r.dataset.theme=t;r.dataset.bg='solid';var f=['sora','mono','inter','dmsans'].indexOf(u.font)>-1?u.font:'sora';if(u.v!==2&&u.font==='mono')f='sora';r.dataset.font=f;var w=u.weights&&u.weights[f];if(w)r.style.setProperty('--clock-weight',w);if(u.textWeight)r.style.setProperty('--w',u.textWeight);}catch(e){}</script>
+    <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' ('+String(e.filename||'').split('/').pop().split('?')[0]+' line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
+    <link rel="stylesheet" href="css/app.css?v=51">
+</head>
+<body data-mode="focus" data-tab="clock">
+    <header class="topbar">
+        <div class="brand">
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M51.92 48.71A26 26 0 1 1 51.92 15.29" stroke-width="4" stroke-linecap="round"/><circle cx="58" cy="32" r="5"/></svg>
+            <span class="brand-name">Clockus</span>
+        </div>
+        <nav class="nav" aria-label="Main">
+            <button class="nav-button active" id="clock-btn" type="button" title="Home" aria-label="Home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5L12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H5.5A1.5 1.5 0 0 1 4 19z"/></svg><span class="nav-label">Home</span>
+            </button>
+            <button class="nav-button" id="focus-btn" type="button" title="Focus" aria-label="Focus">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/></svg><span class="nav-label">Focus</span>
+            </button>
+            <button class="nav-button" id="todo-btn" type="button" title="To do" aria-label="To do">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.5 1.5L7 5M3.5 12l1.5 1.5L7 11M3.5 18l1.5 1.5L7 17"/></svg><span class="nav-label">To do</span>
+            </button>
+            <button class="nav-button" id="cal-btn" type="button" title="Calendar" aria-label="Calendar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span class="nav-label">Calendar</span>
+            </button>
+            <button class="nav-button" id="stats-btn" type="button" title="Stats" aria-label="Stats">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-7"/></svg><span class="nav-label">Stats</span>
+            </button>
+            <button class="nav-button" id="settings-tab-btn" type="button" title="Settings" aria-label="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg><span class="nav-label">Settings</span>
+            </button>
+        </nav>
+        <div class="topbar-right">
+            <button class="avatar-btn" id="avatar-btn" type="button" title="Account" aria-label="Account" aria-haspopup="dialog" aria-expanded="false" aria-controls="account-menu">
+                <span id="avatar-initial"></span>
+                <svg class="avatar-person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.2-3.6 3.9-5.5 7-5.5s5.8 1.9 7 5.5"/></svg>
+            </button>
+            <div class="account-menu" id="account-menu" role="dialog" aria-label="Account" hidden>
+                <div class="am-who" id="am-who"></div>
+                <p class="am-note" id="am-note"></p>
+                <div class="am-sync" id="am-sync">
+                    <span class="sync-pill" id="am-pill"><i aria-hidden="true"></i><span id="am-status"></span></span>
+                    <span class="am-when" id="am-when"></span>
+                </div>
+                <button class="btn primary am-action" id="am-signin" type="button">Continue with Google</button>
+                <button class="btn am-action" id="am-signout" type="button">Sign out</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="stage">
+        <div class="realtime" id="realtime"><span id="rt-main">00:00</span><span class="rt-seconds" id="rt-sec">:00</span><span class="rt-ampm" id="rt-ampm"></span></div>
+        <div class="rt-date" id="rt-date"></div>
+        <div class="mode-pills" id="mode-pills">
+            <button class="mode-pill" id="clean-pill" type="button" aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Clean mode <kbd>F</kbd>
+            </button>
+            <button class="mode-pill aes-pill" id="aes-pill" type="button" aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4l1.6 4.4L16 10l-4.4 1.6L10 16l-1.6-4.4L4 10l4.4-1.6z"/><path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z"/></svg>Aesthetic mode <kbd>A</kbd>
+            </button>
+        </div>
+        <div class="clock" id="clock">25:00</div>
+        <div class="progress" id="progress"><div class="progress-bar" id="progress-bar"></div></div>
+    </div>
+
+    <div class="below">
+        <!-- Home: Up next and the chips (home.js) -->
+        <div class="home-container" id="home-container">
+            <div class="home-cap" id="home-cap" role="group" aria-label="Up next"></div>
+            <div class="home-chips" id="home-chips"></div>
+        </div>
+
+        <div class="focus-container" id="focus-container">
+            <div class="status" id="status">Focus Time</div>
+            <div class="cur-row">
+                <button class="current-line" id="current-line" type="button"></button>
+                <button class="note-badge" id="note-badge" type="button" aria-expanded="false" aria-controls="focus-note" hidden></button>
+            </div>
+            <!-- The note of the current task, under the timer (task-notes.js) -->
+            <div class="focus-note" id="focus-note" hidden>
+                <textarea id="focus-note-input" maxlength="2000" rows="3" placeholder="Write a note for this task…" aria-label="Note of the current task"></textarea>
+            </div>
+            <div class="controls">
+                <button class="btn primary" id="start-btn">Start</button>
+                <button class="btn" id="pause-btn">Pause</button>
+                <button class="btn" id="reset-btn">Reset</button>
+                <button class="btn" id="skip-btn" hidden>Skip break</button>
+            </div>
+
+            <button class="goal-line" id="goal-line" type="button" hidden>
+                <span class="goal-line-label" id="goal-line-label">Today</span>
+                <span class="goal-line-track"><span class="goal-line-fill" id="goal-line-fill"></span></span>
+                <span class="goal-line-nums"><span id="goal-line-done"></span><span id="goal-line-goal"></span></span>
+            </button>
+
+            <div class="settings">
+                <div class="custom">
+                    <label>Focus <input type="number" id="focus-input" min="1" max="180" value="25"> min</label>
+                    <label>Break <input type="number" id="break-input" min="1" max="60" value="5"> min</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="todo-container" id="todo-container">
+            <div class="todo-input">
+                <input type="text" id="task-input" placeholder="Add a task..." maxlength="120">
+                <button class="btn primary" id="add-btn">Add</button>
+            </div>
+            <!-- Search titles and notes, and the filters (task-notes.js) -->
+            <div class="tn-search" id="tn-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+                <input type="search" id="tn-query" placeholder="Search tasks and notes" maxlength="80" autocomplete="off" aria-label="Search tasks and notes">
+                <kbd class="tn-key" aria-hidden="true">/</kbd>
+                <button class="tn-clear" id="tn-clear" type="button" aria-label="Clear the search" hidden>&times;</button>
+            </div>
+            <div class="tn-filters" role="group" aria-label="Show">
+                <button type="button" data-tn-filter="all">All</button>
+                <button type="button" data-tn-filter="open">Open</button>
+                <button type="button" data-tn-filter="done">Done</button>
+                <button type="button" data-tn-filter="notes">With notes</button>
+            </div>
+            <div class="tn-count" id="tn-count" aria-live="polite" hidden></div>
+            <ul class="todo-list" id="todo-list"></ul>
+            <p class="tn-hint" id="tn-hint" hidden>Matches in the title or in the note. Enter opens the first one.</p>
+        </div>
+
+        <div class="cal-container" id="cal-container">
+            <div class="cal-card">
+                <section class="cal-month" aria-label="Month">
+                    <div class="cal-head">
+                        <h2 class="cal-title" id="cal-title" aria-live="polite">Calendar</h2>
+                        <div class="cal-nav">
+                            <div class="seg cal-views" role="group" aria-label="Calendar view"><button type="button" data-cal-view="month">Month</button><button type="button" data-cal-view="list">List</button></div>
+                            <button class="range-btn cal-today" id="cal-today" type="button">Today</button>
+                            <button class="cal-arrow" id="cal-prev" type="button" aria-label="Previous month">&lsaquo;</button>
+                            <button class="cal-arrow" id="cal-next" type="button" aria-label="Next month">&rsaquo;</button>
+                        </div>
+                    </div>
+                    <div class="cal-dow" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+                    <div class="cal-grid" id="cal-grid"></div>
+                </section>
+
+                <section class="cal-day" aria-labelledby="day-title">
+                    <div class="day-head">
+                        <h3 class="day-title" id="day-title">Today</h3>
+                        <span class="day-date" id="day-date"></span>
+                    </div>
+
+                    <div class="cal-overdue" id="cal-overdue" hidden>
+                        <div class="cal-overdue-head">
+                            <span id="cal-overdue-text"></span>
+                            <button class="cal-link" id="cal-overdue-btn" type="button">Move to today</button>
+                        </div>
+                        <ul class="day-tasks" id="cal-overdue-list"></ul>
+                    </div>
+
+                    <p class="day-empty" id="day-empty" hidden></p>
+                    <ul class="day-tasks" id="day-tasks"></ul>
+
+                    <form class="day-add" id="day-add">
+                        <span class="day-add-plus" aria-hidden="true">+</span>
+                        <input type="text" id="day-input" placeholder="Add a task for this day" maxlength="120" aria-label="New task for this day">
+                    </form>
+
+                    <button class="day-pick-btn" id="day-pick-btn" type="button" aria-expanded="false" aria-controls="day-pick">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>
+                        Pick from your To do list
+                    </button>
+                    <div class="day-pick" id="day-pick" hidden>
+                        <div class="day-pick-title">Pick from your To do list</div>
+                        <ul class="day-tasks" id="day-pick-list"></ul>
+                        <p class="day-pick-hint">Tap one to put it on this day</p>
+                    </div>
+
+                    <div class="day-spacer" aria-hidden="true"></div>
+                    <p class="day-focus" id="day-focus" hidden></p>
+                </section>
+            </div>
+
+            <!-- List view: the tasks grouped by date (Overdue, Today, Tomorrow, then each day that has tasks) -->
+            <section class="up-card" id="cal-list" aria-labelledby="up-title">
+                <div class="cal-head">
+                    <h2 class="cal-title" id="up-title">Upcoming</h2>
+                    <div class="cal-nav">
+                        <div class="seg cal-views" role="group" aria-label="Calendar view"><button type="button" data-cal-view="month">Month</button><button type="button" data-cal-view="list">List</button></div>
+                        <button class="up-done-btn" id="up-done" type="button" aria-pressed="false">Show done</button>
+                    </div>
+                </div>
+                <form class="day-add up-add" id="up-add">
+                    <span class="day-add-plus" aria-hidden="true">+</span>
+                    <input type="text" id="up-input" placeholder="Add a task… try “Email Ana friday”" maxlength="120" aria-label="New task. A day in the words, like tomorrow or friday, becomes its date">
+                    <span class="up-hint" aria-hidden="true">date is picked up from the words</span>
+                </form>
+                <div class="up-groups" id="up-groups"></div>
+            </section>
+        </div>
+
+        <div class="stats-container" id="stats-container">
+            <section class="goals" aria-labelledby="goals-title">
+                <div class="goals-head">
+                    <h2 class="goals-title" id="goals-title">Goals</h2>
+                    <button class="range-btn" id="goals-edit" type="button" hidden>Edit goals</button>
+                </div>
+                <div class="stat-panel goals-empty" id="goals-empty">
+                    <div>
+                        <div class="goal-label">Not set</div>
+                        <p>A daily focus goal, a few tasks a day, and the days you want to count. Small and steady beats big and abandoned.</p>
+                    </div>
+                    <button class="btn primary" id="goals-set" type="button">+ Set a goal</button>
+                </div>
+                <div id="goals-body" hidden>
+                    <div class="goal-rings" id="goal-rings"></div>
+                    <div class="goal-week-row">
+                        <div class="stat-panel goal-week" id="goal-week"></div>
+                        <div class="goal-side">
+                            <div class="stat-panel goal-small" id="goal-days"></div>
+                            <div class="stat-panel goal-small" id="goal-tasks-week"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="stats-head">
+                <span class="stats-title">Your focus</span>
+                <div class="stats-range">
+                    <button class="range-btn active" data-range="week">Week</button>
+                    <button class="range-btn" data-range="month">Month</button>
+                </div>
+            </div>
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="stat-label">Today</div>
+                    <div class="stat-value" id="sc-today">0m</div>
+                    <div class="stat-sub" id="sc-today-sub"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" id="sc-period-label">This week</div>
+                    <div class="stat-value" id="sc-period">0m</div>
+                    <div class="stat-sub" id="sc-period-sub"></div>
+                </div>
+                <div class="stat-card streak-card" id="streak-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Streak</span>
+                        <svg class="flame" id="streak-flame" width="30" height="30" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                    </div>
+                    <div class="stat-value"><span id="streak-n">0</span><span class="stat-unit" id="streak-unit"> days</span></div>
+                    <div class="stat-sub" id="streak-best"></div>
+                    <div class="stat-sub" id="streak-note"></div>
+                    <div class="streak-dots" id="streak-dots"></div>
+                </div>
+            </div>
+            <section class="records" aria-labelledby="records-title">
+                <div class="records-head">
+                    <h2 class="records-title" id="records-title">Records</h2>
+                    <span>updated live as you focus</span>
+                </div>
+                <div class="records-grid">
+                    <div class="stat-card rec-card" id="rec-day">
+                        <div class="stat-top"><span class="stat-label">Best day</span><span class="rec-new">NEW</span></div>
+                        <div class="stat-value" id="rec-day-v">0m</div>
+                        <div class="stat-sub" id="rec-day-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-week">
+                        <div class="stat-top"><span class="stat-label">Best week</span><span class="rec-new">NEW</span></div>
+                        <div class="stat-value" id="rec-week-v">0m</div>
+                        <div class="stat-sub" id="rec-week-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-streak">
+                        <div class="stat-top"><span class="stat-label">Longest streak</span><span class="rec-new">NEW</span></div>
+                        <div class="stat-value" id="rec-streak-v">0</div>
+                        <div class="stat-sub" id="rec-streak-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-session">
+                        <div class="stat-top"><span class="stat-label">Longest session</span><span class="rec-new">NEW</span></div>
+                        <div class="stat-value" id="rec-session-v">0m</div>
+                        <div class="stat-sub" id="rec-session-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-avg">
+                        <div class="stat-label"><span class="rec-long">Average per active day</span><span class="rec-short">Avg / active day</span></div>
+                        <div class="stat-value" id="rec-avg-v">0m</div>
+                        <div class="stat-sub" id="rec-avg-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-days">
+                        <div class="stat-label">Days with focus</div>
+                        <div class="stat-value" id="rec-days-v">0</div>
+                        <div class="stat-sub" id="rec-days-sub"></div>
+                    </div>
+                    <div class="stat-card rec-card" id="rec-all">
+                        <div class="stat-label">All time</div>
+                        <div class="stat-value" id="rec-all-v">0m</div>
+                        <div class="stat-sub" id="rec-all-sub"></div>
+                    </div>
+                    <div class="stat-card rec-more">More records appear<br>as you keep going</div>
+                </div>
+            </section>
+            <div class="stat-panel">
+                <div class="stat-panel-head"><span>Focus map</span><span id="map-total"></span></div>
+                <div class="map-box">
+                    <div class="map-wrap" id="map-wrap">
+                        <div class="map-grid" id="map-grid" role="img" aria-label="Focus map for the last 12 months"></div>
+                    </div>
+                    <div class="map-tip" id="map-tip" hidden></div>
+                </div>
+                <div class="map-legend"><i class="s-key"></i><span class="s-label">Current streak</span><span>0h</span><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>4h+</span></div>
+            </div>
+            <div class="stat-panel">
+                <div class="stat-panel-head"><span id="chart-title">Last 7 days</span><span id="chart-best"></span></div>
+                <div class="chart" id="chart"></div>
+            </div>
+        </div>
+
+        <div class="settings-container" id="settings-container">
+            <div class="set-layout">
+                <nav class="set-nav" aria-label="Settings categories">
+                    <h2 class="set-title">Settings</h2>
+                    <button class="set-nav-item" type="button" data-sec="appearance"><span>Appearance</span><span class="set-nav-sum" id="sum-appearance"></span></button>
+                    <button class="set-nav-item" type="button" data-sec="clock"><span>Clock and time</span><span class="set-nav-sum" id="sum-clock"></span></button>
+                    <button class="set-nav-item" type="button" data-sec="timer-alerts"><span>Timer alerts</span><span class="set-nav-sum" id="sum-timer-alerts"></span></button>
+                    <button class="set-nav-item" type="button" data-sec="notifications"><span>Notifications</span><span class="set-nav-sum" id="sum-notifications"></span></button>
+                    <button class="set-nav-item" type="button" data-sec="shortcuts"><span>Shortcuts</span><span class="set-nav-sum"></span></button>
+                    <button class="set-nav-item" type="button" data-sec="account"><span>Account and data</span><span class="set-nav-sum" id="sum-account"></span></button>
+                    <p class="set-version">Clockus · <span id="build-info">Version 33</span></p>
+                </nav>
+
+                <div class="set-main">
+                    <!-- Appearance -->
+                    <section class="set-card" id="set-appearance" data-sec="appearance" aria-labelledby="set-h-appearance">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-appearance">Appearance</h3><span>how Clockus looks</span></div>
+
+                        <div class="set-label" id="theme-label">Theme</div>
+                        <!-- Two rows: Classic and Colors (on a phone, two cards per row in the same order) -->
+                        <div class="set-themes" role="group" aria-labelledby="theme-label">
+                            <div class="set-sublabel">Classic</div>
+                            <button class="set-tile" type="button" data-theme-choice="animated"><span class="set-prev prev-animated" id="prev-animated"><span class="prev-live" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/></svg>Live</span><span class="prev-time">12:34</span><span class="prev-line"></span></span><span class="set-tile-row"><span class="set-tile-name">Animated</span><span class="set-tile-note">your video</span></span></button>
+                            <button class="set-tile" type="button" data-theme-choice="dark"><span class="set-prev prev-dark"><span class="prev-time">12:34</span><span class="prev-line"></span></span><span class="set-tile-row"><span class="set-tile-name">Dark</span><span class="set-dots" aria-hidden="true"><i></i><i></i></span></span></button>
+                            <button class="set-tile" type="button" data-theme-choice="light"><span class="set-prev prev-light"><span class="prev-time">12:34</span><span class="prev-line"></span></span><span class="set-tile-row"><span class="set-tile-name">Light</span><span class="set-dots" aria-hidden="true"><i></i><i></i></span></span></button>
+                            <button class="set-tile" type="button" data-theme-choice="graphite"><span class="set-prev prev-graphite"><span class="prev-time">12:34</span><span class="prev-line"></span></span><span class="set-tile-row"><span class="set-tile-name">Graphite</span><span class="set-dots" aria-hidden="true"><i></i><i></i></span></span></button>
+                            <button class="set-tile" type="button" data-theme-choice="paper"><span class="set-prev prev-paper"><span class="prev-time">12:34</span><span class="prev-line"></span></span><span class="set-tile-row"><span class="set-tile-name">Paper</span><span class="set-dots" aria-hidden="true"><i></i><i></i></span></span></button>
+                            <div class="set-sublabel">Colors</div>
+                            <button class="set-tile" type="button" data-theme-choice="blush"><span class="set-prev prev-blush"><span class="prev-time">12:34</span><span class="prev-line"></span></span><span class="set-tile-row"><span class="set-tile-name">Blush</span><span class="set-dots" aria-hidden="true"><i></i><i></i></span></span></button>
+                            <button class="set-tile" type="button" data-theme-choice="vanilla"><span class="set-prev prev-vanilla"><span class="prev-time">12:34</span><span class="prev-line"></span></span><span class="set-tile-row"><span class="set-tile-name">Vanilla</span><span class="set-dots" aria-hidden="true"><i></i><i></i></span></span></button>
+                            <button class="set-tile" type="button" data-theme-choice="olive"><span class="set-prev prev-olive"><span class="prev-time">12:34</span><span class="prev-line"></span></span><span class="set-tile-row"><span class="set-tile-name">Olive</span><span class="set-dots" aria-hidden="true"><i></i><i></i></span></span></button>
+                            <button class="set-tile" type="button" data-theme-choice="forest"><span class="set-prev prev-forest"><span class="prev-time">12:34</span><span class="prev-line"></span></span><span class="set-tile-row"><span class="set-tile-name">Forest</span><span class="set-dots" aria-hidden="true"><i></i><i></i></span></span></button>
+                            <button class="set-tile" type="button" data-theme-choice="deep-sea"><span class="set-prev prev-deep-sea"><span class="prev-time">12:34</span><span class="prev-line"></span></span><span class="set-tile-row"><span class="set-tile-name">Deep Sea</span><span class="set-dots" aria-hidden="true"><i></i><i></i></span></span></button>
+                        </div>
+
+                        <!-- The Animated theme's video: the same choice as Aesthetic mode (animated-theme.js). Dimmed with another theme; a tap switches to Animated -->
+                        <div class="set-anim-label" id="anim-label">Animated background <span>used by the Animated theme</span></div>
+                        <div class="set-anim" id="set-anim" role="group" aria-labelledby="anim-label">
+                            <button class="set-tile" type="button" data-anim-scene="samurai"><span class="set-prev prev-samurai"></span><span class="set-tile-name">Samurai</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="rainy-garden"><span class="set-prev prev-rainy-garden"></span><span class="set-tile-name">Rainy garden</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="cherry-grove"><span class="set-prev prev-cherry-grove"></span><span class="set-tile-name">Cherry Grove</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="autumn"><span class="set-prev prev-autumn"></span><span class="set-tile-name">Autumn</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="winter"><span class="set-prev prev-winter"></span><span class="set-tile-name">Winter</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="lofi-coffee"><span class="set-prev prev-lofi-coffee"></span><span class="set-tile-name">Lo-Fi Coffee</span></button>
+                        </div>
+
+                        <!-- Christmas Specials: same cards as above. A card stays disabled until its video is on the site (AES_XMAS_READY in aesthetic-mode.js) -->
+                        <div class="set-anim-label" id="xmas-label">Christmas Specials <span>6 seasonal animated backgrounds</span></div>
+                        <div class="set-anim set-xmas" role="group" aria-labelledby="xmas-label">
+                            <button class="set-tile" type="button" data-anim-scene="christmas"><span class="set-prev prev-christmas"></span><span class="set-tile-name">Christmas</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="minecraft-fireplace"><span class="set-prev prev-minecraft-fireplace"></span><span class="set-tile-name">Minecraft Fireplace</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="adventure-time"><span class="set-prev prev-adventure-time"></span><span class="set-tile-name">Adventure Time</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="santas-sleigh"><span class="set-prev prev-santas-sleigh"></span><span class="set-tile-name">Santa’s sleigh</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="snow-globe"><span class="set-prev prev-snow-globe"></span><span class="set-tile-name">Snow globe</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="northern-lights"><span class="set-prev prev-northern-lights"></span><span class="set-tile-name">Northern lights</span></button>
+                        </div>
+
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Accent color</div><p>Used for the streak, progress and highlights.</p></div>
+                            <div class="swatches">
+                                <button class="swatch" type="button" data-color="#5b21b6" aria-label="Violet"></button>
+                                <button class="swatch" type="button" data-color="#1d4ed8" aria-label="Blue"></button>
+                                <button class="swatch" type="button" data-color="#0f766e" aria-label="Teal"></button>
+                                <button class="swatch" type="button" data-color="#15803d" aria-label="Green"></button>
+                                <button class="swatch" type="button" data-color="#c2410c" aria-label="Orange"></button>
+                                <button class="swatch" type="button" data-color="#be123c" aria-label="Rose"></button>
+                                <label class="swatch swatch-custom" id="swatch-custom" title="Custom color">+<input type="color" id="accent-custom" aria-label="Custom accent color"></label>
+                            </div>
+                        </div>
+                        <!-- Glow: only with Dark, Light, Graphite and Paper; dimmed with the other themes (appearance.js) -->
+                        <div class="set-row" id="glow-row">
+                            <div class="set-row-text"><div id="glow-label">Glow <span class="new-badge">New</span></div><p>A soft light at the bottom of Home and Focus, in your accent color.</p></div>
+                            <div class="seg" role="group" aria-labelledby="glow-label">
+                                <button type="button" data-glow-choice="off">Off</button>
+                                <button type="button" data-glow-choice="soft">Soft</button>
+                                <button type="button" data-glow-choice="strong">Strong</button>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="text-weight-range">Text weight</label><p>Thickness of all text on the site.</p></div>
+                            <div class="set-range">
+                                <input type="range" id="text-weight-range" min="0" max="7" step="1">
+                                <div class="set-range-ends"><span>Thin</span><span>Bold</span></div>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="animations-switch">Animations</label><p>Fades between tabs and the floating clock.</p>
+                                <p id="motion-note" hidden>Your system asks for reduced motion, so animations start off.</p></div>
+                            <input type="checkbox" class="set-toggle" id="animations-switch">
+                        </div>
+
+                        <div class="set-label" id="aes-label">Aesthetic mode <span class="new-badge">New</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="aes-min-switch">Minimise the widget</label><p>Shrinks to ring and time after 5 seconds.</p></div>
+                            <input type="checkbox" class="set-toggle" id="aes-min-switch">
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="aes-dim">Dim the background</label><p>Keeps the timer readable on bright animations.</p></div>
+                            <div class="set-range">
+                                <input type="range" id="aes-dim" min="0" max="100" step="5">
+                                <div class="set-range-ends"><span>Off</span><span>Dark</span></div>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Enter with a key</div><p>Press A on the Focus tab to switch, A or Esc to leave.</p></div>
+                            <kbd>A</kbd>
+                        </div>
+                    </section>
+
+                    <!-- Clock and time -->
+                    <section class="set-card" id="set-clock" data-sec="clock" aria-labelledby="set-h-clock">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-clock">Clock and time</h3><span>the main clock</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div id="font-label">Clock font</div><p>Bold variants are marked in the picker.</p></div>
+                            <div class="font-tiles" role="group" aria-labelledby="font-label">
+                                <button class="font-tile" type="button" data-font-choice="sora"><span class="font-prev f-sora">12:34</span><span>Sora</span></button>
+                                <button class="font-tile" type="button" data-font-choice="mono"><span class="font-prev f-mono">12:34</span><span>Mono</span></button>
+                                <button class="font-tile" type="button" data-font-choice="inter"><span class="font-prev f-inter">12:34</span><span>Inter</span></button>
+                                <button class="font-tile" type="button" data-font-choice="dmsans"><span class="font-prev f-dmsans">12:34</span><span>DM Sans</span></button>
+                            </div>
+                        </div>
+                        <div class="set-row" id="weight-row">
+                            <div class="set-row-text"><label for="weight-range">Clock weight</label><p id="weight-name"></p></div>
+                            <div class="set-range">
+                                <input type="range" id="weight-range" min="0" max="7" step="1">
+                                <div class="set-range-ends"><span>Thin</span><span>Bold</span></div>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div id="format-label">Time format</div></div>
+                            <div class="seg" role="group" aria-labelledby="format-label">
+                                <button type="button" data-format-choice="12">12h</button>
+                                <button type="button" data-format-choice="24">24h</button>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="seconds-switch">Show seconds</label></div>
+                            <input type="checkbox" class="set-toggle" id="seconds-switch">
+                        </div>
+                    </section>
+
+                    <!-- Timer alerts -->
+                    <section class="set-card" id="set-timer-alerts" data-sec="timer-alerts" aria-labelledby="set-h-timer-alerts">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-timer-alerts">Timer alerts</h3><span>the tab title and session end</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="ta-title">Show the timer in the tab title</label><p>Time left and what is happening.</p></div>
+                            <input type="checkbox" class="set-toggle" id="ta-title">
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="ta-sound">Sound when a session ends</label><p>The same soft chime as the reminder.</p></div>
+                            <input type="checkbox" class="set-toggle" id="ta-sound">
+                        </div>
+                        <div class="set-row" id="ta-volume-row">
+                            <div class="set-row-text"><label for="ta-volume">Volume</label></div>
+                            <div class="set-range">
+                                <input type="range" id="ta-volume" min="0" max="100" step="5">
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="ta-flash">Flash the title when time is up</label><p>Until you come back to the tab.</p></div>
+                            <input type="checkbox" class="set-toggle" id="ta-flash">
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="ta-notify">Browser notification</label><p id="ta-notify-note">Your browser asks for permission the first time you turn this on.</p></div>
+                            <input type="checkbox" class="set-toggle" id="ta-notify">
+                        </div>
+                    </section>
+
+                    <!-- Notifications -->
+                    <section class="set-card" id="set-notifications" data-sec="notifications" aria-labelledby="set-h-notifications">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-notifications">Notifications</h3><span>reminders while Clockus is open</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="rem-switch">Top priority reminder <span class="new-badge">New</span></label><p>Reminds you of the task while Clockus is open.</p></div>
+                            <input type="checkbox" class="set-toggle" id="rem-switch">
+                        </div>
+                        <div class="set-row rem-dep">
+                            <div class="set-row-text"><div id="rem-every-label">Every</div><p>How often the reminder appears.</p></div>
+                            <div class="seg" role="group" aria-labelledby="rem-every-label">
+                                <button type="button" data-rem-every="30">30 min</button>
+                                <button type="button" data-rem-every="60">1 h</button>
+                                <button type="button" data-rem-every="120">2 h</button>
+                                <button type="button" data-rem-every="180">3 h</button>
+                            </div>
+                        </div>
+                        <div class="set-row rem-dep">
+                            <div class="set-row-text"><label for="rem-wait">Wait during focus sessions</label><p>Holds the reminder until the timer is paused or on a break.</p></div>
+                            <input type="checkbox" class="set-toggle" id="rem-wait">
+                        </div>
+                        <div class="set-row rem-dep">
+                            <div class="set-row-text"><div id="rem-show-label">Show for</div><p>How long the ring takes to fill.</p></div>
+                            <div class="seg" role="group" aria-labelledby="rem-show-label">
+                                <button type="button" data-rem-show="5">5 s</button>
+                                <button type="button" data-rem-show="8">8 s</button>
+                                <button type="button" data-rem-show="12">12 s</button>
+                            </div>
+                        </div>
+                        <div class="set-row rem-dep">
+                            <div class="set-row-text"><label for="rem-sound">Sound</label><p>A short, quiet chime when the reminder appears.</p></div>
+                            <input type="checkbox" class="set-toggle" id="rem-sound">
+                        </div>
+                        <div class="set-row" id="rem-volume-row">
+                            <div class="set-row-text"><label for="rem-volume">Volume</label><p>Plays a preview when you let go.</p></div>
+                            <div class="set-range">
+                                <input type="range" id="rem-volume" min="0" max="100" step="5">
+                                <div class="set-range-ends"><span>Quiet</span><span>Loud</span></div>
+                            </div>
+                        </div>
+
+                        <div class="set-label">Coming up <span class="new-badge">New</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div id="cu-morning-label">Morning summary</div><p>Today's tasks, once a day.</p></div>
+                            <div class="seg" role="group" aria-labelledby="cu-morning-label">
+                                <button type="button" data-cu-morning="open">On open</button>
+                                <button type="button" data-cu-morning="08:00">08:00</button>
+                                <button type="button" data-cu-morning="off">Off</button>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div id="cu-evening-label">Evening lookahead</div><p>Tomorrow's tasks.</p></div>
+                            <div class="seg" role="group" aria-labelledby="cu-evening-label">
+                                <button type="button" data-cu-evening="20:00">20:00</button>
+                                <button type="button" data-cu-evening="21:00">21:00</button>
+                                <button type="button" data-cu-evening="off">Off</button>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="cu-overdue">Overdue reminder</label><p>Only when tasks were left behind.</p></div>
+                            <input type="checkbox" class="set-toggle" id="cu-overdue">
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="cu-quiet">Stay quiet when nothing is planned</label><p>Always on, so you never see an empty notification.</p></div>
+                            <input type="checkbox" class="set-toggle" id="cu-quiet" checked disabled>
+                        </div>
+
+                        <div class="set-label">Goal reached <span class="new-badge">New</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="ga-switch">Goal animation</label><p>When you reach the daily or weekly goal. Once per goal.</p></div>
+                            <input type="checkbox" class="set-toggle" id="ga-switch">
+                        </div>
+                        <div class="set-row" id="ga-sound-row">
+                            <div class="set-row-text"><label for="ga-sound">Sound</label><p>A very soft chime. Off by default.</p></div>
+                            <input type="checkbox" class="set-toggle" id="ga-sound">
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Reduce motion</div><p>On: no light or halo. The bar just fills and the label changes.</p></div>
+                            <span class="ga-system">Follows your system</span>
+                        </div>
+                    </section>
+
+                    <!-- Shortcuts -->
+                    <section class="set-card" id="set-shortcuts" data-sec="shortcuts" aria-labelledby="set-h-shortcuts">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-shortcuts">Shortcuts</h3><span>keyboard</span></div>
+                        <dl class="set-keys">
+                            <div><dt>Start / pause</dt><dd><kbd>Space</kbd></dd></div>
+                            <div><dt>Clean mode</dt><dd><kbd>F</kbd></dd></div>
+                            <div><dt>Aesthetic mode</dt><dd><kbd>A</kbd></dd></div>
+                            <div><dt>Reset</dt><dd><kbd>R</kbd></dd></div>
+                            <div><dt>Close</dt><dd><kbd>Esc</kbd></dd></div>
+                            <div><dt>New task</dt><dd><kbd>N</kbd></dd></div>
+                            <div><dt>Skip pause</dt><dd><kbd>S</kbd></dd></div>
+                        </dl>
+                    </section>
+
+                    <!-- Account and data -->
+                    <section class="set-card" id="set-account" data-sec="account" aria-labelledby="set-h-account">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-account">Account and data</h3><span>sync and backup</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text">
+                                <div>Google account</div>
+                                <p id="account-note">Sign in to keep your timer, tasks and focus time synced across devices.</p>
+                            </div>
+                            <div id="account-out"><button class="btn" id="google-btn" type="button">Continue with Google</button></div>
+                            <div class="set-account" id="account-in" hidden>
+                                <span class="set-avatar" id="account-email" role="img"></span>
+                                <button class="btn" id="signout-btn" type="button">Sign out</button>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Sync status</div><p id="sync-when">Sign in to sync.</p></div>
+                            <span class="sync-pill" id="sync-pill"><i aria-hidden="true"></i><span id="sync-status">Not signed in</span></span>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Export my data <span class="new-badge">New</span></div><p>Download tasks and focus history as one file.</p></div>
+                            <button class="btn" id="export-btn" type="button">Export</button>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Reset on this device</div><p>Clears local data only. Your cloud copy stays.</p></div>
+                            <button class="btn set-muted-btn" id="reset-btn-local" type="button">Reset</button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals editor -->
+    <div class="goals-modal" id="goals-modal" hidden>
+        <div class="ge-card" role="dialog" aria-modal="true" aria-labelledby="ge-title">
+            <h2 class="ge-title" id="ge-title">Set your goals</h2>
+            <p class="ge-intro">Small and steady beats big and abandoned.</p>
+
+            <div class="ge-sec">Daily focus</div>
+            <div class="pk-chips" id="ge-presets"></div>
+            <div class="ge-row">
+                <span>Focus per day<small id="ge-focus-sub"></small></span>
+                <span class="ge-step">
+                    <button type="button" data-step="focus" data-d="-15" aria-label="15 minutes less">&minus;</button>
+                    <output id="ge-focus" aria-live="polite"></output>
+                    <button type="button" data-step="focus" data-d="15" aria-label="15 minutes more">+</button>
+                </span>
+            </div>
+            <div class="ge-row">
+                <span>Tasks per day<small>tasks you tick off, from To do or Calendar</small></span>
+                <span class="ge-step">
+                    <button type="button" data-step="tasks" data-d="-1" aria-label="One task less">&minus;</button>
+                    <output id="ge-tasks" aria-live="polite"></output>
+                    <button type="button" data-step="tasks" data-d="1" aria-label="One task more">+</button>
+                </span>
+            </div>
+
+            <div class="ge-sec">Active days</div>
+            <div class="ge-days" id="ge-days"></div>
+            <p class="ge-note">Rest days do not count against you. They are skipped by the weekly maths.</p>
+
+            <div class="ge-week">
+                <span>Weekly goal<small id="ge-week-sub"></small></span>
+                <b id="ge-week"></b>
+            </div>
+
+            <div class="ge-actions">
+                <button class="ge-off" id="ge-off" type="button">Turn goals off</button>
+                <span class="ge-actions-right">
+                    <button class="btn" id="ge-cancel" type="button">Cancel</button>
+                    <button class="btn primary" id="ge-save" type="button">Save</button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- A task with its note: side panel (phone: full screen) (task-notes.js) -->
+    <aside class="tn-panel" id="tn-panel" role="dialog" aria-labelledby="tn-panel-title" hidden>
+        <div class="tn-panel-head">
+            <span class="tn-panel-kicker">Task</span>
+            <button class="tn-panel-close" id="tn-panel-close" type="button" aria-label="Close">&times;</button>
+        </div>
+        <h2 class="tn-panel-title" id="tn-panel-title"></h2>
+        <div class="tn-panel-chips" id="tn-panel-chips"></div>
+        <label class="tn-panel-label" for="tn-panel-note">Notes</label>
+        <textarea class="tn-panel-note" id="tn-panel-note" maxlength="2000" placeholder="Write what you need for this task…"></textarea>
+        <div class="tn-panel-foot"><span id="tn-panel-state">Saved</span><span id="tn-panel-count">0 / 2000</span></div>
+    </aside>
+
+    <!-- Top priority reminder (top left) -->
+    <div class="prio-toast" id="prio-toast" role="status" hidden>
+        <button class="prio-toast-btn" id="prio-toast-btn" type="button">
+            <svg class="prio-ring" aria-hidden="true"><path class="prio-ring-base"/><path class="prio-ring-fill"/></svg>
+            <span class="prio-toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4M6 4h11l-2.5 4.5L17 13H6"/></svg></span>
+            <span class="prio-toast-text"><span class="prio-toast-label">Top priority</span><span class="prio-toast-task" id="prio-toast-task"></span></span>
+        </button>
+    </div>
+
+    <!-- Coming up: same spot, same ring as the top priority reminder; never both at once -->
+    <div class="prio-toast cu-toast" id="cu-toast" role="status" hidden>
+        <button class="prio-toast-btn" id="cu-toast-btn" type="button">
+            <svg class="prio-ring" aria-hidden="true"><path class="prio-ring-base"/><path class="prio-ring-fill"/></svg>
+            <span class="prio-toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
+            <span class="prio-toast-text"><span class="prio-toast-label" id="cu-toast-label"></span><span class="prio-toast-task" id="cu-toast-title"></span><span class="cu-toast-sub" id="cu-toast-sub"></span></span>
+        </button>
+    </div>
+
+    <!-- After a task is moved to another day: "Moved to Wed 18" with Undo -->
+    <div class="mv-toast" id="mv-toast" role="status" hidden>
+        <span id="mv-toast-text"></span>
+        <button class="mv-undo" id="mv-undo" type="button">Undo</button>
+    </div>
+
+    <!-- Clean mode -->
+    <button class="icon-btn clean-btn" id="clean-btn" aria-label="Clean mode (F)" title="Clean mode (F)" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    </button>
+
+
+    <!-- Accent glow: a soft light at the bottom of Home and Focus (Dark, Light, Graphite, Paper only; appearance.js) -->
+    <div class="glow-bg" aria-hidden="true"></div>
+
+    <!-- Animated theme: the chosen video behind the whole site, under a dark layer (animated-theme.js) -->
+    <div class="theme-bg" id="theme-bg" aria-hidden="true" hidden>
+        <div class="aes-bg" id="theme-bg-scene">
+            <video class="aes-video" id="theme-bg-video" muted loop playsinline preload="none" disablepictureinpicture hidden></video>
+        </div>
+        <div class="theme-bg-dim"></div>
+    </div>
+
+    <!-- Home in the Aesthetic look: the same video background, behind the page (home.js) -->
+    <div class="home-bg" id="home-bg" aria-hidden="true" hidden>
+        <div class="aes-bg" id="home-bg-scene">
+            <video class="aes-video" id="home-bg-video" muted loop playsinline preload="none" disablepictureinpicture hidden></video>
+        </div>
+        <div class="aes-dim" id="home-bg-dim"></div>
+    </div>
+
+    <!-- Aesthetic mode: animated background, the timer becomes the widget at the bottom left -->
+    <div class="aes" id="aes" hidden>
+        <div class="aes-bg" id="aes-bg" aria-hidden="true">
+            <video class="aes-video" id="aes-video" muted loop playsinline preload="none" disablepictureinpicture hidden></video>
+        </div>
+        <div class="aes-dim" id="aes-dim-layer" aria-hidden="true"></div>
+        <div class="aes-hint" aria-hidden="true"><span>A or Esc to exit</span><span>Space pause</span></div>
+        <div class="aes-widget" id="aes-widget" role="group" aria-label="Focus timer">
+            <svg class="aes-ring" aria-hidden="true"><path class="aes-ring-base"/><path class="aes-ring-fill"/></svg>
+            <button class="aes-btn" id="aes-play" type="button" aria-label="Pause">
+                <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="5.5" width="3" height="13" rx="1"/><rect x="14" y="5.5" width="3" height="13" rx="1"/></svg>
+                <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/></svg>
+            </button>
+            <div class="aes-info">
+                <span class="aes-label" id="aes-label-text">Focus</span>
+                <span class="aes-time" id="aes-time" aria-live="off">25:00</span>
+            </div>
+            <button class="aes-btn" id="aes-skip" type="button" aria-label="Skip break (S)" title="Skip break (S)" hidden>
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.5 6.3v11.4a.8.8 0 0 0 1.2.7l8.3-5.7a.8.8 0 0 0 0-1.4L7.7 5.6a.8.8 0 0 0-1.2.7z"/><rect x="16.5" y="5.5" width="2.4" height="13" rx="1"/></svg>
+            </button>
+            <button class="aes-btn" id="aes-exit" type="button" aria-label="Exit aesthetic mode (A)" title="Exit (A or Esc)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>
+            </button>
+            <div class="aes-mini" aria-hidden="true">
+                <svg class="aes-mini-ring" viewBox="0 0 24 24"><circle class="aes-mini-base" cx="12" cy="12" r="9"/><circle class="aes-mini-fill" id="aes-mini-fill" cx="12" cy="12" r="9" pathLength="100"/></svg>
+                <span class="aes-time" id="aes-mini-time">25:00</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <!-- App code, split by feature. Classic scripts sharing one global scope: the ORDER matters. -->
+    <script src="js/core/helpers.js?v=33"></script>
+    <script src="js/core/dom.js?v=33"></script>
+    <script src="js/features/navigation.js?v=38"></script>
+    <script src="js/features/appearance.js?v=45"></script>
+    <script src="js/features/clock.js?v=33"></script>
+    <script src="js/features/timer.js?v=33"></script>
+    <script src="js/features/focus-log.js?v=33"></script>
+    <script src="js/features/stats.js?v=33"></script>
+    <script src="js/features/tasks.js?v=36"></script>
+    <script src="js/features/task-reorder.js?v=36"></script>
+    <script src="js/features/calendar.js?v=34"></script>
+    <script src="js/features/date-picker.js?v=33"></script>
+    <script src="js/features/calendar-list.js?v=34"></script>
+    <script src="js/features/calendar-move.js?v=34"></script>
+    <script src="js/features/goals.js?v=35"></script>
+    <script src="js/features/settings.js?v=33"></script>
+    <script src="js/features/reminders.js?v=34"></script>
+    <script src="js/features/coming-up.js?v=34"></script>
+    <script src="js/features/timer-alerts.js?v=46"></script>
+    <script src="js/features/clean-mode.js?v=37"></script>
+    <script src="js/features/aesthetic-mode.js?v=51"></script>
+    <script src="js/features/animated-theme.js?v=47"></script>
+    <script src="js/features/goal-reached.js?v=35"></script>
+    <script src="js/features/home.js?v=44"></script>
+    <script src="js/features/task-notes.js?v=36"></script>
+    <script src="js/features/shortcuts.js?v=33"></script>
+    <script src="js/services/sync.js?v=45"></script>
+    <script src="js/services/auth.js?v=33"></script>
+    <script src="js/main.js?v=37"></script>
+</body>
+</html>

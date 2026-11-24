@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200;300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-mode="focus">
+    <div class="nav">
+        <button class="nav-button active" id="focus-btn">Focus</button>
+        <button class="nav-button" id="todo-btn">To do</button>
+    </div>
+
+    <div class="clock" id="clock">25:00</div>
+    <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+
+    <div class="focus-container" id="focus-container">
+        <div class="status" id="status">Focus Time</div>
+        <div class="controls">
+            <button class="btn primary" id="start-btn">Start</button>
+            <button class="btn" id="pause-btn">Pause</button>
+            <button class="btn" id="reset-btn">Reset</button>
+        </div>
+
+        <div class="settings">
+            <div class="presets" id="presets">
+                <button class="preset" data-min="15">15</button>
+                <button class="preset" data-min="25">25</button>
+                <button class="preset" data-min="45">45</button>
+                <button class="preset" data-min="60">60</button>
+            </div>
+            <div class="custom">
+                <label>Focus <input type="number" id="focus-input" min="1" max="180" value="25"> min</label>
+                <label>Break <input type="number" id="break-input" min="1" max="60" value="5"> min</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="todo-container" id="todo-container">
+        <div class="todo-input">
+            <input type="text" id="task-input" placeholder="Enter a task..." maxlength="120">
+            <button class="btn primary" id="add-btn">Add</button>
+        </div>
+        <ul class="todo-list" id="todo-list"></ul>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

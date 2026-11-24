@@ -1,0 +1,34 @@
+CLOCKUS - cum pui site-ul in GitHub (fara foldere)
+
+Zip-ul are 12 fisiere, toate la acelasi nivel, fara niciun folder:
+
+  index.html            <- pagina de prezentare (clockus.live)
+  app.html              <- aplicatia (clockus.live/app)
+  welcome.css           <- stilul paginii de prezentare
+  styles.css            <- stilul aplicatiei
+  script.js             <- codul aplicatiei
+  favicon.svg           <- iconita din tab-ul browserului
+  favicon.ico           <- aceeasi iconita, pentru browsere mai vechi
+  apple-touch-icon.png  <- iconita pentru iPhone / iPad
+  icon-192.png          <- iconita pentru Android
+  icon-512.png          <- iconita pentru Android (mare)
+  manifest.webmanifest  <- numele si iconitele cand adaugi site-ul pe ecranul telefonului
+  og-image.png          <- imaginea care apare cand trimiti linkul (acum cu fontul Sora)
+
+PASI
+1. Dezarhiveaza zip-ul (click dreapta, "Extract All").
+2. Intra in repository-ul de pe GitHub: Add file > Upload files.
+3. Selecteaza toate cele 12 fisiere si trage-le in fereastra GitHub.
+   Fisierele cu acelasi nume se inlocuiesc singure.
+4. Apasa "Commit changes".
+5. Asteapta ~1 minut, apoi deschide clockus.live cu Ctrl+Shift+R.
+
+NU atinge fisierul CNAME (tine domeniul clockus.live).
+
+NOTE
+- Fontul Sora se incarca de pe Google Fonts, deci are nevoie de internet.
+- Imaginea de la link (og-image.png) este tinuta in memorie de WhatsApp,
+  Facebook si alte retele. Daca ai trimis deja linkul, previzualizarea
+  veche poate ramane o vreme.
+
+VERIFICARE: in setari (piulita), jos, trebuie sa scrie "Version 20".
