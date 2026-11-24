@@ -116,8 +116,8 @@ function renderAesthetic() {
     if (!aesOpen) return;
     const done = Math.max(0, Math.min(1, 1 - remaining / duration()));
     const time = format(remaining);
-    aesTime.textContent = time;
-    aesMiniTime.textContent = time;
+    setDigits(aesTime, time);       // only the changed digit moves: digit-motion.js
+    setDigits(aesMiniTime, time);
 
     const task = tasks.find((x) => x.id === currentTaskId && !x.done);
     aesLabel.textContent = paused ? 'Paused' : mode === 'break' ? 'Break' : task ? `Focus · ${task.text}` : 'Focus';
