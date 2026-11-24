@@ -11,8 +11,8 @@ function updateRealtime() {
         suffix = h >= 12 ? 'PM' : 'AM';
         h = h % 12 || 12;
     }
-    rtMain.textContent = `${p(h)}:${p(d.getMinutes())}`;
-    rtSec.textContent = ui.seconds ? `:${p(d.getSeconds())}` : '';
+    setDigits(rtMain, `${p(h)}:${p(d.getMinutes())}`);   // only the changed digit moves: digit-motion.js
+    setDigits(rtSec, ui.seconds ? `:${p(d.getSeconds())}` : '');
     rtAmpm.textContent = suffix;
 }
 setInterval(updateRealtime, 250);

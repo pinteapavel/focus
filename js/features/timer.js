@@ -21,7 +21,7 @@ function format(ms) {
 function render() {
     const time = format(remaining);
     const label = paused ? 'Paused' : mode === 'focus' ? 'Focus Time' : 'Break Time';
-    clockEl.textContent = time;
+    setDigits(clockEl, time);   // only the changed digit moves: digit-motion.js
     bar.style.width = `${Math.max(0, Math.min(100, (remaining / duration()) * 100))}%`;
     statusEl.textContent = label;
     document.body.dataset.mode = mode;

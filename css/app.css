@@ -249,6 +249,29 @@ body[data-mode="break"] .clock { color: var(--muted); }
 
 .rt-seconds { color: var(--muted); }
 
+/* Digit motion (digit-motion.js): only the digit that changes moves. The old digit blurs and fades out while the
+   new one comes in blurred and sharpens, both in the same place: nothing slides and every digit keeps its line. */
+.dm { position: relative; display: inline-block; }
+.dm-go {
+    -webkit-text-fill-color: transparent;   /* the real glyph waits; the two layers below draw the change */
+    animation: dm-hold 0.35s linear;
+}
+.dm-go::before,
+.dm-go::after {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    text-align: center;
+    -webkit-text-fill-color: currentColor;
+    pointer-events: none;
+}
+.dm-go::before { content: attr(data-old); animation: dm-out 0.35s ease-out forwards; }
+.dm-go::after { content: attr(data-new); animation: dm-in 0.35s ease-out both; }
+@keyframes dm-hold { from { opacity: 1; } to { opacity: 1; } }
+@keyframes dm-in { from { opacity: 0; filter: blur(0.06em); } to { opacity: 1; filter: blur(0); } }
+@keyframes dm-out { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(0.06em); } }
+
 .rt-ampm {
     margin-left: 0.6em;
     font-size: 0.2em;
