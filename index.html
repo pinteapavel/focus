@@ -31,7 +31,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/landing.css?v=5">
+    <link rel="stylesheet" href="css/landing.css?v=7">
 </head>
 <body>
     <header class="topbar">
@@ -42,6 +42,7 @@
             </a>
             <nav class="nav-links" aria-label="Main">
                 <a class="link" href="#features">Features</a>
+                <a class="link" href="#themes">Themes</a>
                 <a class="link" href="#progress">Progress</a>
                 <a class="btn primary small" href="app">Open Clockus</a>
             </nav>
@@ -51,9 +52,9 @@
     <main id="top">
         <section class="wrap hero">
             <div class="hero-text">
-                <p class="eyebrow">POMODORO · CLOCK · TO DO · STATS</p>
+                <p class="eyebrow">HOME · FOCUS · TO DO · CALENDAR · STATS</p>
                 <h1>Focus, without the noise.</h1>
-                <p class="lead">A timer, a clock and a to-do list in one calm page. Track your focus, keep your streak and watch your progress grow.</p>
+                <p class="lead">One calm place for your time: a clock that shows your day, a focus timer, your tasks, a calendar and the progress you are building.</p>
                 <div class="actions">
                     <a class="btn primary" href="app">Open Clockus</a>
                     <a class="btn" href="#features">See features</a>
@@ -61,12 +62,21 @@
                 <p class="note">No account needed. Works right in your browser.</p>
             </div>
             <div class="hero-visual" aria-hidden="true">
-                <div class="timer-card">
-                    <div class="mini-tabs"><span>Clock</span><span class="on">Focus</span><span>To do</span><span>Stats</span></div>
-                    <div class="timer-clock">25:00</div>
-                    <div class="timer-line"><div></div></div>
-                    <div class="timer-status">Focus Time</div>
-                    <div class="timer-buttons"><span class="pill primary">Start</span><span class="pill">Pause</span><span class="pill">Reset</span></div>
+                <div class="timer-card home-card">
+                    <div class="app-tabs">
+                        <span class="on"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>Home</span>
+                        <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></span>
+                        <span><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></span>
+                        <span><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>
+                        <span><svg viewBox="0 0 24 24"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9"/></svg></span>
+                    </div>
+                    <div class="home-time">14:32</div>
+                    <div class="home-date">WEDNESDAY · 25 NOVEMBER</div>
+                    <div class="home-tiles">
+                        <div class="home-tile"><span class="tile-label">FOCUS TODAY</span><span class="tile-val">1h 20m</span><span class="tile-sub">of 2h goal</span></div>
+                        <div class="home-tile"><span class="tile-label">STREAK</span><span class="tile-val"><svg class="flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>12 days</span><span class="tile-sub">best 21</span></div>
+                        <div class="home-tile"><span class="tile-label">NEXT</span><span class="tile-val">16:00</span><span class="tile-sub">Chemistry homework</span></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -74,45 +84,95 @@
         <section class="section" id="features">
             <div class="wrap">
                 <p class="eyebrow">FEATURES</p>
-                <h2>Everything you need to focus, nothing you don't.</h2>
-                <div class="grid">
-                <article class="card">
-                    <div class="card-num">01</div>
-                    <h3>Pomodoro timer</h3>
-                    <p>Pick 15, 25, 45 or 60 minutes, or set your own. Breaks start automatically, and you can skip them.</p>
+                <h2>Five tabs. One calm flow, from the first task to the last minute.</h2>
+                <div class="grid tabs-grid">
+                <article class="card tab-card">
+                    <div class="tab-preview" aria-hidden="true">
+                        <div class="tp-clock">14:32</div>
+                        <div class="tp-cap">TODAY</div>
+                    </div>
+                    <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>Home</h3>
+                    <p>Your day at a glance: the time, today&rsquo;s focus, your next task and your streak.</p>
                 </article>
-                <article class="card">
-                    <div class="card-num">02</div>
-                    <h3>Clock</h3>
-                    <p>A calm full-screen clock with 12h or 24h time, optional seconds and two fonts.</p>
+                <article class="card tab-card">
+                    <div class="tab-preview" aria-hidden="true">
+                        <div class="tp-clock">25:00</div>
+                        <div class="tp-line"><div></div></div>
+                        <div class="tp-modes"><span class="on">Clean</span><span>Aesthetic</span></div>
+                    </div>
+                    <h3><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>Focus</h3>
+                    <p>A Pomodoro timer with Clean or Aesthetic mode, gentle alerts and your own session length.</p>
                 </article>
-                <article class="card">
-                    <div class="card-num">03</div>
-                    <h3>To do</h3>
-                    <p>Add, edit and drag tasks into order. Finished tasks sink to the bottom and stay crossed out for the day.</p>
+                <article class="card tab-card">
+                    <div class="tab-preview tp-tasks" aria-hidden="true">
+                        <div class="tp-task"><i></i><span>Chemistry homework</span><b></b></div>
+                        <div class="tp-task"><i></i><span>Read chapter 4</span></div>
+                        <div class="tp-task done"><i></i><span>Email teacher</span></div>
+                    </div>
+                    <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>To do</h3>
+                    <p>Tasks with notes and a top priority. Drag to reorder, search to find. Done tasks sink to the bottom.</p>
                 </article>
-                <article class="card">
-                    <div class="card-num">04</div>
-                    <h3>Stats</h3>
-                    <p>See today, this week and every day, with a GitHub-style Focus map of the whole year.</p>
+                <article class="card tab-card">
+                    <div class="tab-preview" aria-hidden="true">
+                        <div class="tp-cal"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="m"></i><i></i><i></i><i></i><i></i><i class="m"></i><i></i><i class="t"></i><i></i><i></i><i></i></div>
+                    </div>
+                    <h3><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Calendar</h3>
+                    <p>See your tasks by day, drag them to move, and check what is coming up next.</p>
                 </article>
-                <article class="card">
-                    <div class="card-num">05</div>
-                    <h3>Streaks</h3>
-                    <p>Focus 1h a day to keep your flame alive. Track your current streak and your best.</p>
-                </article>
-                <article class="card">
-                    <div class="card-num">06</div>
-                    <h3>Sync</h3>
-                    <p>Sign in with Google to keep your tasks, settings and stats on every device.</p>
+                <article class="card tab-card">
+                    <div class="tab-preview" aria-hidden="true">
+                        <div class="tp-bars"><i style="height:30%"></i><i style="height:55%"></i><i style="height:40%"></i><i style="height:70%"></i><i style="height:50%"></i><i class="m" style="height:90%"></i><i style="height:45%"></i></div>
+                    </div>
+                    <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9"/></svg>Stats</h3>
+                    <p>Today, this week and every day, with records and a Focus map of the whole year.</p>
                 </article>
                 </div>
                 <ul class="chips">
                 <li>Space · R · N shortcuts</li>
-                <li>Dark and light theme</li>
-                <li>Your own accent color</li>
-                <li>Mono or Inter clock font</li>
+                <li>Timer alerts</li>
+                <li>Daily and weekly goals</li>
+                <li>Sign in with Google to sync</li>
+                <li>Free, no ads</li>
                 </ul>
+            </div>
+        </section>
+
+        <section class="section" id="themes">
+            <div class="wrap">
+                <p class="eyebrow">THEMES</p>
+                <h2 class="themes-title">Make it yours.</h2>
+                <p class="lead small">Ten themes, animated backgrounds for your focus sessions, seasonal specials, and an accent color that is all yours.</p>
+                <ul class="theme-row">
+                    <li><div class="theme-tile th-animated"><span>12:34</span></div>Animated</li>
+                    <li><div class="theme-tile" style="--bg:#000;--fg:#f2f2f2"><span>12:34</span></div>Dark</li>
+                    <li><div class="theme-tile" style="--bg:#fff;--fg:#111"><span>12:34</span></div>Light</li>
+                    <li><div class="theme-tile" style="--bg:#1c1c1e;--fg:#f2f2f2"><span>12:34</span></div>Graphite</li>
+                    <li><div class="theme-tile" style="--bg:#f4efe6;--fg:#2a2620"><span>12:34</span></div>Paper</li>
+                    <li><div class="theme-tile" style="--bg:#7b3b4b;--fg:#dfd4d8"><span>12:34</span></div>Blush</li>
+                    <li><div class="theme-tile" style="--bg:#f0e7d5;--fg:#212842"><span>12:34</span></div>Vanilla</li>
+                    <li><div class="theme-tile" style="--bg:#d2db76;--fg:#2d371d"><span>12:34</span></div>Olive</li>
+                    <li><div class="theme-tile" style="--bg:#00311f;--fg:#fff7e6"><span>12:34</span></div>Forest</li>
+                    <li><div class="theme-tile" style="--bg:#156874;--fg:#ede6e6"><span>12:34</span></div>Deep Sea</li>
+                </ul>
+                <div class="theme-extras">
+                    <div class="extra-card">
+                        <p class="extra-title">ACCENT COLOR</p>
+                        <div class="accent-dots" aria-label="Violet, blue, teal, green, orange, rose, or any color you pick">
+                            <i class="on" style="--c:#5b21b6"></i><i style="--c:#1d4ed8"></i><i style="--c:#0f766e"></i><i style="--c:#15803d"></i><i style="--c:#c2410c"></i><i style="--c:#be123c"></i>
+                        </div>
+                    </div>
+                    <div class="extra-card">
+                        <p class="extra-title"><span>ANIMATED BACKGROUNDS</span><span class="extra-tag">+ Christmas Specials</span></p>
+                        <ul class="bg-row">
+                            <li><img src="backgrounds/samurai.jpg" alt="" loading="lazy" decoding="async">Samurai</li>
+                            <li><img src="backgrounds/rainy-garden.jpg" alt="" loading="lazy" decoding="async">Rainy garden</li>
+                            <li><img src="backgrounds/cherry-grove.jpg" alt="" loading="lazy" decoding="async">Cherry Grove</li>
+                            <li><img src="backgrounds/autumn.jpg" alt="" loading="lazy" decoding="async">Autumn</li>
+                            <li><img src="backgrounds/winter.jpg" alt="" loading="lazy" decoding="async">Winter</li>
+                            <li><img src="backgrounds/christmas.jpg" alt="" loading="lazy" decoding="async">Christmas</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -121,10 +181,17 @@
                 <div class="split-text">
                     <p class="eyebrow">PROGRESS</p>
                     <h2>See your focus grow.</h2>
-                    <p class="lead small">Every day you focus adds a square to your Focus map. Reach 1 hour and your flame stays lit.</p>
+                    <p class="lead small">Set a daily and weekly goal. Every day you focus adds a square to your Focus map, keeps your flame lit and builds your records.</p>
+                    <div class="progress-tiles">
+                    <div class="goal-chip">
+                        <div class="goal-label">DAILY GOAL</div>
+                        <div class="goal-n">1h 20m <span>/ 2h</span></div>
+                        <div class="goal-bar"><div></div></div>
+                    </div>
                     <div class="streak-chip">
                         <svg width="34" height="34" viewBox="0 0 24 24" fill="#8458c8" stroke="#d6c8ed" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-                        <div><div class="streak-n">12 days</div><div class="streak-sub">Best: 21 days · Today counted</div></div>
+                        <div><div class="streak-n">12 days</div><div class="streak-sub">Best: 21</div></div>
+                    </div>
                     </div>
                 </div>
                 <div class="map-card" role="img" aria-label="Sample Focus map showing about ten months of daily focus time">
@@ -155,7 +222,11 @@
     <footer class="footer">
         <div class="wrap footer-inner">
             <span>Clockus · 2026</span>
-            <span>Sign in with Google to sync across devices</span>
+            <span class="footer-links">
+                <span>Sign in with Google to sync across devices</span>
+                <a href="privacy">Privacy</a>
+                <a href="terms">Terms</a>
+            </span>
         </div>
     </footer>
 </body>

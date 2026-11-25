@@ -1,0 +1,119 @@
+/* Clockus privacy page (privacy.html). Builds on landing.css: same colours, font, top bar, buttons and footer. */
+
+/* ---------- Title ---------- */
+.pv-hero { padding-top: 72px; padding-bottom: 48px; }
+.pv-hero h1 { margin: 20px 0 16px; }
+.pv-updated { margin-top: 24px; font-size: 0.75rem; color: var(--muted); }
+
+/* ---------- Two columns: "On this page" and the text ---------- */
+.pv-layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 48px;
+    align-items: start;
+    padding-bottom: 96px;
+}
+
+.pv-side { position: sticky; top: 100px; }
+.pv-toc-title { margin: 0 0 12px 12px; font-size: 0.6875rem; letter-spacing: 0.12em; color: var(--muted); }
+.pv-toc ol { margin: 0; padding: 0; list-style: none; }
+
+.pv-toc a {
+    display: flex;
+    gap: 12px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    color: var(--muted);
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.pv-toc a:hover { color: var(--text); }
+.pv-toc a.on { background: #141414; color: var(--text); }
+.pv-toc .pv-n { color: var(--p3); }
+
+.pv-back {
+    display: inline-block;
+    margin: 28px 0 0 12px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--line-strong);
+    transition: color 0.2s;
+}
+
+.pv-back:hover { color: var(--text); }
+
+/* ---------- The short version ---------- */
+.pv-short {
+    position: relative;
+    overflow: hidden;
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+}
+
+.pv-short::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    right: -100px;
+    width: 340px;
+    height: 300px;
+    background: radial-gradient(closest-side, rgba(91, 33, 182, 0.38), transparent);
+}
+
+.pv-short > * { position: relative; }
+.pv-short-title { margin-bottom: 14px; font-size: 0.6875rem; letter-spacing: 0.12em; color: var(--muted); }
+.pv-short p:not(.pv-short-title) { max-width: 720px; font-size: 1.125rem; line-height: 1.6; }
+
+/* ---------- Sections ---------- */
+.pv-sec { padding: 40px 0; border-bottom: 1px solid var(--line-soft); }
+.pv-sec:last-child { border-bottom: 0; }
+
+.pv-sec h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    max-width: none;
+    margin: 0 0 18px;
+    font-size: clamp(1.35rem, 4vw, 1.625rem);
+    letter-spacing: -0.02em;
+}
+
+.pv-num { flex: none; font-size: 0.75rem; letter-spacing: 0; color: var(--p3); }
+
+.pv-sec p,
+.pv-sec li { max-width: 720px; font-size: 0.875rem; line-height: 1.8; color: var(--muted); }
+.pv-sec ul { display: grid; gap: 10px; }
+.pv-sec li { position: relative; padding-left: 18px; }
+.pv-sec li::before { content: '·'; position: absolute; left: 4px; color: var(--muted); }
+.pv-sec strong { font-weight: 500; color: var(--text); }
+
+/* The other legal page, at the bottom of the text */
+.pv-also { padding-top: 32px; font-size: 0.875rem; color: var(--muted); }
+
+.pv-mail {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--p3);
+}
+
+/* ---------- Phone: one column, the contents become a row of numbers ---------- */
+@media (max-width: 960px) {
+    .pv-layout { grid-template-columns: 1fr; gap: 24px; }
+    .pv-side { position: static; }
+    .pv-toc-title, .pv-toc .pv-t { display: none; }
+    .pv-toc ol { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pv-toc a { padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; }
+    .pv-back { display: none; }
+}
+
+@media (max-width: 620px) {
+    .pv-hero { padding-top: 48px; padding-bottom: 32px; }
+    .pv-short { padding: 22px; }
+    .pv-short p:not(.pv-short-title) { font-size: 1rem; }
+    .pv-sec { padding: 32px 0; }
+}
