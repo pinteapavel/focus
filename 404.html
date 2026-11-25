@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page not found · Clockus</title>
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#000000">
+    <!-- GitHub Pages shows this page for any wrong link, at any depth: every path here starts with / -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/landing.css?v=8">
+    <link rel="stylesheet" href="/css/feedback.css?v=1">
+    <style>
+        .nf { position: relative; overflow: hidden; padding: 96px 0 112px; text-align: center; }
+        .nf::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 40px;
+            width: 640px;
+            max-width: 140%;
+            height: 420px;
+            transform: translateX(-50%);
+            background: radial-gradient(closest-side, rgba(91, 33, 182, 0.36), transparent);
+            pointer-events: none;
+        }
+        .nf > .wrap { position: relative; }
+        .nf-clock {
+            margin: 28px 0 18px;
+            font-size: clamp(6rem, 26vw, 10rem);
+            font-weight: 200;
+            letter-spacing: -0.04em;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+        .nf-line { width: 220px; max-width: 70%; height: 1px; margin: 0 auto; background: var(--line); }
+        .nf-paused { margin-top: 14px; font-size: 0.6875rem; letter-spacing: 0.16em; color: var(--muted); }
+        .nf h1 { margin: 44px 0 14px; font-size: clamp(1.6rem, 5vw, 2rem); letter-spacing: -0.03em; }
+        .nf .lead { margin: 0 auto; max-width: 420px; font-size: 0.875rem; }
+        .nf .actions { justify-content: center; }
+        .nf-report { margin-top: 28px; font-size: 0.75rem; color: var(--muted); }
+        .nf-report a { color: var(--text); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--line-strong); }
+        @media (max-width: 620px) { .nf { padding: 64px 0 80px; } }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="wrap topbar-inner">
+            <a class="logo" href="/" aria-label="Clockus home">
+                <svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M51.92 48.71A26 26 0 1 1 51.92 15.29" stroke="#f2f2f2" stroke-width="3.5" stroke-linecap="round"/><circle cx="58" cy="32" r="4.5" fill="#8458c8"/></svg>
+                <span>clockus</span>
+            </a>
+            <nav class="nav-links" aria-label="Main">
+                <a class="link" href="/#features">Features</a>
+                <a class="link" href="/#themes">Themes</a>
+                <a class="link" href="/#progress">Progress</a>
+                <a class="btn primary small" href="/app">Open Clockus</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="nf">
+        <div class="wrap">
+            <p class="eyebrow">ERROR 404</p>
+            <div class="nf-clock" aria-hidden="true">404</div>
+            <div class="nf-line" aria-hidden="true"></div>
+            <p class="nf-paused" aria-hidden="true">PAUSED</p>
+            <h1>This page took a break.</h1>
+            <p class="lead">The link may be wrong, or the page has moved. Let&rsquo;s get you back to focus.</p>
+            <div class="actions">
+                <a class="btn primary" href="/">Back to Clockus</a>
+                <a class="btn" href="/app">Open the app</a>
+            </div>
+            <p class="nf-report">Think this link should work? <a href="#feedback" data-feedback="bug" aria-haspopup="dialog">Send feedback</a></p>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="wrap footer-inner">
+            <span>Clockus · 2026</span>
+            <span class="footer-links">
+                <span>Sign in with Google to sync across devices</span>
+                <a href="/privacy">Privacy</a>
+                <a href="/terms">Terms</a>
+                <a href="#feedback" data-feedback aria-haspopup="dialog">Feedback</a>
+            </span>
+        </div>
+    </footer>
+
+    <script src="/js/feedback.js?v=1"></script>
+</body>
+</html>

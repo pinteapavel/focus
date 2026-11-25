@@ -31,7 +31,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/landing.css?v=7">
+    <link rel="stylesheet" href="css/landing.css?v=8">
+    <link rel="stylesheet" href="css/feedback.css?v=1">
 </head>
 <body>
     <header class="topbar">
@@ -52,6 +53,7 @@
     <main id="top">
         <section class="wrap hero">
             <div class="hero-text">
+                <p class="deleted-note" id="deleted-note" role="status" hidden>Your account was deleted.</p>
                 <p class="eyebrow">HOME · FOCUS · TO DO · CALENDAR · STATS</p>
                 <h1>Focus, without the noise.</h1>
                 <p class="lead">One calm place for your time: a clock that shows your day, a focus timer, your tasks, a calendar and the progress you are building.</p>
@@ -143,21 +145,21 @@
                 <h2 class="themes-title">Make it yours.</h2>
                 <p class="lead small">Ten themes, animated backgrounds for your focus sessions, seasonal specials, and an accent color that is all yours.</p>
                 <ul class="theme-row">
-                    <li><div class="theme-tile th-animated"><span>12:34</span></div>Animated</li>
-                    <li><div class="theme-tile" style="--bg:#000;--fg:#f2f2f2"><span>12:34</span></div>Dark</li>
-                    <li><div class="theme-tile" style="--bg:#fff;--fg:#111"><span>12:34</span></div>Light</li>
-                    <li><div class="theme-tile" style="--bg:#1c1c1e;--fg:#f2f2f2"><span>12:34</span></div>Graphite</li>
-                    <li><div class="theme-tile" style="--bg:#f4efe6;--fg:#2a2620"><span>12:34</span></div>Paper</li>
-                    <li><div class="theme-tile" style="--bg:#7b3b4b;--fg:#dfd4d8"><span>12:34</span></div>Blush</li>
-                    <li><div class="theme-tile" style="--bg:#f0e7d5;--fg:#212842"><span>12:34</span></div>Vanilla</li>
-                    <li><div class="theme-tile" style="--bg:#d2db76;--fg:#2d371d"><span>12:34</span></div>Olive</li>
-                    <li><div class="theme-tile" style="--bg:#00311f;--fg:#fff7e6"><span>12:34</span></div>Forest</li>
-                    <li><div class="theme-tile" style="--bg:#156874;--fg:#ede6e6"><span>12:34</span></div>Deep Sea</li>
+                    <li><div aria-hidden="true" class="theme-tile th-animated"><span>12:34</span></div>Animated</li>
+                    <li><div aria-hidden="true" class="theme-tile" style="--bg:#000;--fg:#f2f2f2"><span>12:34</span></div>Dark</li>
+                    <li><div aria-hidden="true" class="theme-tile" style="--bg:#fff;--fg:#111"><span>12:34</span></div>Light</li>
+                    <li><div aria-hidden="true" class="theme-tile" style="--bg:#1c1c1e;--fg:#f2f2f2"><span>12:34</span></div>Graphite</li>
+                    <li><div aria-hidden="true" class="theme-tile" style="--bg:#f4efe6;--fg:#2a2620"><span>12:34</span></div>Paper</li>
+                    <li><div aria-hidden="true" class="theme-tile" style="--bg:#7b3b4b;--fg:#dfd4d8"><span>12:34</span></div>Blush</li>
+                    <li><div aria-hidden="true" class="theme-tile" style="--bg:#f0e7d5;--fg:#212842"><span>12:34</span></div>Vanilla</li>
+                    <li><div aria-hidden="true" class="theme-tile" style="--bg:#d2db76;--fg:#2d371d"><span>12:34</span></div>Olive</li>
+                    <li><div aria-hidden="true" class="theme-tile" style="--bg:#00311f;--fg:#fff7e6"><span>12:34</span></div>Forest</li>
+                    <li><div aria-hidden="true" class="theme-tile" style="--bg:#156874;--fg:#ede6e6"><span>12:34</span></div>Deep Sea</li>
                 </ul>
                 <div class="theme-extras">
                     <div class="extra-card">
                         <p class="extra-title">ACCENT COLOR</p>
-                        <div class="accent-dots" aria-label="Violet, blue, teal, green, orange, rose, or any color you pick">
+                        <div class="accent-dots" role="img" aria-label="Violet, blue, teal, green, orange, rose, or any color you pick">
                             <i class="on" style="--c:#5b21b6"></i><i style="--c:#1d4ed8"></i><i style="--c:#0f766e"></i><i style="--c:#15803d"></i><i style="--c:#c2410c"></i><i style="--c:#be123c"></i>
                         </div>
                     </div>
@@ -226,8 +228,17 @@
                 <span>Sign in with Google to sync across devices</span>
                 <a href="privacy">Privacy</a>
                 <a href="terms">Terms</a>
+                <a href="#feedback" data-feedback aria-haspopup="dialog">Feedback</a>
             </span>
         </div>
     </footer>
+    <script>
+        // After "Delete account" in the app: a short line, then a clean address
+        if (/[?&]deleted=1/.test(location.search)) {
+            document.getElementById('deleted-note').hidden = false;
+            history.replaceState(null, '', location.pathname + location.hash);
+        }
+    </script>
+    <script src="js/feedback.js?v=1"></script>
 </body>
 </html>

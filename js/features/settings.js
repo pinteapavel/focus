@@ -59,19 +59,37 @@ function renderSettingsSummary() {
     $('sum-account').textContent = typeof user !== 'undefined' && user ? 'Synced' : 'Signed out';
 }
 
-// ---------- Export my data: one JSON file with tasks and focus history ----------
-$('export-btn').addEventListener('click', () => {
+// ---------- Export my data: one JSON file with tasks, settings and focus stats ----------
+// Signed in: the newest copy is fetched from the cloud first. Signed out: what is saved in this browser.
+const exportBtn = $('export-btn');
+exportBtn.addEventListener('click', async () => {
+    if (exportBtn.disabled) return;
+    const label = exportBtn.textContent;
+    exportBtn.disabled = true;
+    exportBtn.textContent = 'Preparing…';
+    try {
+        if (user && typeof loadCloud === 'function') await loadCloud();
+    } catch {}   // offline: the copy in this browser is exported
+    exportBtn.textContent = label;
+    exportBtn.disabled = false;
+
     const data = {
         app: 'Clockus',
         exportedAt: new Date().toISOString(),
+        account: user ? (user.email || null) : null,
         tasks: tasks.map((t) => ({
-            text: t.text, done: t.done, doneOn: t.doneOn || null,
+            text: t.text, done: t.done, doneOn: t.doneOn || null, note: t.note || null,
             date: t.date || null, time: t.time || null, minutes: t.time ? t.dur || DEFAULT_DUR : null
         })),
-        focusByDay: Object.fromEntries(Object.entries(totalsByDay()).sort().map(([d, ms]) => [d, Math.round(ms / 60000)])),
-        sessions: sessions.map((s) => ({ start: new Date(s.s).toISOString(), end: new Date(s.e).toISOString(), task: s.x || null })),
-        goals,
-        timer: { focus: settings.focus, break: settings.brk }
+        settings: {
+            timer: { focus: settings.focus, break: settings.brk },
+            appearance: ui,
+            goals
+        },
+        stats: {
+            focusMinutesByDay: Object.fromEntries(Object.entries(totalsByDay()).sort().map(([d, ms]) => [d, Math.round(ms / 60000)])),
+            sessions: sessions.map((s) => ({ start: new Date(s.s).toISOString(), end: new Date(s.e).toISOString(), task: s.x || null }))
+        }
     };
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
     const a = document.createElement('a');

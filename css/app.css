@@ -2492,6 +2492,44 @@ body.modal-open { overflow: hidden; }
 .set-row .btn { flex: none; padding: 8px 18px; font-size: 0.8rem; }
 .set-muted-btn { color: var(--muted); }
 
+/* Danger zone: delete the account (delete-account.js). The same red on every theme. */
+.set-danger {
+    --danger: #e5484d;
+    margin-top: 18px;
+    padding: 4px 18px;
+    border: 1px solid color-mix(in srgb, var(--danger) 30%, var(--line));
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--danger) 4%, transparent);
+}
+
+.set-danger-title { padding-top: 14px; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--danger); }
+.set-danger .set-row { padding: 14px 0 16px; }
+.set-danger-btn { flex: none; border-color: color-mix(in srgb, var(--danger) 70%, transparent); color: var(--danger); }
+.set-danger-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 12%, transparent); }
+
+/* The "Delete your account?" dialog (frame: .goals-modal / .ge-card) */
+.del-card { --danger: #e5484d; }
+.del-label { display: block; margin-bottom: 8px; font-size: 0.75rem; color: var(--muted); }
+.del-label strong { font-weight: 600; color: var(--text); }
+
+.del-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid color-mix(in srgb, var(--danger) 55%, var(--line));
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+}
+
+.del-input:focus { outline: none; border-color: var(--danger); }
+.del-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.del-confirm { border-color: var(--danger); background: var(--danger); color: #fff; }
+.del-confirm:hover:not(:disabled) { background: var(--danger); opacity: 0.88; }
+.del-error { margin: 12px 0 0; font-size: 0.8rem; color: var(--danger); text-align: right; }
+
 .sync-pill { flex: none; display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--muted); }
 .sync-pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
 .sync-pill[data-state="ok"] { color: var(--cal-acc); }

@@ -18,7 +18,8 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@1000&display=swap" rel="stylesheet">
     <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');var r=document.documentElement;var t=u.theme||'dark';if(t==='wine')t='blush';if(t==='electric-blue')t='deep-sea';if(t==='system')t='dark';r.dataset.theme=t;r.dataset.bg='solid';var f=['sora','mono','inter','dmsans'].indexOf(u.font)>-1?u.font:'sora';if(u.v!==2&&u.font==='mono')f='sora';r.dataset.font=f;var w=u.weights&&u.weights[f];if(w)r.style.setProperty('--clock-weight',w);if(u.textWeight)r.style.setProperty('--w',u.textWeight);}catch(e){}</script>
     <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' ('+String(e.filename||'').split('/').pop().split('?')[0]+' line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
-    <link rel="stylesheet" href="css/app.css?v=52">
+    <link rel="stylesheet" href="css/app.css?v=53">
+    <link rel="stylesheet" href="css/feedback.css?v=1">
 </head>
 <body data-mode="focus" data-tab="clock">
     <header class="topbar">
@@ -119,7 +120,7 @@
 
         <div class="todo-container" id="todo-container">
             <div class="todo-input">
-                <input type="text" id="task-input" placeholder="Add a task..." maxlength="120">
+                <input type="text" id="task-input" placeholder="Add a task..." maxlength="120" aria-label="New task">
                 <button class="btn primary" id="add-btn">Add</button>
             </div>
             <!-- Search titles and notes, and the filters (task-notes.js) -->
@@ -335,6 +336,7 @@
                     <button class="set-nav-item" type="button" data-sec="notifications"><span>Notifications</span><span class="set-nav-sum" id="sum-notifications"></span></button>
                     <button class="set-nav-item" type="button" data-sec="shortcuts"><span>Shortcuts</span><span class="set-nav-sum"></span></button>
                     <button class="set-nav-item" type="button" data-sec="account"><span>Account and data</span><span class="set-nav-sum" id="sum-account"></span></button>
+                    <button class="set-nav-item" type="button" data-sec="help"><span>Help</span><span class="set-nav-sum">Feedback</span></button>
                     <p class="set-version">Clockus · <span id="build-info">Version 33</span></p>
                 </nav>
 
@@ -483,7 +485,7 @@
                         <div class="set-row" id="ta-volume-row">
                             <div class="set-row-text"><label for="ta-volume">Volume</label></div>
                             <div class="set-range">
-                                <input type="range" id="ta-volume" min="0" max="100" step="5">
+                                <input type="range" id="ta-volume" aria-label="Timer alert volume" min="0" max="100" step="5">
                             </div>
                         </div>
                         <div class="set-row">
@@ -532,7 +534,7 @@
                         <div class="set-row" id="rem-volume-row">
                             <div class="set-row-text"><label for="rem-volume">Volume</label><p>Plays a preview when you let go.</p></div>
                             <div class="set-range">
-                                <input type="range" id="rem-volume" min="0" max="100" step="5">
+                                <input type="range" id="rem-volume" aria-label="Reminder volume" min="0" max="100" step="5">
                                 <div class="set-range-ends"><span>Quiet</span><span>Loud</span></div>
                             </div>
                         </div>
@@ -613,16 +615,52 @@
                             <span class="sync-pill" id="sync-pill"><i aria-hidden="true"></i><span id="sync-status">Not signed in</span></span>
                         </div>
                         <div class="set-row">
-                            <div class="set-row-text"><div>Export my data <span class="new-badge">New</span></div><p>Download tasks and focus history as one file.</p></div>
-                            <button class="btn" id="export-btn" type="button">Export</button>
+                            <div class="set-row-text"><div>Export my data <span class="new-badge">New</span></div><p>Downloads one file with your tasks, settings and focus stats, so you can keep a copy.</p></div>
+                            <button class="btn" id="export-btn" type="button">Export data</button>
                         </div>
                         <div class="set-row">
                             <div class="set-row-text"><div>Reset on this device</div><p>Clears local data only. Your cloud copy stays.</p></div>
                             <button class="btn set-muted-btn" id="reset-btn-local" type="button">Reset</button>
                         </div>
+                        <!-- Danger zone: delete the account and everything saved online (delete-account.js) -->
+                        <div class="set-danger" role="group" aria-labelledby="danger-title">
+                            <div class="set-danger-title" id="danger-title">Danger zone</div>
+                            <div class="set-row" id="delete-in" hidden>
+                                <div class="set-row-text"><div>Delete account</div><p>Permanently deletes your account and the tasks, settings and stats saved online. This cannot be undone.</p></div>
+                                <button class="btn set-danger-btn" id="delete-btn" type="button" aria-haspopup="dialog">Delete account…</button>
+                            </div>
+                            <div class="set-row" id="delete-out">
+                                <div class="set-row-text"><div>Delete account</div><p>Sign in to manage your online data. Nothing synced exists to delete.</p></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Help: the feedback box (js/feedback.js) -->
+                    <section class="set-card" id="set-help" data-sec="help" aria-labelledby="set-h-help">
+                        <button class="set-back" type="button">&lsaquo; Settings</button>
+                        <div class="set-card-head"><h3 id="set-h-help">Help</h3><span>bugs and ideas</span></div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Feedback</div><p>Found a bug or have an idea? Tell me. It goes straight to the person who builds Clockus.</p></div>
+                            <button class="btn" type="button" data-feedback aria-haspopup="dialog">Send feedback</button>
+                        </div>
                     </section>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Delete account: confirm by typing DELETE (delete-account.js). Same frame as the goals editor. -->
+    <div class="goals-modal" id="del-modal" hidden>
+        <div class="ge-card del-card" role="dialog" aria-modal="true" aria-labelledby="del-title" aria-describedby="del-text">
+            <h2 class="ge-title" id="del-title">Delete your account?</h2>
+            <p class="ge-intro" id="del-text">This permanently deletes your account and your tasks, settings and stats from every device. Data saved only in this browser stays until you clear it. This cannot be undone.</p>
+            <label class="del-label" for="del-input">Type <strong>DELETE</strong> to confirm</label>
+            <input class="del-input" id="del-input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20">
+            <div class="del-actions">
+                <button class="btn" id="del-cancel" type="button">Cancel</button>
+                <button class="btn del-confirm" id="del-confirm" type="button" disabled>Delete forever</button>
+            </div>
+            <p class="del-error" id="del-error" role="alert" hidden>Something went wrong, nothing was deleted. Try again.</p>
         </div>
     </div>
 
@@ -781,7 +819,7 @@
     <script src="js/features/calendar-list.js?v=34"></script>
     <script src="js/features/calendar-move.js?v=34"></script>
     <script src="js/features/goals.js?v=35"></script>
-    <script src="js/features/settings.js?v=33"></script>
+    <script src="js/features/settings.js?v=34"></script>
     <script src="js/features/reminders.js?v=34"></script>
     <script src="js/features/coming-up.js?v=34"></script>
     <script src="js/features/timer-alerts.js?v=46"></script>
@@ -793,7 +831,9 @@
     <script src="js/features/task-notes.js?v=36"></script>
     <script src="js/features/shortcuts.js?v=33"></script>
     <script src="js/services/sync.js?v=45"></script>
-    <script src="js/services/auth.js?v=33"></script>
+    <script src="js/services/auth.js?v=34"></script>
+    <script src="js/services/delete-account.js?v=1"></script>
+    <script src="js/feedback.js?v=1"></script>
     <script src="js/main.js?v=37"></script>
 </body>
 </html>

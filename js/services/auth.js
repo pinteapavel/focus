@@ -15,6 +15,7 @@ function updateAccountUi() {
     if (!user) setSync('Not signed in');
     if (typeof renderSettingsSummary === 'function') renderSettingsSummary();
     if (typeof renderAccountMenu === 'function') renderAccountMenu();
+    if (typeof renderDangerZone === 'function') renderDangerZone();   // delete-account.js
 }
 
 googleBtn.addEventListener('click', async () => {

@@ -97,6 +97,8 @@ h1 {
 .lead.small { margin-bottom: 32px; font-size: 0.875rem; }
 .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 40px; }
 .note { margin-top: 22px; font-size: 0.75rem; color: var(--muted); }
+.deleted-note { display: inline-block; margin-bottom: 20px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 0.75rem; color: var(--text); }
+.deleted-note[hidden] { display: none; }
 
 .hero-visual { position: relative; flex: none; width: 480px; max-width: 100%; }
 
