@@ -182,6 +182,7 @@ function applyRemoteSettings(data, opts = {}) {
         if (typeof data.ui.animations === 'boolean') ui.animations = data.ui.animations;
         if (GLOW_LEVELS.includes(data.ui.glow)) ui.glow = data.ui.glow;   // Glow (appearance.js)
         if (/^#[0-9a-f]{6}$/i.test(data.ui.accent)) ui.accent = data.ui.accent;
+        if (data.ui.ambient && typeof cleanAmbient === 'function') { ui.ambient = cleanAmbient(data.ui.ambient); renderAmbientSettings(); }   // ambient-sound.js
         migrateTheme(ui);   // appearance.js
         if (!THEMES.includes(ui.theme)) ui.theme = 'dark';
         ui.at = Number(data.ui.at) || 0;

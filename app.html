@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@1000&display=swap" rel="stylesheet">
     <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');var r=document.documentElement;var t=u.theme||'dark';if(t==='wine')t='blush';if(t==='electric-blue')t='deep-sea';if(t==='system')t='dark';r.dataset.theme=t;r.dataset.bg='solid';var f=['sora','mono','inter','dmsans'].indexOf(u.font)>-1?u.font:'sora';if(u.v!==2&&u.font==='mono')f='sora';r.dataset.font=f;var w=u.weights&&u.weights[f];if(w)r.style.setProperty('--clock-weight',w);if(u.textWeight)r.style.setProperty('--w',u.textWeight);}catch(e){}</script>
     <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' ('+String(e.filename||'').split('/').pop().split('?')[0]+' line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
-    <link rel="stylesheet" href="css/app.css?v=53">
+    <link rel="stylesheet" href="css/app.css?v=55">
     <link rel="stylesheet" href="css/feedback.css?v=1">
 </head>
 <body data-mode="focus" data-tab="clock">
@@ -380,9 +380,9 @@
                             <button class="set-tile" type="button" data-anim-scene="christmas"><span class="set-prev prev-christmas"></span><span class="set-tile-name">Christmas</span></button>
                             <button class="set-tile" type="button" data-anim-scene="minecraft-fireplace"><span class="set-prev prev-minecraft-fireplace"></span><span class="set-tile-name">Minecraft Fireplace</span></button>
                             <button class="set-tile" type="button" data-anim-scene="adventure-time"><span class="set-prev prev-adventure-time"></span><span class="set-tile-name">Adventure Time</span></button>
-                            <button class="set-tile" type="button" data-anim-scene="santas-sleigh"><span class="set-prev prev-santas-sleigh"></span><span class="set-tile-name">Santa’s sleigh</span></button>
-                            <button class="set-tile" type="button" data-anim-scene="snow-globe"><span class="set-prev prev-snow-globe"></span><span class="set-tile-name">Snow globe</span></button>
-                            <button class="set-tile" type="button" data-anim-scene="northern-lights"><span class="set-prev prev-northern-lights"></span><span class="set-tile-name">Northern lights</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="forest-snowfall"><span class="set-prev prev-forest-snowfall"></span><span class="set-tile-name">Forest Snowfall</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="winter-evening"><span class="set-prev prev-winter-evening"></span><span class="set-tile-name">Winter Evening</span></button>
+                            <button class="set-tile" type="button" data-anim-scene="northern-landscape"><span class="set-prev prev-northern-landscape"></span><span class="set-tile-name">Northern Landscape</span></button>
                         </div>
 
                         <div class="set-row">
@@ -430,6 +430,21 @@
                                 <input type="range" id="aes-dim" min="0" max="100" step="5">
                                 <div class="set-range-ends"><span>Off</span><span>Dark</span></div>
                             </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="ambient-switch">Ambient sound <span class="new-badge">New</span></label><p>A quiet sound that matches the background, only in Aesthetic mode. Same switch as the speaker button, and off until you turn it on.</p></div>
+                            <input type="checkbox" class="set-toggle" id="ambient-switch">
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><label for="ambient-volume">Volume</label><p>Applies to every background.</p></div>
+                            <div class="set-range">
+                                <input type="range" id="ambient-volume" aria-label="Ambient sound volume" min="0" max="100" step="5">
+                                <div class="set-range-ends"><span>Quiet</span><span id="ambient-pct"></span></div>
+                            </div>
+                        </div>
+                        <div class="set-row">
+                            <div class="set-row-text"><div>Sound follows the background</div><p>Change the background and the sound changes with it. There is no separate choice.</p></div>
+                            <span class="set-muted-text">Automatic</span>
                         </div>
                         <div class="set-row">
                             <div class="set-row-text"><div>Enter with a key</div><p>Press A on the Focus tab to switch, A or Esc to leave.</p></div>
@@ -794,6 +809,18 @@
             <button class="aes-btn" id="aes-exit" type="button" aria-label="Exit aesthetic mode (A)" title="Exit (A or Esc)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>
             </button>
+            <!-- Ambient sound: the speaker above the widget, with the name and volume box (ambient-sound.js) -->
+            <div class="aes-sound-wrap" hidden>
+                <div class="aes-sound-pop" id="aes-sound-pop" hidden>
+                    <span class="aes-sound-full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span id="aes-sound-full"></span></span>
+                    <span class="aes-sound-vol"><input type="range" id="aes-sound-vol" min="0" max="100" step="5" aria-label="Ambient sound volume"><span id="aes-sound-pct"></span></span>
+                </div>
+                <button class="aes-sound" id="aes-sound" type="button" aria-pressed="false">
+                    <svg class="i-sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
+                    <svg class="i-sound-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+                    <span id="aes-sound-name">Sound off</span>
+                </button>
+            </div>
             <div class="aes-mini" aria-hidden="true">
                 <svg class="aes-mini-ring" viewBox="0 0 24 24"><circle class="aes-mini-base" cx="12" cy="12" r="9"/><circle class="aes-mini-fill" id="aes-mini-fill" cx="12" cy="12" r="9" pathLength="100"/></svg>
                 <span class="aes-time" id="aes-mini-time">25:00</span>
@@ -824,13 +851,14 @@
     <script src="js/features/coming-up.js?v=34"></script>
     <script src="js/features/timer-alerts.js?v=46"></script>
     <script src="js/features/clean-mode.js?v=37"></script>
-    <script src="js/features/aesthetic-mode.js?v=52"></script>
+    <script src="js/features/aesthetic-mode.js?v=54"></script>
+    <script src="js/features/ambient-sound.js?v=2"></script>
     <script src="js/features/animated-theme.js?v=47"></script>
     <script src="js/features/goal-reached.js?v=35"></script>
     <script src="js/features/home.js?v=44"></script>
     <script src="js/features/task-notes.js?v=36"></script>
     <script src="js/features/shortcuts.js?v=33"></script>
-    <script src="js/services/sync.js?v=45"></script>
+    <script src="js/services/sync.js?v=46"></script>
     <script src="js/services/auth.js?v=34"></script>
     <script src="js/services/delete-account.js?v=1"></script>
     <script src="js/feedback.js?v=1"></script>

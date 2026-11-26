@@ -16,8 +16,8 @@ const AES_VIDEOS = {
 // Christmas Specials (Settings › Appearance, under Animated background), in this order. Their videos are not on the
 // site yet: a card stays disabled until its name is in AES_XMAS_READY. To add one, put backgrounds/<name>.mp4 and
 // backgrounds/<name>.jpg in site/ (compressed like the others), then add the name below. Nothing else to change.
-const AES_XMAS = ['christmas', 'minecraft-fireplace', 'adventure-time', 'santas-sleigh', 'snow-globe', 'northern-lights'];
-const AES_XMAS_READY = ['christmas', 'minecraft-fireplace', 'adventure-time'];
+const AES_XMAS = ['christmas', 'minecraft-fireplace', 'adventure-time', 'forest-snowfall', 'winter-evening', 'northern-landscape'];
+const AES_XMAS_READY = ['christmas', 'minecraft-fireplace', 'adventure-time', 'forest-snowfall', 'winter-evening', 'northern-landscape'];
 AES_XMAS_READY.filter((k) => AES_XMAS.includes(k)).forEach((k) => {
     AES_SCENES.push(k);
     AES_VIDEOS[k] = { src: `backgrounds/${k}.mp4`, poster: `backgrounds/${k}.jpg` };
@@ -164,6 +164,7 @@ function syncAesVideo() {
     } else if (!play && !aesVideo.paused) {
         aesVideo.pause();
     }
+    if (typeof syncAmbient === 'function') syncAmbient();   // the ambient sound follows (ambient-sound.js)
 }
 
 // After 5 s without the mouse or a key, the widget shrinks to ring and time

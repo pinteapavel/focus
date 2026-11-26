@@ -2946,6 +2946,66 @@ body.clean .mode-pills {
 .aes-widget.min > .aes-btn { visibility: hidden; transition: opacity 0.25s, visibility 0s 0.25s; }
 .aes-widget.min .aes-mini { opacity: 1; transition-delay: 0.15s; }
 
+/* Ambient sound (ambient-sound.js): the speaker sits above the widget; hover or focus shows the name and volume */
+.aes-sound-wrap { position: absolute; left: 0; bottom: calc(100% + 12px); transition: opacity 0.25s; }
+.aes-sound-wrap[hidden] { display: none; }
+.aes-widget.min .aes-sound-wrap { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s, visibility 0s 0.25s; }
+
+.aes-sound {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    background: rgba(12, 12, 16, 0.55);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    color: rgba(242, 242, 242, 0.7);
+    font: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.aes-sound:hover { background: rgba(28, 28, 34, 0.7); color: #f2f2f2; }
+.aes-sound.on { color: #f2f2f2; }
+.aes-sound svg { width: 16px; height: 16px; }
+.aes-sound.on .i-sound-off,
+.aes-sound:not(.on) .i-sound-on { display: none; }
+
+.aes-sound-pop {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 230px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(12, 12, 16, 0.75);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    color: #f2f2f2;
+    font-size: 0.78rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0s 0.2s;
+}
+
+.aes-sound-pop[hidden] { display: none; }
+.aes-sound-wrap:hover .aes-sound-pop,
+.aes-sound-wrap:focus-within .aes-sound-pop { opacity: 1; visibility: visible; transition: opacity 0.2s; }
+.aes-sound-pop::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 10px; }   /* keeps hover across the gap */
+.aes-sound-full { display: flex; align-items: center; gap: 7px; }
+.aes-sound-full svg { flex: none; width: 15px; height: 15px; }
+.aes-sound-vol { display: flex; align-items: center; gap: 10px; color: rgba(242, 242, 242, 0.7); }
+.aes-sound-vol input { flex: 1; min-width: 0; accent-color: var(--p3); }
+
+.set-muted-text { flex: none; font-size: 0.8rem; color: var(--muted); }
+
 @media (max-width: 600px), (hover: none) {
     .aes-hint { display: none; }
     .aes-widget { left: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); }
@@ -3991,6 +4051,6 @@ body:is([data-tab="clock"], [data-tab="focus"]):not(.aesthetic) .glow-bg { opaci
 .prev-christmas { background: radial-gradient(#ffffffb0 1px, transparent 1.6px) 0 0 / 14px 14px, linear-gradient(160deg, #23324d, #5a7fa8); }
 .prev-minecraft-fireplace { background: radial-gradient(#f5d56bcc 1.2px, transparent 1.8px) 0 0 / 14px 14px, linear-gradient(160deg, #0e2a1c, #1f5a3a); }
 .prev-adventure-time { background: radial-gradient(ellipse at 50% 110%, #f08a3c, #8a2a12 55%, #2a0d08); }
-.prev-santas-sleigh { background: radial-gradient(#ffffff99 1px, transparent 1.6px) 0 0 / 16px 16px, linear-gradient(160deg, #0c1638, #22327a); }
-.prev-snow-globe { background: radial-gradient(#ffffffa0 1px, transparent 1.6px) 0 0 / 12px 12px, linear-gradient(160deg, #2b1d4a, #8d6ac2); }
-.prev-northern-lights { background: linear-gradient(170deg, #06141a 20%, #0f6e5a 70%, #3fd0a0); }
+.prev-forest-snowfall { background: radial-gradient(#ffffffb0 1px, transparent 1.6px) 0 0 / 13px 13px, linear-gradient(170deg, #9aa3a8, #2c3b3d 70%, #142022); }
+.prev-winter-evening { background: radial-gradient(circle at 75% 55%, #ffcf8a99, transparent 22%), radial-gradient(#ffffffa0 1px, transparent 1.6px) 0 0 / 14px 14px, linear-gradient(170deg, #2a3150, #4b5578 60%, #c9ccd8); }
+.prev-northern-landscape { background: linear-gradient(170deg, #cfe3ea 0%, #2f6a7a 35%, #123845 70%, #0a1e26); }

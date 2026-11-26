@@ -22,6 +22,9 @@ apare când animațiile sunt oprite, în Settings, pe pagina principală și ca 
 | `backgrounds/christmas.mp4`, `backgrounds/christmas.jpg` | de completat | de completat | de completat |
 | `backgrounds/minecraft-fireplace.mp4`, `backgrounds/minecraft-fireplace.jpg` | de completat | de completat | de completat |
 | `backgrounds/adventure-time.mp4`, `backgrounds/adventure-time.jpg` | de completat | de completat | de completat |
+| `backgrounds/forest-snowfall.mp4`, `backgrounds/forest-snowfall.jpg` | de completat | de completat | de completat |
+| `backgrounds/winter-evening.mp4`, `backgrounds/winter-evening.jpg` | de completat | de completat | de completat |
+| `backgrounds/northern-landscape.mp4`, `backgrounds/northern-landscape.jpg` | de completat | de completat | de completat |
 
 ## Imagini și iconițe
 
@@ -56,7 +59,10 @@ repository, deci au nevoie și ele de licență.
 | Fișier | Sursă (link) | Licență | Autor |
 | --- | --- | --- | --- |
 | `backgrounds/*-original-4k.mp4`, `backgrounds/winter-original.mp4` (originalele fundalurilor) | de completat | de completat | de completat |
-| `backgrounds/Christmas Tree and Fireplace.mp4` | de completat | de completat | de completat |
+| `backgrounds/christmas-original-4k.mp4` (sursa noului fundal Christmas, „Christmas room with fireplace”) | de completat | de completat | de completat |
+| `backgrounds/forest-snowfall-original-4k.mp4` (sursa fundalului Forest Snowfall, „Snowfall in forest”) | de completat | de completat | de completat |
+| `backgrounds/winter-evening-original-4k.mp4` (sursa fundalului Winter Evening) | de completat | de completat | de completat |
+| `backgrounds/northern-landscape-original-4k.mp4` (sursa fundalului Northern Landscape) | de completat | de completat | de completat |
 | `brand/*` (logo, iconița de aplicație, imaginea de partajare) | Identitatea Clockus | de completat | de completat |
 | `YouTube banner 2560×1440@1x.png`, `YouTube banner 2560×1440@2x.png` | de completat | de completat | de completat |
 
