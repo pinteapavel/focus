@@ -7,12 +7,6 @@
 // - After every move a toast says where the task went, with Undo, for a few seconds.
 
 // ---------- Moving, and Undo ----------
-const mvToast = $('mv-toast');
-const mvToastText = $('mv-toast-text');
-const mvUndoBtn = $('mv-undo');
-const MV_TOAST_MS = 5000;
-let mvUndo = null;
-let mvToastTimer = null;
 
 function movedText(k) {
     if (!k) return 'Date removed';
@@ -42,28 +36,10 @@ function moveTasks(list, date) {
     });
 }
 
+// "Moved to Wed 18" with Undo: a toast (js/core/toast.js), 6 s; a second move replaces the first
 function showMoveToast(text, undo) {
-    clearTimeout(mvToastTimer);
-    mvToastText.textContent = text;
-    mvUndo = undo;
-    mvToast.hidden = false;
-    mvToast.classList.remove('in');
-    void mvToast.offsetWidth;   // restart the fade-in when a second move replaces the first
-    mvToast.classList.toggle('in', !!ui.animations);
-    mvToastTimer = setTimeout(hideMoveToast, MV_TOAST_MS);
+    showToast({ type: 'info', id: 'move', title: text, action: { label: 'Undo', run: undo } });
 }
-
-function hideMoveToast() {
-    clearTimeout(mvToastTimer);
-    mvToast.hidden = true;
-    mvUndo = null;
-}
-
-mvUndoBtn.addEventListener('click', () => {
-    const undo = mvUndo;
-    hideMoveToast();
-    if (undo) undo();
-});
 
 // ---------- Drag ----------
 const mvBadge = makeEl('div', 'mv-badge');

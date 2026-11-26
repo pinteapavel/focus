@@ -8,7 +8,7 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@1000&display=swap" rel="stylesheet">
     <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');var r=document.documentElement;var t=u.theme||'dark';if(t==='wine')t='blush';if(t==='electric-blue')t='deep-sea';if(t==='system')t='dark';r.dataset.theme=t;r.dataset.bg='solid';var f=['sora','mono','inter','dmsans'].indexOf(u.font)>-1?u.font:'sora';if(u.v!==2&&u.font==='mono')f='sora';r.dataset.font=f;var w=u.weights&&u.weights[f];if(w)r.style.setProperty('--clock-weight',w);if(u.textWeight)r.style.setProperty('--w',u.textWeight);}catch(e){}</script>
     <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' ('+String(e.filename||'').split('/').pop().split('?')[0]+' line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
-    <link rel="stylesheet" href="css/app.css?v=55">
+    <link rel="stylesheet" href="css/app.css?v=58">
     <link rel="stylesheet" href="css/feedback.css?v=1">
 </head>
 <body data-mode="focus" data-tab="clock">
@@ -60,7 +60,11 @@
                     <span class="am-when" id="am-when"></span>
                 </div>
                 <button class="btn primary am-action" id="am-signin" type="button">Continue with Google</button>
+                <p class="am-legal">By continuing you agree to the <a href="terms.html" target="_blank" rel="noopener">Terms</a> and the <a href="privacy.html" target="_blank" rel="noopener">Privacy policy</a>.</p>
                 <button class="btn am-action" id="am-signout" type="button">Sign out</button>
+                <!-- Install as an app (js/pwa.js): only when the browser offers it; on iPhone a hint -->
+                <button class="am-install" id="am-install" type="button" hidden>Install app</button>
+                <p class="am-install-hint" id="am-install-hint" hidden>Install: tap Share, then Add to Home Screen.</p>
             </div>
         </div>
     </header>
@@ -654,6 +658,11 @@
                     <section class="set-card" id="set-help" data-sec="help" aria-labelledby="set-h-help">
                         <button class="set-back" type="button">&lsaquo; Settings</button>
                         <div class="set-card-head"><h3 id="set-h-help">Help</h3><span>bugs and ideas</span></div>
+                        <!-- Install as an app (js/pwa.js): only when the browser offers it; on iPhone a hint -->
+                        <div class="set-row" id="install-row" hidden>
+                            <div class="set-row-text"><div>Install Clockus</div><p id="install-note">Opens in its own window and works offline.</p></div>
+                            <button class="btn" id="install-btn" type="button" hidden>Install</button>
+                        </div>
                         <div class="set-row">
                             <div class="set-row-text"><div>Feedback</div><p>Found a bug or have an idea? Tell me. It goes straight to the person who builds Clockus.</p></div>
                             <button class="btn" type="button" data-feedback aria-haspopup="dialog">Send feedback</button>
@@ -737,30 +746,6 @@
         <div class="tn-panel-foot"><span id="tn-panel-state">Saved</span><span id="tn-panel-count">0 / 2000</span></div>
     </aside>
 
-    <!-- Top priority reminder (top left) -->
-    <div class="prio-toast" id="prio-toast" role="status" hidden>
-        <button class="prio-toast-btn" id="prio-toast-btn" type="button">
-            <svg class="prio-ring" aria-hidden="true"><path class="prio-ring-base"/><path class="prio-ring-fill"/></svg>
-            <span class="prio-toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4M6 4h11l-2.5 4.5L17 13H6"/></svg></span>
-            <span class="prio-toast-text"><span class="prio-toast-label">Top priority</span><span class="prio-toast-task" id="prio-toast-task"></span></span>
-        </button>
-    </div>
-
-    <!-- Coming up: same spot, same ring as the top priority reminder; never both at once -->
-    <div class="prio-toast cu-toast" id="cu-toast" role="status" hidden>
-        <button class="prio-toast-btn" id="cu-toast-btn" type="button">
-            <svg class="prio-ring" aria-hidden="true"><path class="prio-ring-base"/><path class="prio-ring-fill"/></svg>
-            <span class="prio-toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
-            <span class="prio-toast-text"><span class="prio-toast-label" id="cu-toast-label"></span><span class="prio-toast-task" id="cu-toast-title"></span><span class="cu-toast-sub" id="cu-toast-sub"></span></span>
-        </button>
-    </div>
-
-    <!-- After a task is moved to another day: "Moved to Wed 18" with Undo -->
-    <div class="mv-toast" id="mv-toast" role="status" hidden>
-        <span id="mv-toast-text"></span>
-        <button class="mv-undo" id="mv-undo" type="button">Undo</button>
-    </div>
-
     <!-- Clean mode -->
     <button class="icon-btn clean-btn" id="clean-btn" aria-label="Clean mode (F)" title="Clean mode (F)" aria-pressed="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
@@ -834,6 +819,7 @@
     <script src="js/core/dom.js?v=33"></script>
     <script src="js/features/navigation.js?v=38"></script>
     <script src="js/features/appearance.js?v=45"></script>
+    <script src="js/core/toast.js?v=1"></script>
     <script src="js/features/digit-motion.js?v=1"></script>
     <script src="js/features/clock.js?v=34"></script>
     <script src="js/features/timer.js?v=34"></script>
@@ -844,12 +830,12 @@
     <script src="js/features/calendar.js?v=34"></script>
     <script src="js/features/date-picker.js?v=33"></script>
     <script src="js/features/calendar-list.js?v=34"></script>
-    <script src="js/features/calendar-move.js?v=34"></script>
+    <script src="js/features/calendar-move.js?v=35"></script>
     <script src="js/features/goals.js?v=35"></script>
     <script src="js/features/settings.js?v=34"></script>
-    <script src="js/features/reminders.js?v=34"></script>
-    <script src="js/features/coming-up.js?v=34"></script>
-    <script src="js/features/timer-alerts.js?v=46"></script>
+    <script src="js/features/reminders.js?v=35"></script>
+    <script src="js/features/coming-up.js?v=35"></script>
+    <script src="js/features/timer-alerts.js?v=47"></script>
     <script src="js/features/clean-mode.js?v=37"></script>
     <script src="js/features/aesthetic-mode.js?v=54"></script>
     <script src="js/features/ambient-sound.js?v=2"></script>
@@ -862,6 +848,7 @@
     <script src="js/services/auth.js?v=34"></script>
     <script src="js/services/delete-account.js?v=1"></script>
     <script src="js/feedback.js?v=1"></script>
+    <script src="js/pwa.js?v=2"></script>
     <script src="js/main.js?v=37"></script>
 </body>
 </html>

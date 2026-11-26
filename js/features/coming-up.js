@@ -43,65 +43,29 @@ cuMorningBtns.forEach((b) => b.addEventListener('click', () => changeComingUp('m
 cuEveningBtns.forEach((b) => b.addEventListener('click', () => changeComingUp('evening', b.dataset.cuEvening)));
 cuOverdue.addEventListener('change', () => changeComingUp('overdue', cuOverdue.checked));
 
-// ---------- The card ----------
-const cuToast = $('cu-toast');
-const cuToastBtn = $('cu-toast-btn');
-const cuRingBase = cuToast.querySelector('.prio-ring-base');
-const cuRingFill = cuToast.querySelector('.prio-ring-fill');
-let cuTimer = null;
-let cuDay = null;   // the day the card is about (a click opens it in the Calendar)
+// ---------- The toast (js/core/toast.js) ----------
+let cuToast = null;   // the toast on screen, if any
 
-// Read by reminders.js: the top priority reminder waits while this card is on screen
-const comingUpVisible = () => !cuToast.hidden;
+// Read by reminders.js: the top priority reminder waits while this one is on screen
+const comingUpVisible = () => !!(cuToast && cuToast.isOpen());
 
+// "Coming up · Today · 3 tasks today", then the task names. Shown as long as the reminder (Settings: 5, 8 or 12 s).
+// A click opens that day in the Calendar.
 function showComingUp(c) {
-    clearTimeout(cuTimer);
-    cuDay = c.day;
-    $('cu-toast-label').textContent = c.label;
-    $('cu-toast-title').textContent = c.title;
-    $('cu-toast-sub').textContent = c.sub;
-    cuToastBtn.setAttribute('aria-label', `${c.label}: ${c.title}. ${c.sub}. Open Calendar`);
-    cuToast.getAnimations({ subtree: true }).forEach((a) => a.cancel());
-    cuToast.hidden = false;
-
-    // Same ring as the top priority reminder: fills clockwise from the top left while the card is shown
-    const w = cuToastBtn.offsetWidth;
-    const h = cuToastBtn.offsetHeight;
-    const d = ringPath(w, h, 14);
-    cuToast.querySelector('.prio-ring').setAttribute('viewBox', `0 0 ${w} ${h}`);
-    cuRingBase.setAttribute('d', d);
-    cuRingFill.setAttribute('d', d);
-    const len = cuRingFill.getTotalLength();
-    cuRingFill.style.strokeDasharray = `${len} ${len}`;
-    cuRingFill.style.strokeDashoffset = '0';
-    const ms = reminders.show * 1000;
-    cuRingFill.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: ms, easing: 'linear', fill: 'forwards' });
-    if (ui.animations) {
-        cuToast.animate([
-            { opacity: 0, transform: 'translateY(-6px)' },
-            { opacity: 1, transform: 'none', offset: Math.min(0.4, 400 / ms) },
-            { opacity: 1, transform: 'none' }
-        ], { duration: ms, easing: 'ease-out' });
-    }
+    if (cuToast) cuToast.close();
+    const open = () => { showTab('calendar'); if (c.day) selectDay(c.day); };
+    cuToast = showToast({
+        type: 'info',
+        id: 'coming-up',
+        title: `${c.label} · ${c.title}`,
+        text: c.sub,
+        duration: reminders.show * 1000,
+        label: `${c.label}: ${c.title}. ${c.sub}. Open Calendar`,
+        onClick: open,
+        action: { label: 'Open', run: open }
+    });
     chime();
-    cuTimer = setTimeout(() => hideComingUp(false), ms);
 }
-
-function hideComingUp(now) {
-    clearTimeout(cuTimer);
-    if (cuToast.hidden) return;
-    const close = () => { cuToast.getAnimations({ subtree: true }).forEach((a) => a.cancel()); cuToast.hidden = true; };
-    if (now || !ui.animations) { close(); return; }
-    cuToast.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, easing: 'ease-in', fill: 'forwards' });
-    cuTimer = setTimeout(close, 400);
-}
-
-cuToastBtn.addEventListener('click', () => {
-    const k = cuDay;
-    hideComingUp(true);
-    showTab('calendar');
-    if (k) selectDay(k);
-});
 
 // ---------- What each kind says (null: nothing to say, so it stays quiet) ----------
 function comingUpContent(kind) {
@@ -137,7 +101,7 @@ const CU_SETTLE_MS = 6000;
 
 setInterval(() => {
     if (Date.now() - cuStartedAt < CU_SETTLE_MS) return;
-    if (!cuToast.hidden || !prioToast.hidden) return;              // one at a time, never stacked
+    if (comingUpVisible() || reminderVisible()) return;           // one at a time, never stacked
     if (document.visibilityState !== 'visible') return;
     if (running && mode === 'focus') return;                       // waits while a focus session is running
     // When each kind was last shown (shared by the tabs of this browser, so only one of them shows it)

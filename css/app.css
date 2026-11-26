@@ -186,6 +186,144 @@ button, input, select { font-weight: inherit; }
 .am-when { font-size: 0.7rem; color: var(--muted); }
 .am-action { width: 100%; padding: 9px 16px; font-size: 0.85rem; }
 
+/* Under "Continue with Google": the Terms and Privacy line, gone with the button once signed in */
+.am-legal { margin: -4px 0 0; font-size: 0.7rem; line-height: 1.5; color: var(--muted); text-align: center; }
+#am-signin[hidden] + .am-legal { display: none; }
+.am-legal a { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: 2px; }
+.am-legal a:hover { color: var(--text); }
+
+/* Install as an app (js/pwa.js): a quiet text button at the bottom of the account menu */
+.am-install {
+    align-self: center;
+    padding: 2px 4px;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.75rem;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+.am-install:hover { color: var(--text); }
+.am-install[hidden], .am-install-hint[hidden] { display: none; }
+.am-install-hint { margin: 0; font-size: 0.7rem; line-height: 1.5; color: var(--muted); text-align: center; }
+
+/* ---------- Toasts (js/core/toast.js): every notification of the app ----------
+   Centred 14 px under the tab bar (the script sets `top`), over the page; at most 3, newest on top.
+   Phone: at the top, full width with a 10 px margin. Aesthetic mode: top centre, timer events only. */
+.toasts {
+    --t-success: #3fb27f;
+    --t-info: var(--cal-acc);
+    --t-warning: #e0a33a;
+    --t-error: #e5484d;
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    z-index: 50;
+    width: min(380px, calc(100vw - 32px));
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.toast {
+    --tc: var(--t-info);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+    padding: 11px 8px 11px 12px;
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    text-align: left;
+    /* older ones: dimmer but still solid, so the page never shows through */
+    filter: brightness(var(--o, 1));
+    transform: translateY(var(--y, 0)) scale(var(--s, 1));
+    transform-origin: top center;
+    transition: transform 0.25s ease-out, opacity 0.25s ease-out, filter 0.25s ease-out;
+    pointer-events: auto;
+}
+
+.toast-success { --tc: var(--t-success); }
+.toast-warning { --tc: var(--t-warning); }
+.toast-error { --tc: var(--t-error); }
+/* Slides down 12 px while fading in, and the same way out */
+.toast.in,
+.toast.out { opacity: 0; transform: translateY(calc(var(--y, 0px) - 12px)) scale(var(--s, 1)); }
+.toast.out { pointer-events: none; }
+.toast-link { cursor: pointer; }
+.toast-link:hover { border-color: var(--text); }
+
+.toast-icon {
+    flex: none;
+    display: grid;
+    place-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--tc) 18%, transparent);
+    color: var(--tc);
+}
+
+.toast-icon svg { width: 14px; height: 14px; }
+.toast-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.toast-title { overflow: hidden; font-size: 0.85rem; text-overflow: ellipsis; white-space: nowrap; }
+.toast-sub { overflow: hidden; font-size: 0.72rem; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+
+.toast-action {
+    flex: none;
+    padding: 6px 8px;
+    background: none;
+    color: var(--cal-acc);
+    border: 0;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.toast-action:hover { background: var(--hover); }
+
+.toast-close {
+    flex: none;
+    display: grid;
+    place-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: none;
+    color: var(--muted);
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.toast-close:hover { background: var(--hover); color: var(--text); }
+.toast-close svg { width: 14px; height: 14px; }
+/* The time left: a thin line at the bottom (pauses while the mouse is over the toast) */
+.toast-bar { position: absolute; left: 14px; right: 14px; bottom: 0; height: 2px; }
+.toast-bar i { display: block; height: 100%; border-radius: 2px; background: var(--tc); transform-origin: left; }
+
+/* Aesthetic mode: only timer events; the rest wait hidden */
+body.aesthetic .toast:not(.toast-timer) { display: none; }
+/* Animations off: they just appear and disappear */
+.toasts.still .toast { transition: none; }
+
+/* Read aloud by screen readers, not shown */
+.toast-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 600px) {
+    .toasts { top: calc(10px + env(safe-area-inset-top)); width: calc(100vw - 20px); }
+}
+
 /* Phone: only the logo and the two round buttons on top, the four tabs in a bar at the bottom */
 @media (max-width: 600px) {
     body { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
@@ -2646,63 +2784,7 @@ body.modal-open { overflow: hidden; }
     .prio-btn:not(.on) .prio-text { display: none; }
 }
 
-/* ---------- Top priority reminder (top left) ---------- */
-.prio-toast {
-    position: fixed;
-    top: 84px;
-    left: calc(max(0px, (100vw - 1280px) / 2) + 12px);
-    z-index: 40;
-    width: min(300px, calc(100vw - 32px));
-}
-
-.prio-toast-btn {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 14px 16px;
-    background: var(--panel);
-    color: var(--text);
-    border: 0;
-    border-radius: 14px;
-    font: inherit;
-    text-align: left;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-    cursor: pointer;
-}
-
-.prio-ring {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    pointer-events: none;
-}
-
-.prio-ring path { fill: none; stroke-width: 1.5; }
-.prio-ring-base { stroke: var(--line-strong); }
-.prio-ring-fill { stroke: var(--cal-acc); }
-
-.prio-toast-icon {
-    flex: none;
-    display: grid;
-    place-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--cal-acc) 18%, transparent);
-    color: var(--cal-acc);
-}
-
-.prio-toast-icon svg { width: 16px; height: 16px; }
-.prio-toast-text { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.prio-toast-label { font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
-.prio-toast-task { overflow: hidden; font-size: 0.9rem; text-overflow: ellipsis; white-space: nowrap; }
-
 @media (max-width: 700px) {
-    .prio-toast { top: 16px; left: 16px; right: 16px; width: auto; }
     .todo-item.top { margin: 4px 0; }
     .prio-btn .prio-text { display: none; }   /* the box and the flag say it; the task keeps the room */
 }
@@ -3092,46 +3174,6 @@ body.mv-dragging * { cursor: grabbing !important; }
     pointer-events: none;
 }
 
-/* "Moved to Wed 18" with Undo, for a few seconds */
-.mv-toast {
-    position: fixed;
-    left: 50%;
-    bottom: 28px;
-    z-index: 45;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    max-width: calc(100vw - 32px);
-    padding: 7px 7px 7px 18px;
-    background: var(--panel);
-    color: var(--text);
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-    font-size: 0.82rem;
-    transform: translateX(-50%);
-}
-
-.mv-toast[hidden] { display: none; }
-.mv-toast.in { animation: mv-toast-in 0.25s ease-out; }
-
-@keyframes mv-toast-in {
-    from { opacity: 0; transform: translate(-50%, 8px); }
-}
-
-.mv-undo {
-    flex: none;
-    padding: 6px 16px;
-    background: var(--text);
-    color: var(--on-text);
-    border: 0;
-    border-radius: 999px;
-    font: inherit;
-    font-size: 0.78rem;
-}
-
-.mv-undo:hover { opacity: 0.85; }
-
 /* Move to…: a small window next to the grip; on a phone, a sheet from the bottom */
 .mv-backdrop { position: fixed; inset: 0; z-index: 60; }
 .mv-backdrop.dim { background: rgba(0, 0, 0, 0.5); }
@@ -3240,19 +3282,15 @@ body.mv-dragging * { cursor: grabbing !important; }
 .up-all { margin-left: auto; }
 .up-empty { margin: 0; font-size: 0.8rem; color: var(--muted); }
 
-/* ---------- "Coming up": the third line of the card ---------- */
-.cu-toast-sub { overflow: hidden; font-size: 0.72rem; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
-
 /* Settings › Notifications: "Stay quiet when nothing is planned" is always on */
 .set-toggle:disabled { opacity: 0.55; cursor: default; }
 
-/* Phone: the list keeps only the switch; the toast sits above the tab bar */
+/* Phone: the list keeps only the switch */
 @media (max-width: 600px) {
     .up-card { padding: 16px 12px; border-radius: 20px; }
     .up-done-btn,
     .up-hint { display: none; }
     .cal-views button { padding: 4px 10px; font-size: 0.72rem; }
-    .mv-toast { bottom: calc(88px + env(safe-area-inset-bottom)); }
 }
 
 /* ---------- Goal reached: a quiet animation (goal-reached.js) ---------- */
@@ -3973,7 +4011,7 @@ body.home-aes .nav { background: rgba(255, 255, 255, 0.06); }
 
 /* Cards and panels */
 :where(:root[data-theme="animated"]) :is(.set-card, .cal-card, .up-card, .stat-card, .stat-panel, .goal-card,
-    .cal-overdue, .day-pick, .account-menu, .ge-card, .pk, .mv-sheet, .mv-toast, .tn-panel, .prio-toast-btn, .hc-menu) {
+    .cal-overdue, .day-pick, .account-menu, .ge-card, .pk, .mv-sheet, .toast, .tn-panel, .hc-menu) {
     background: rgba(8, 8, 12, 0.6);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
@@ -3990,7 +4028,7 @@ body.home-aes .nav { background: rgba(255, 255, 255, 0.06); }
 
 /* Thicker borders (on lines drawn on one side, only that side shows) */
 :where(:root[data-theme="animated"]) :is(.set-card, .cal-card, .up-card, .stat-card, .stat-panel, .goal-card, .cal-overdue,
-    .day-pick, .account-menu, .ge-card, .pk, .mv-sheet, .mv-toast, .tn-panel, .hc-menu, .home-cap, .home-chip,
+    .day-pick, .account-menu, .ge-card, .pk, .mv-sheet, .toast, .tn-panel, .hc-menu, .home-cap, .home-chip,
     .nav, .btn, .range-btn, .seg, .mode-pill, .avatar-btn, .icon-btn, .cal-arrow, .due-btn, .prio-btn, .up-done-btn,
     .tn-filters button, .day-chip, .day-item, .day-pick-item, .day-add, .pk-chip, .pk-arrow, .mv-opt, .ge-step button,
     .ge-day, .font-tile, .note-badge, .gw-last, .tn-search, .todo-input input, .hc-ghost, .set-prev,

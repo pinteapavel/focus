@@ -231,7 +231,7 @@ function renderTabTitle() {
         title = tick ? 'Back to Clockus' : flashing === 'focus' ? 'Time is up! · Clockus' : 'Break over · Focus?';
         icon = 'done';
     } else if (timerAlerts.title) {
-        const reminderTask = !prioToast.hidden && topTask();
+        const reminderTask = reminderVisible() && topTask();
         if (reminderTask) {
             title = `Reminder · ${shorten(reminderTask.text, 18)}`;
             icon = 'flag';

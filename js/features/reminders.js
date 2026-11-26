@@ -54,7 +54,7 @@ function changeReminders(key, value) {
 remSwitch.addEventListener('change', () => {
     if (remSwitch.checked) { remLast = Date.now(); store.set('reminderLast', remLast); }   // next one after a full interval
     changeReminders('on', remSwitch.checked);
-    if (!reminders.on) hideReminder(true);
+    if (!reminders.on) hideReminder();
 });
 remWait.addEventListener('change', () => changeReminders('wait', remWait.checked));
 remSound.addEventListener('change', () => {
@@ -113,15 +113,12 @@ function playChime(volume) {
     } catch {}
 }
 
-// ---------- The card at the top left ----------
-const prioToast = $('prio-toast');
-const prioToastBtn = $('prio-toast-btn');
-const prioToastTask = $('prio-toast-task');
-const ringBase = prioToast.querySelector('.prio-ring-base');
-const ringFill = prioToast.querySelector('.prio-ring-fill');
-let toastTimer = null;
+// ---------- The reminder: a toast (js/core/toast.js) ----------
+let prioToast = null;   // the toast on screen, if any
 
 const topTask = () => tasks.find((t) => t.id === topPriorityId && !t.done);
+// Read by coming-up.js and timer-alerts.js: never two reminders at once, and the tab title says so
+const reminderVisible = () => !!(prioToast && prioToast.isOpen());
 
 // A rounded rectangle that starts at the top left corner and runs clockwise
 function ringPath(w, h, r) {
@@ -131,63 +128,40 @@ function ringPath(w, h, r) {
         + ` V ${h - r - i} A ${r} ${r} 0 0 1 ${w - r - i} ${h - i} H ${r + i} A ${r} ${r} 0 0 1 ${i} ${h - r - i} Z`;
 }
 
+// "Top priority" and the task; shown for the time chosen in Settings (5, 8 or 12 s). A click opens To do.
 function showReminder() {
     const t = topTask();
     if (!t) return;
-    clearTimeout(toastTimer);
-    prioToastTask.textContent = t.text;
-    prioToastBtn.setAttribute('aria-label', `Top priority: ${t.text}. Open To do`);
-    prioToast.getAnimations({ subtree: true }).forEach((a) => a.cancel());
-    prioToast.hidden = false;
-
-    const w = prioToastBtn.offsetWidth;
-    const h = prioToastBtn.offsetHeight;
-    const d = ringPath(w, h, 14);
-    prioToast.querySelector('.prio-ring').setAttribute('viewBox', `0 0 ${w} ${h}`);
-    ringBase.setAttribute('d', d);
-    ringFill.setAttribute('d', d);
-    const len = ringFill.getTotalLength();
-    ringFill.style.strokeDasharray = `${len} ${len}`;
-    ringFill.style.strokeDashoffset = '0';   // full, if animations are not available
-    const ms = reminders.show * 1000;
-    // The ring fills clockwise from the top left while the card is shown; fades in and out at the ends
-    ringFill.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: ms, easing: 'linear', fill: 'forwards' });
-    if (ui.animations) {
-        prioToast.animate([
-            { opacity: 0, transform: 'translateY(-6px)' },
-            { opacity: 1, transform: 'none', offset: Math.min(0.4, 400 / ms) },
-            { opacity: 1, transform: 'none' }
-        ], { duration: ms, easing: 'ease-out' });
-    }
+    hideReminder();
+    prioToast = showToast({
+        type: 'info',
+        id: 'reminder',
+        title: 'Top priority',
+        text: t.text,
+        duration: reminders.show * 1000,
+        label: `Top priority: ${t.text}. Open To do`,
+        onClick: () => showTab('todo'),
+        action: { label: 'Open', run: () => showTab('todo') }
+    });
     chime();
-    toastTimer = setTimeout(() => hideReminder(false), ms);
 }
 
-function hideReminder(now) {
-    clearTimeout(toastTimer);
-    if (prioToast.hidden) return;
-    const close = () => { prioToast.getAnimations({ subtree: true }).forEach((a) => a.cancel()); prioToast.hidden = true; };
-    if (now || !ui.animations) { close(); return; }
-    prioToast.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, easing: 'ease-in', fill: 'forwards' });
-    toastTimer = setTimeout(close, 400);
+function hideReminder() {
+    if (prioToast) prioToast.close();
+    prioToast = null;
 }
-
-prioToastBtn.addEventListener('click', () => {
-    hideReminder(true);
-    showTab('todo');
-});
 
 // Called by tasks.js when the flag moves: the next reminder comes after a full interval
 function onTopPriorityChange() {
     remLast = Date.now();
     store.set('reminderLast', remLast);
-    hideReminder(true);   // a card on screen would show the old task
+    hideReminder();   // a card on screen would show the old task
 }
 
 // Due? Only in a visible tab, and (if chosen) not while a focus session is running
 setInterval(() => {
     remLast = Number(store.get('reminderLast', remLast)) || remLast;   // another tab may have shown it
-    if (!reminders.on || !topTask() || !prioToast.hidden) return;
+    if (!reminders.on || !topTask() || reminderVisible()) return;
     if (typeof comingUpVisible === 'function' && comingUpVisible()) return;   // never stacked: waits for "Coming up" to fade
     if (document.visibilityState !== 'visible') return;
     if (reminders.wait && running && mode === 'focus') return;
@@ -203,7 +177,7 @@ window.addEventListener('storage', (e) => {
     if (e.key === 'topPriority') {
         topPriorityId = store.get('topPriority', null);
         renderTasks();
-        if (!topTask()) hideReminder(true);
+        if (!topTask()) hideReminder();
     } else if (e.key === 'reminders') {
         reminders = cleanReminders(store.get('reminders', null));
         renderReminderSettings();

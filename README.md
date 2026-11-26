@@ -19,7 +19,8 @@ Site: https://clockus.live
 site/
 ├── index.html              pagina de prezentare (clockus.live)
 ├── app.html                aplicația (clockus.live/app)
-├── manifest.webmanifest    numele și iconițele pentru „Adaugă pe ecran”
+├── manifest.json           numele și iconițele aplicației instalabile (PWA)
+├── sw.js                   service worker: aplicația merge și fără net
 ├── favicon.svg, favicon.ico, apple-touch-icon.png, icon-192.png, icon-512.png
 ├── og-image.png            imaginea afișată când trimiți linkul
 ├── backgrounds/            fundalurile animate (.mp4) și imaginile lor de pornire (.jpg), comprimate
