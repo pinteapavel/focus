@@ -74,6 +74,13 @@ function migrateTheme(u) {
     return changed;
 }
 if (migrateTheme(ui)) store.set('ui', ui);
+// First visit (nothing of Clockus saved yet, decided in app.html's head): the Animated theme is the default.
+// Saved so it stays on the next visit; without a time (ui.at), so the settings of an account signed in later win.
+// Glass is not saved: each device keeps its own default until the person picks a level.
+if (window.clockusFirstVisit && !store.get('ui', null)) {
+    ui.theme = 'animated';
+    store.set('ui', ui);
+}
 
 function luminance(hex) {
     return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
@@ -177,7 +184,14 @@ function applyUi() {
     // How many digits the clock shows decides how large it can be on a narrow screen
     realtimeEl.style.setProperty('--fit', String((ui.seconds ? 5.4 : 3.4) + (ui.format === '12' ? 0.45 : 0)));
     motionNote.hidden = !systemReducesMotion;
-    paletteFor(ui.accent).forEach((c, i) => root.style.setProperty(`--p${i}`, c));
+    const pal = paletteFor(ui.accent);
+    pal.forEach((c, i) => root.style.setProperty(`--p${i}`, c));
+    // Text and icons drawn on the accent (today in the calendar, the avatar, chosen days): white, near black or the
+    // theme's background, whichever reads best on the shade the theme uses (--cal-acc). The accent itself is unchanged.
+    const accShade = ['dark', 'graphite', 'animated'].includes(resolved) ? pal[3] : pal[4];
+    const onAcc = ['#ffffff', '#111111'].concat(THEME_COLORS[ui.theme] ? [THEME_COLORS[ui.theme][0]] : [])
+        .reduce((best, c) => (contrast(c, accShade) > contrast(best, accShade) ? c : best));
+    root.style.setProperty('--on-acc', onAcc);
     let isPreset = false;
     swatchBtns.forEach((b) => {
         b.style.setProperty('--c', paletteFor(b.dataset.color)[3]);   // shown in the tone used on screen

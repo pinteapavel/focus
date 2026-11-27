@@ -1,7 +1,7 @@
 :root {
     --bg: #000;
     --text: #f2f2f2;
-    --muted: #7d7d7d;
+    --muted: #8f8f8f;   /* secondary text: never darker than this on black */
     --line: #2b2b2b;
     --line-strong: #5a5a5a;
     --on-text: #000;
@@ -23,7 +23,7 @@
 :root:is([data-theme="light"], [data-theme="paper"], [data-theme="vanilla"], [data-theme="olive"]) {
     --bg: #fff;
     --text: #111;
-    --muted: #767676;   /* 4.5:1 on white (#777 was 4.48) */
+    --muted: #6b6b6b;   /* 5.3:1 on white, 4.9:1 on the slightly darker panels and fields */
     --line: #e4e4e4;
     --line-strong: #bdbdbd;
     --on-text: #fff;
@@ -158,7 +158,7 @@ button, input, select { font-weight: inherit; }
 
 .avatar-btn:hover { color: var(--text); border-color: var(--line-strong); }
 .avatar-person { width: 18px; height: 18px; }
-.avatar-btn.signed { background: var(--cal-acc); color: #fff; border-color: var(--cal-acc); }
+.avatar-btn.signed { background: var(--cal-acc); color: var(--on-acc, #fff); border-color: var(--cal-acc); }
 .avatar-btn.signed .avatar-person { display: none; }
 
 .account-menu {
@@ -936,6 +936,11 @@ kbd {
 
 .stat-card { flex: 1 1 150px; min-width: 0; }
 .stat-panel { margin-bottom: 20px; }
+/* No focus session yet (stats.js): one quiet line and a button, above the zero figures */
+.stats-first { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; padding: 14px 16px 14px 20px; }
+.stats-first[hidden] { display: none; }
+.stats-first p { margin: 0; font-size: 0.85rem; color: var(--muted); text-align: left; }
+.stats-first .btn { flex: none; padding: 8px 18px; font-size: 0.8rem; }
 
 .stat-label,
 .stat-sub,
@@ -1495,7 +1500,7 @@ body.clean.show-exit .clean-btn { opacity: 0.85; pointer-events: auto; }
 }
 
 .cal-cell:hover { background: color-mix(in srgb, var(--text) 11%, transparent); }
-.cal-cell.out { background: transparent; color: var(--muted); opacity: 0.55; }
+.cal-cell.out { background: transparent; color: var(--muted); }   /* other months: the grey alone sets them apart (no opacity, still 4.5:1) */
 .cal-cell.sel { border-color: color-mix(in srgb, var(--text) 75%, transparent); }
 
 .cal-num {
@@ -1507,7 +1512,7 @@ body.clean.show-exit .clean-btn { opacity: 0.85; pointer-events: auto; }
     font-variant-numeric: tabular-nums;
 }
 
-.cal-cell.today .cal-num { background: var(--cal-acc); color: #fff; font-weight: var(--w-hi); }
+.cal-cell.today .cal-num { background: var(--cal-acc); color: var(--on-acc, #fff); font-weight: var(--w-hi); }
 
 /* One dot per task: open ones in the accent color, done ones grey */
 .cal-dots { display: flex; justify-content: center; gap: 3px; height: 5px; }
@@ -1593,6 +1598,10 @@ body.clean.show-exit .clean-btn { opacity: 0.85; pointer-events: auto; }
 }
 
 .day-empty { margin: 0 0 12px; font-size: 0.85rem; color: var(--muted); }
+/* An empty day from today on: the add field stands out a little more (calendar.js) */
+.day-add.prominent { border-style: solid; border-color: color-mix(in srgb, var(--text) 45%, transparent); }
+.day-add.prominent .day-add-plus,
+.day-add.prominent input::placeholder { color: var(--text); }
 
 /* Overdue: one quiet line, one button. No red. */
 .cal-overdue {
@@ -1831,6 +1840,15 @@ body.clean.show-exit .clean-btn { opacity: 0.85; pointer-events: auto; }
 }
 
 /* Narrow screens: the day goes under the month */
+/* Wide screens: the card fills the page height below the tab bar (--cal-fill, set by calendar.js), and the weeks
+   grow to fill it; the day panel on the right stretches with it. A busy day can still make the card taller. */
+@media (min-width: 901px) {
+    .cal-card { min-height: var(--cal-fill, auto); }
+    .cal-month { display: flex; flex-direction: column; }
+    .cal-grid { flex: 1; grid-auto-rows: minmax(54px, 1fr); }
+    .cal-cell { height: auto; }
+}
+
 @media (max-width: 900px) {
     .cal-card { grid-template-columns: minmax(0, 1fr); }
     .cal-month { padding-right: 0; }
@@ -2045,7 +2063,7 @@ body.clean.show-exit .clean-btn { opacity: 0.85; pointer-events: auto; }
     border-radius: 50%;
 }
 
-.gs-dot svg { width: 14px; height: 14px; color: #fff; }
+.gs-dot svg { width: 14px; height: 14px; color: var(--on-acc, #fff); }
 .gs-dot.hit { background: var(--cal-acc); border-color: var(--cal-acc); }
 .gs-dot.today { border-color: var(--text); }
 .gs-dot.future { border-style: dashed; }
@@ -2182,7 +2200,7 @@ body.modal-open { overflow: hidden; }
     transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.ge-day.on { background: var(--cal-acc); color: #fff; border-color: var(--cal-acc); }
+.ge-day.on { background: var(--cal-acc); color: var(--on-acc, #fff); border-color: var(--cal-acc); }
 .ge-note { margin: 10px 0 0; font-size: 0.72rem; color: var(--muted); }
 
 .ge-week {
@@ -2245,7 +2263,7 @@ body.modal-open { overflow: hidden; }
 :root[data-theme="graphite"] {
     --bg: #1c1c1e;
     --text: #f2f2f2;
-    --muted: #8e8e93;
+    --muted: #a0a0a5;
     --line: #333336;
     --line-strong: #5c5c60;
     --on-text: #1c1c1e;
@@ -2299,10 +2317,10 @@ body.modal-open { overflow: hidden; }
     --cal-acc: var(--p4);            /* the accent itself (by default the text colour) */
 }
 /* Grey text at least 4.5:1 on each theme (on its background and on its glass): more of the text colour where needed */
-:root[data-theme="blush"][data-bg] { --muted: color-mix(in srgb, var(--text) 90%, var(--bg)); }
-:root[data-theme="vanilla"][data-bg] { --muted: color-mix(in srgb, var(--text) 70%, var(--bg)); }
-:root[data-theme="olive"][data-bg] { --muted: color-mix(in srgb, var(--text) 78%, var(--bg)); }
-:root[data-theme="deep-sea"][data-bg] { --muted: color-mix(in srgb, var(--text) 95%, var(--bg)); }
+:root[data-theme="blush"][data-bg] { --muted: var(--text); }   /* the text itself is only ~5:1 here */
+:root[data-theme="vanilla"][data-bg] { --muted: color-mix(in srgb, var(--text) 80%, var(--bg)); }
+:root[data-theme="olive"][data-bg] { --muted: color-mix(in srgb, var(--text) 88%, var(--bg)); }
+:root[data-theme="deep-sea"][data-bg] { --muted: var(--text); }   /* the text itself is only ~5:1 here */
 
 :root:is([data-theme="blush"], [data-theme="vanilla"], [data-theme="olive"], [data-theme="forest"], [data-theme="deep-sea"])[data-bg] body {
     background: var(--bg);
@@ -2310,7 +2328,7 @@ body.modal-open { overflow: hidden; }
 
 /* Text and icons drawn on the accent take the background colour, so they stay readable on a text-coloured accent */
 :root:is([data-theme="blush"], [data-theme="vanilla"], [data-theme="olive"], [data-theme="forest"], [data-theme="deep-sea"]) :is(.cal-cell.today .cal-num, .avatar-btn.signed, .ge-day.on, .set-avatar, .gs-dot svg) {
-    color: var(--bg);
+    color: var(--on-acc, var(--bg));
 }
 :root:is([data-theme="blush"], [data-theme="vanilla"], [data-theme="olive"], [data-theme="forest"], [data-theme="deep-sea"]) .set-toggle:checked::after { background: var(--bg); }
 
@@ -2414,7 +2432,7 @@ body.modal-open { overflow: hidden; }
     margin-left: 6px;
     padding: 2px 7px;
     border-color: var(--cal-acc);
-    color: var(--cal-acc);
+    color: var(--text);   /* the accent stays on the outline; the word is the text colour so it reads on every theme */
     font-size: 0.56rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -2628,7 +2646,7 @@ body.modal-open { overflow: hidden; }
     height: 34px;
     border-radius: 50%;
     background: var(--cal-acc);
-    color: #fff;
+    color: var(--on-acc, #fff);
     font-size: 0.9rem;
 }
 
@@ -2645,9 +2663,14 @@ body.modal-open { overflow: hidden; }
     background: color-mix(in srgb, var(--danger) 4%, transparent);
 }
 
-.set-danger-title { padding-top: 14px; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--danger); }
+/* Red words: a red that reads at 4.5:1 on each kind of background (the red of borders and fills stays #e5484d) */
+:root { --danger-text: #ff8a8d; }
+:root[data-theme="animated"] { --danger-text: #ffb0b2; }
+:root:is([data-theme="light"], [data-theme="paper"], [data-theme="vanilla"], [data-theme="olive"]) { --danger-text: #951a1f; }
+:root:is([data-theme="blush"], [data-theme="forest"], [data-theme="deep-sea"]) { --danger-text: var(--text); }
+.set-danger-title { padding-top: 14px; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--danger-text); }
 .set-danger .set-row { padding: 14px 0 16px; }
-.set-danger-btn { flex: none; border-color: color-mix(in srgb, var(--danger) 70%, transparent); color: var(--danger); }
+.set-danger-btn { flex: none; border-color: color-mix(in srgb, var(--danger) 70%, transparent); color: var(--danger-text); }
 .set-danger-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 12%, transparent); }
 
 /* The "Delete your account?" dialog (frame: .goals-modal / .ge-card) */
@@ -2671,7 +2694,7 @@ body.modal-open { overflow: hidden; }
 .del-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 .del-confirm { border-color: var(--danger); background: var(--danger); color: #fff; }
 .del-confirm:hover:not(:disabled) { background: var(--danger); opacity: 0.88; }
-.del-error { margin: 12px 0 0; font-size: 0.8rem; color: var(--danger); text-align: right; }
+.del-error { margin: 12px 0 0; font-size: 0.8rem; color: var(--danger-text); text-align: right; }
 
 .sync-pill { flex: none; display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--muted); }
 .sync-pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
@@ -2795,7 +2818,9 @@ body.modal-open { overflow: hidden; }
 }
 
 /* Settings › Notifications: rows that wait for the switch above them */
-.set-row.off { opacity: 0.45; pointer-events: none; }
+/* A row that cannot be used right now: its controls dim, its label and explanation stay readable */
+.set-row.off { pointer-events: none; }
+.set-row.off > :not(.set-row-text) { opacity: 0.45; }
 
 /* ---------- Aesthetic mode (key A) ---------- */
 /* Focus tab: Clean mode and Aesthetic mode, right under the top bar (out of the flow, so the timer stays centred) */
@@ -2885,7 +2910,7 @@ body.clean .mode-pills {
     display: flex;
     gap: 18px;
     font-size: 0.7rem;
-    color: rgba(242, 242, 242, 0.5);
+    color: rgba(242, 242, 242, 0.78);
     pointer-events: none;
 }
 
@@ -3621,7 +3646,7 @@ body:not([data-tab="todo"]) .tn-panel { display: none; }
 
 .aes-note textarea { color: #f2f2f2; border-color: rgba(255, 255, 255, 0.16); }
 .aes-note textarea:focus { outline: none; border-color: rgba(255, 255, 255, 0.4); }
-.aes-note textarea::placeholder { color: rgba(242, 242, 242, 0.5); }
+.aes-note textarea::placeholder { color: rgba(242, 242, 242, 0.78); }
 
 @media (max-width: 600px), (hover: none) {
     .aes-note { left: 16px; bottom: calc(131px + env(safe-area-inset-bottom)); }
@@ -3945,6 +3970,10 @@ body.home-aes .nav { background: rgba(255, 255, 255, 0.06); }
 [data-theme-choice="animated"] { --tb: #05050a; --tt: #f2f2f2; }
 .theme-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: #05050a; }
 .theme-bg-dim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.5); pointer-events: none; }
+/* The background fades in once its picture is ready (animated-theme.js); the page never waits for it */
+#theme-bg-scene { transition: opacity 0.4s ease-out; }
+#theme-bg-scene.loading { opacity: 0; }
+:root[data-animations="off"] #theme-bg-scene { transition: none; }
 
 /* The Animated card: the chosen background (set by the script), "Live" and "your video" */
 .set-themes .prev-animated { background-size: cover; background-position: center; }
@@ -3977,7 +4006,7 @@ body.home-aes .nav { background: rgba(255, 255, 255, 0.06); }
     text-transform: uppercase;
     color: var(--muted);
 }
-.set-anim-label span { margin-left: 8px; font-size: 0.68rem; letter-spacing: 0; text-transform: none; opacity: 0.8; }
+.set-anim-label span { margin-left: 8px; font-size: 0.68rem; letter-spacing: 0; text-transform: none; }
 .set-anim {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -3985,8 +4014,9 @@ body.home-aes .nav { background: rgba(255, 255, 255, 0.06); }
 }
 .set-anim .set-tile { gap: 7px; text-align: left; transition: opacity 0.25s; }
 .set-anim .set-prev { position: relative; height: auto; aspect-ratio: 1.75; border-radius: 12px; }
-.set-anim.off .set-tile { opacity: 0.42; }
-.set-anim.off .set-tile:hover { opacity: 0.7; }
+/* Another theme is on: the pictures dim, the names stay readable (a tap still picks the background) */
+.set-anim.off .set-prev { opacity: 0.42; }
+.set-anim.off .set-tile:hover .set-prev { opacity: 0.7; }
 
 @media (max-width: 700px) {
     .set-anim { grid-template-columns: repeat(2, minmax(0, 1fr)); }

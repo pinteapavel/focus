@@ -30,7 +30,7 @@
 
 .pv-toc a:hover { color: var(--text); }
 .pv-toc a.on { background: #141414; color: var(--text); }
-.pv-toc .pv-n { color: var(--p3); }
+.pv-toc .pv-n { color: var(--p2); }   /* the lighter shade of the same violet: 4.5:1 on black */
 
 .pv-back {
     display: inline-block;
@@ -82,7 +82,7 @@
     letter-spacing: -0.02em;
 }
 
-.pv-num { flex: none; font-size: 0.75rem; letter-spacing: 0; color: var(--p3); }
+.pv-num { flex: none; font-size: 0.75rem; letter-spacing: 0; color: var(--p2); }
 
 .pv-sec p,
 .pv-sec li { max-width: 720px; font-size: 0.875rem; line-height: 1.8; color: var(--muted); }

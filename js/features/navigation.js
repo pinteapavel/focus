@@ -136,6 +136,9 @@ function showTab(tab) {
     focusContainer.style.display = tab === 'focus' ? 'block' : 'none';
     todoContainer.style.display = tab === 'todo' ? 'block' : 'none';
 
+    // An empty To do list: the cursor waits in "Add a task…", ready for the first task
+    if (tab === 'todo' && prev !== 'todo' && !tasks.some(onTodoList)) taskInput.focus({ preventScroll: true });
+
     if (first) floatClock(first, tab);
     if (crossfade) {
         ghosts.forEach(fadeOutAndRemove);

@@ -38,6 +38,11 @@ function cleanAesthetic(a) {
 }
 
 let aesthetic = cleanAesthetic(store.get('aesthetic', null));
+// First visit (see appearance.js): the Animated theme starts with the Samurai background
+if (window.clockusFirstVisit && !store.get('aesthetic', null)) {
+    aesthetic.scene = 'samurai';
+    store.set('aesthetic', aesthetic);
+}
 
 const aesEl = $('aes');
 const aesBg = $('aes-bg');

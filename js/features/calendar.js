@@ -148,10 +148,23 @@ function renderCalendarSoon() {
     }, 1000);
 }
 
+// Wide screens: the month card fills the page height, from where it starts down to the page's bottom margin, so the
+// page does not scroll for nothing. The CSS uses it only above 900px (app.css, --cal-fill).
+const calCard = calContainerEl.querySelector('.cal-card');
+function sizeCalCard() {
+    if (document.body.dataset.tab !== 'calendar' || calView === 'list') return;
+    const top = calCard.getBoundingClientRect().top + window.scrollY;
+    const bottom = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+    const fill = Math.floor(document.documentElement.clientHeight - top - bottom);
+    document.documentElement.style.setProperty('--cal-fill', `${Math.max(0, fill)}px`);
+}
+window.addEventListener('resize', sizeCalCard);
+
 function renderCalendar() {
     calContainerEl.dataset.view = calView;
     press(calViewBtns, (b) => b.dataset.calView === calView);
     if (calView === 'list') { renderList(); return; }   // calendar-list.js
+    sizeCalCard();
     const todayK = dayKey();
     const d = keyToDate(calMonth);
     calTitle.replaceChildren(`${CAL_MONTHS[d.getMonth()]} `, makeEl('span', 'cal-year', String(d.getFullYear())));
@@ -252,7 +265,9 @@ function renderDay(todayK) {
     // Empty day: one line and one action, nothing else
     const empty = !list.length;
     dayEmpty.hidden = !empty;
-    dayEmpty.textContent = calSel < todayK ? 'Nothing was planned.' : 'Nothing planned yet.';
+    dayEmpty.textContent = calSel < todayK ? 'Nothing was planned.' : 'Nothing planned for this day.';
+    // An empty day from today on: "Add a task for this day" stands out a little more (the first step)
+    $('day-add').classList.toggle('prominent', empty && calSel >= todayK);
     dayTasks.replaceChildren(...list.map((t) => dayRow(t, { grip: true })));
 
     // Pick from To do: the open tasks without a day

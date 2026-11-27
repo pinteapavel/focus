@@ -84,7 +84,7 @@ function filterTodo(list) {
 
 function todoEmptyText() {
     if (tnQ) return `No tasks match “${tnQuery.value.trim()}”.`;
-    return { open: 'No open tasks.', done: 'Nothing done today yet.', notes: 'No tasks with notes yet.' }[tnFilter] || 'Nothing to do yet.';
+    return { open: 'No open tasks.', done: 'Nothing done today yet.', notes: 'No tasks with notes yet.' }[tnFilter] || 'Nothing here yet. Add your first task and start a focus session.';
 }
 
 // The text with what matched in <mark> (folding keeps one character per letter, so positions line up)

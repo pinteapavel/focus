@@ -17,7 +17,7 @@ function updateCurrentLine() {
         currentLine.append('Working on: ', makeEl('b', '', t.text));
         currentLine.title = 'Change the task';
     } else {
-        currentLine.textContent = 'Pick a task to work on';
+        currentLine.textContent = 'Pick a task, or just press Start.';
         currentLine.title = 'Open your to-do list';
     }
 }
@@ -108,7 +108,7 @@ function renderTasks() {
     if (!visible.length) {
         const li = document.createElement('li');
         li.className = 'todo-empty';
-        li.textContent = all.length && typeof todoEmptyText === 'function' ? todoEmptyText() : 'Nothing to do yet.';
+        li.textContent = all.length && typeof todoEmptyText === 'function' ? todoEmptyText() : 'Nothing here yet. Add your first task and start a focus session.';
         todoList.append(li);
         return;
     }

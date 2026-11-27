@@ -21,9 +21,26 @@ animTiles.forEach((b) => {
 });
 const animSaveData = !!(navigator.connection && navigator.connection.saveData);
 
+// The background never holds up the page: the clock is drawn at once, and the background stays invisible until its
+// picture has loaded, then fades in (0.4 s; at once with Animations off, see app.css). The video follows on top of it.
+let themeBgShown = false;
+let themeBgWaiting = false;
+themeBgScene.classList.add('loading');
+function revealThemeBg(scene) {
+    if (themeBgShown || themeBgWaiting) return;
+    themeBgWaiting = true;
+    const img = new Image();
+    img.onload = img.onerror = () => {
+        themeBgShown = true;
+        themeBgScene.classList.remove('loading');
+    };
+    img.src = scene.poster;
+}
+
 function syncThemeBg() {
     const on = ui.theme === 'animated';
     const scene = AES_VIDEOS[aesthetic.scene];
+    if (on) revealThemeBg(scene);
 
     // Aesthetic mode belongs to the Animated theme: its button on Focus shows only then. Leaving the theme while
     // in Aesthetic mode (from another device, say) goes back to Clean mode.

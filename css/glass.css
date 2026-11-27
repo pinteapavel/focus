@@ -281,3 +281,16 @@ body.aesthetic {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
 }
+
+/* ---------- 6. Readable text on the light-text colour themes ----------
+   Blush, Forest and Deep Sea have light text on a dark colour. Lightening a button inside a panel (the text colour
+   mixed in) lowers the contrast of that text below 4.5:1 on Deep Sea, so there the inner tint and the hover darken. */
+:root:is([data-theme="blush"], [data-theme="forest"], [data-theme="deep-sea"])[data-bg],
+:root:is([data-theme="blush"], [data-theme="forest"], [data-theme="deep-sea"])[data-bg][data-glass] {
+    --glass-tint-nested: rgb(0 0 0 / 0.08);
+}
+:root[data-theme="deep-sea"][data-bg] { --hover: rgb(0 0 0 / 0.12); }
+/* The calendar's day cells too (they were the text colour mixed in, which lightens them) */
+:root:is([data-theme="blush"], [data-theme="forest"], [data-theme="deep-sea"])[data-bg] .cal-cell { background: rgb(0 0 0 / 0.08); }
+:root:is([data-theme="blush"], [data-theme="forest"], [data-theme="deep-sea"])[data-bg] .cal-cell:hover { background: rgb(0 0 0 / 0.14); }
+:root:is([data-theme="blush"], [data-theme="forest"], [data-theme="deep-sea"])[data-bg] .cal-cell.out { background: transparent; }

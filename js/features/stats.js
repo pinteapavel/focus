@@ -94,6 +94,8 @@ function renderStreak(ms) {
 function renderStats() {
     renderGoals();
     const totals = totalsByDay();
+    // No focus session yet: a line above the zero figures, and a button to the Focus tab
+    $('stats-first').hidden = sessions.length > 0 || Object.values(totals).some((v) => v > 0);
     const ms = (d) => totals[dayKey(d)] || 0;
     const now = dateAgo(0);
     const month = statsRange === 'month';
@@ -383,3 +385,6 @@ rangeBtns.forEach((b) => b.addEventListener('click', () => {
     rangeBtns.forEach((x) => x.classList.toggle('active', x === b));
     renderStats();
 }));
+
+// "Start a session": to the Focus tab, where Start begins the first one
+$('stats-start').addEventListener('click', () => showTab('focus'));
