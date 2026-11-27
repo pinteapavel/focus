@@ -27,6 +27,13 @@ if (typeof ui.animations !== 'boolean') ui.animations = true;
 const GLOW_LEVELS = ['off', 'soft', 'strong'];
 const GLOW_THEMES = ['dark', 'light', 'graphite', 'paper'];
 if (!GLOW_LEVELS.includes(ui.glow)) ui.glow = 'strong';
+// Glass (css/glass.css): Off, Soft, Strong, on every theme. Until the person picks one, each device takes its own default:
+// Strong on a computer, Soft on a phone or small screen. A device that asks for less transparency always gets Off.
+const GLASS_LEVELS = ['off', 'soft', 'strong'];
+if (ui.glass !== undefined && !GLASS_LEVELS.includes(ui.glass)) delete ui.glass;
+const lessTransparency = window.matchMedia ? window.matchMedia('(prefers-reduced-transparency: reduce)') : { matches: false };
+const smallScreen = window.matchMedia ? window.matchMedia('(max-width: 600px)') : { matches: false };
+const glassLevel = () => (lessTransparency.matches ? 'off' : ui.glass || (smallScreen.matches ? 'soft' : 'strong'));
 if (!['sora', 'mono', 'inter', 'dmsans'].includes(ui.font)) ui.font = 'sora';
 if (!TEXT_WEIGHTS.includes(Number(ui.textWeight))) ui.textWeight = 300;
 ui.textWeight = Number(ui.textWeight);
@@ -104,6 +111,10 @@ const customSwatch = $('swatch-custom');
 const accentCustom = $('accent-custom');
 const glowRow = $('glow-row');
 const glowBtns = document.querySelectorAll('[data-glow-choice]');
+const glassRow = $('glass-row');
+const glassNote = $('glass-note');
+const glassBtns = document.querySelectorAll('[data-glass-choice]');
+const GLASS_NOTE = glassNote.textContent;
 
 // 5 even steps from white (0h) to the accent color (4h+)
 function paletteFor(hex) {
@@ -139,12 +150,20 @@ function applyUi() {
     press(glowBtns, (b) => b.dataset.glowChoice === ui.glow);
     glowBtns.forEach((b) => { b.disabled = !glowOk; });
     glowRow.classList.toggle('off', !glowOk);
+    // Glass: data-glass picks the level's values in glass.css. Less transparency asked: Off, the row greyed with why
+    const glass = glassLevel();
+    root.dataset.glass = glass;
+    press(glassBtns, (b) => b.dataset.glassChoice === glass);
+    glassBtns.forEach((b) => { b.disabled = lessTransparency.matches; });
+    glassRow.classList.toggle('off', lessTransparency.matches);
+    glassNote.textContent = lessTransparency.matches ? 'Turned off because your device asks for less transparency.' : GLASS_NOTE;
     press(fontTiles, (b) => b.dataset.fontChoice === ui.font);
     press(formatBtns, (b) => b.dataset.formatChoice === ui.format);
     secondsSwitch.checked = ui.seconds;
     setRange(textWeightRange, TEXT_WEIGHTS.indexOf(ui.textWeight), TEXT_WEIGHTS.length - 1);
     textWeightRange.setAttribute('aria-valuetext', `${WEIGHT_NAMES[ui.textWeight]} (${ui.textWeight})`);
     root.style.setProperty('--w', String(ui.textWeight));
+    root.dataset.animations = ui.animations ? 'on' : 'off';   // glass.css: no transitions when off
     const weights = FONT_WEIGHTS[ui.font];
     weightRow.hidden = !weights;
     if (weights) {
@@ -202,4 +221,7 @@ swatchBtns.forEach((b) => b.addEventListener('click', () => changeUi('accent', b
 accentCustom.addEventListener('input', () => { ui.accent = accentCustom.value; applyUi(); }); // live preview
 accentCustom.addEventListener('change', () => changeUi('accent', accentCustom.value));
 glowBtns.forEach((b) => b.addEventListener('click', () => changeUi('glow', b.dataset.glowChoice)));
+glassBtns.forEach((b) => b.addEventListener('click', () => changeUi('glass', b.dataset.glassChoice)));
+// The device setting or the window size changed: the forced Off and the default follow
+[lessTransparency, smallScreen].forEach((mq) => { if (mq.addEventListener) mq.addEventListener('change', applyUi); });
 if (systemLight && systemLight.addEventListener) systemLight.addEventListener('change', () => { if (ui.theme === 'system') applyUi(); });

@@ -68,7 +68,14 @@ let aesLen = 0;
 function applyAestheticLook() {
     aesBg.dataset.scene = aesthetic.scene;
     aesPicture(aesBg, aesthetic.scene);
-    aesDimLayer.style.opacity = String((aesthetic.dim / 100) * 0.8);
+    setAesDim(aesthetic.dim);
+}
+
+// The Dim layer over the video; glass.css reads --aes-dim to make the glass as dark as the text needs
+function setAesDim(dim) {
+    const d = (dim / 100) * 0.8;
+    aesDimLayer.style.opacity = String(d);
+    document.documentElement.style.setProperty('--aes-dim', String(d));
 }
 
 function renderAestheticSettings() {
@@ -92,7 +99,7 @@ aesMinSwitch.addEventListener('change', () => {
 });
 aesDimRange.addEventListener('input', () => {
     aesDimRange.style.setProperty('--pct', `${aesDimRange.value}%`);
-    aesDimLayer.style.opacity = String((Number(aesDimRange.value) / 100) * 0.8);   // live preview
+    setAesDim(Number(aesDimRange.value));   // live preview
 });
 aesDimRange.addEventListener('change', () => changeAesthetic('dim', Number(aesDimRange.value)));
 

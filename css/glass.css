@@ -1,0 +1,283 @@
+/* Clockus — the "Frosted" glass: every button and panel of the site (landing, app, Settings, dialogs, tab bar, cards,
+   fields, menus, toasts, Aesthetic mode). Loaded last on every page, so this one file holds the whole look.
+
+   1. Tokens: change the glass here (blur, tint, border, top highlight, grain, corners).
+   2. Theme tints: dark themes a dark tint, Light and Paper a light one with dark text, colour themes their own colour.
+      Over a video the tint is stronger, measured so text (also the grey text) keeps at least 4.5:1 on every background.
+   3. Where it applies: panels and the main buttons get blur; small buttons inside rows, and anything inside a glass
+      panel, get only the tint (no blur on blur, and no blur repeated down a long list).
+   4. Fallbacks: no backdrop-filter, reduced transparency, small or weak devices.
+   States (hover, selected, primary...) keep the rules they already had: those are more specific and win. */
+
+/* ---------- 1. Tokens ---------- */
+:root {
+    --glass-blur: 24px;
+    --glass-saturate: 1.25;
+    --glass-tint: rgb(12 12 16 / 0.35);              /* the see-through fill */
+    --glass-tint-strong: rgb(12 12 16 / 0.72);       /* bars that content scrolls under */
+    --glass-tint-nested: rgb(255 255 255 / 0.06);    /* inside a glass panel: tint only, no blur */
+    --glass-solid: rgb(14 14 18 / 0.96);             /* no blur available, or less transparency asked */
+    --glass-border: rgb(255 255 255 / 0.14);         /* the thin bright edge */
+    --glass-highlight: rgb(255 255 255 / 0.10);      /* the fine line of light along the top (inset) */
+    --glass-hover: rgb(255 255 255 / 0.06);          /* added on hover: a little brighter, nothing moves */
+    --glass-press: rgb(0 0 0 / 0.10);                /* added while pressed */
+    --glass-radius: 20px;                            /* panels; buttons are pills */
+    --glass-drop: 0 0 #0000;                         /* floating panels keep their own shadow (below) */
+    --glass-over: transparent;
+    --glass-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ---------- 2. Theme tints ---------- */
+/* The landing pages: black with a violet glow; 45% keeps grey text at 4.5:1 over the brightest part of the glow */
+:root:not([data-theme]) {
+    --glass-tint: rgb(12 12 16 / 0.45);
+}
+
+:root[data-theme="graphite"] {
+    --glass-tint: rgb(44 44 48 / 0.35);
+    --glass-tint-strong: rgb(36 36 38 / 0.78);
+    --glass-solid: rgb(36 36 38 / 0.96);
+}
+
+/* Light and Paper: a light tint, dark text, a darker grain; the edge is a soft dark line with a white top highlight */
+:root:is([data-theme="light"], [data-theme="paper"]) {
+    --glass-tint: rgb(255 255 255 / 0.55);
+    --glass-tint-strong: rgb(255 255 255 / 0.8);
+    --glass-tint-nested: rgb(0 0 0 / 0.035);
+    --glass-solid: rgb(255 255 255 / 0.96);
+    --glass-border: rgb(0 0 0 / 0.09);
+    --glass-highlight: rgb(255 255 255 / 0.9);
+    --glass-hover: rgb(255 255 255 / 0.45);
+    --glass-press: rgb(0 0 0 / 0.05);
+    --glass-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");
+}
+:root[data-theme="paper"] {
+    --glass-tint: rgb(251 248 242 / 0.55);
+    --glass-tint-strong: rgb(251 248 242 / 0.82);
+    --glass-solid: rgb(248 244 236 / 0.96);
+}
+
+/* Colour themes: the tint is the theme's own colour (lifted a touch by its text colour) */
+:root:is([data-theme="blush"], [data-theme="vanilla"], [data-theme="olive"], [data-theme="forest"], [data-theme="deep-sea"])[data-bg] {
+    --glass-tint: color-mix(in srgb, color-mix(in srgb, var(--text) 6%, var(--bg)) 55%, transparent);
+    --glass-tint-strong: color-mix(in srgb, var(--bg) 82%, transparent);
+    --glass-tint-nested: color-mix(in srgb, var(--text) 6%, transparent);
+    --glass-solid: color-mix(in srgb, color-mix(in srgb, var(--text) 6%, var(--bg)) 96%, transparent);
+    --glass-border: color-mix(in srgb, var(--text) 22%, transparent);
+    --glass-highlight: rgb(255 255 255 / 0.16);
+    --glass-hover: color-mix(in srgb, var(--text) 7%, transparent);
+    --glass-press: color-mix(in srgb, var(--bg) 20%, transparent);
+}
+:root:is([data-theme="vanilla"], [data-theme="olive"])[data-bg] { --glass-highlight: rgb(255 255 255 / 0.45); }
+
+/* Animated: the video runs under a 50% dark layer; 42% keeps text and grey text at 4.5:1 on every background
+   (the brightest, Cherry Grove and Northern Landscape, need 33%; the rest is room for the saturate) */
+:root[data-theme="animated"] {
+    --glass-tint: rgb(10 10 14 / 0.42);
+    --glass-tint-strong: rgb(10 10 14 / 0.6);
+    --glass-solid: rgb(10 10 14 / 0.94);
+    --glass-border: rgb(255 255 255 / 0.2);
+}
+/* Home over the video: its grey text is fainter (62%), so the glass is darker (52% needed) */
+:root[data-theme="animated"] body.home-aes { --glass-tint: rgb(10 10 14 / 0.56); }
+/* Aesthetic mode: the video has only the Dim layer (Settings, 0 to 80%; aesthetic-mode.js sets --aes-dim).
+   The widget's label is 60% white, so video and glass together must darken by 81%:
+   Dim 0 -> 81% tint, Dim 40 (default) -> 72%, Dim 80 -> 47%. Never below 42%. */
+body.aesthetic {
+    --glass-tint: rgb(10 10 14 / max(0.42, calc(1 - 0.19 / (1 - var(--aes-dim, 0)))));
+    --glass-solid: rgb(10 10 14 / 0.94);
+    --glass-border: rgb(255 255 255 / 0.2);
+}
+
+/* ---------- 3. Where it applies ---------- */
+/* Panels and the main buttons: tint, blur, bright edge, top highlight, grain */
+:is(
+    /* app panels, menus, dialogs, toasts */
+    .set-card, .cal-card, .up-card, .stat-card, .stat-panel, .goal-card, .cal-overdue, .day-pick, .account-menu,
+    .ge-card, .pk, .mv-sheet, .toast, .tn-panel, .hc-menu, .home-cap, .home-chip, .fb-card,
+    /* Aesthetic mode */
+    .aes-widget, .aes-sound, .aes-sound-pop,
+    /* the tab bar and the main buttons */
+    .nav, .btn, .mode-pill, .avatar-btn, .icon-btn, .range-btn, .seg, .cal-arrow, .hc-ghost,
+    /* landing, Privacy, Terms, 404 */
+    .timer-card, .card, .map-card, .cta, .extra-card, .goal-chip, .streak-chip, .pv-short, .chips li
+) {
+    background: var(--glass-grain), linear-gradient(var(--glass-over), var(--glass-over)), var(--glass-tint);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border-color: var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-drop);
+}
+
+/* Small buttons in rows and lists, and the text fields: the same glass without its own blur */
+:is(
+    .due-btn, .day-chip, .day-add, .pk-chip, .pk-arrow, .ge-day, .ge-step button, .note-badge, .gw-last, .up-done-btn,
+    .tn-filters button, .aes-btn, .fb-btn, .fb-types button, .am-action,
+    .tn-search, .todo-input input, .del-input, .fb-field, .edit-input, .hc-custom input
+) {
+    background: var(--glass-grain), linear-gradient(var(--glass-over), var(--glass-over)), var(--glass-tint);
+    border-color: var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* No blur of their own, on any theme: small buttons in rows and lists, tiles and menu options. (An older Animated
+   theme rule in app.css gave them a light blur; that meant blur on blur in panels and dozens of blurs down a list.) */
+:is(
+    .due-btn, .prio-btn, .up-done-btn, .tn-filters button, .day-chip, .day-item, .day-pick-item, .day-add, .pk-chip,
+    .pk-arrow, .mv-opt, .ge-step button, .ge-day, .font-tile, .note-badge, .gw-last, .tn-search, .todo-input input
+) {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+/* Inside a glass panel: only a tint, never blur on blur */
+:where(
+    .set-card, .cal-card, .up-card, .stat-card, .stat-panel, .goal-card, .cal-overdue, .day-pick, .account-menu,
+    .ge-card, .pk, .mv-sheet, .toast, .tn-panel, .hc-menu, .home-cap, .home-chip, .fb-card, .aes-widget, .aes-sound-pop,
+    .nav, .timer-card, .card, .map-card, .cta, .extra-card
+) :is(
+    .stat-card, .stat-panel, .goal-card, .home-chip, .btn, .mode-pill, .range-btn, .seg, .cal-arrow, .hc-ghost, .chips li,
+    .due-btn, .day-chip, .day-add, .pk-chip, .pk-arrow, .ge-day, .ge-step button, .note-badge, .gw-last, .up-done-btn,
+    .tn-filters button, .aes-btn, .fb-btn, .fb-types button, .am-action,
+    .tn-search, .todo-input input, .del-input, .fb-field, .edit-input, .hc-custom input
+) {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--glass-grain), linear-gradient(var(--glass-over), var(--glass-over)), var(--glass-tint-nested);
+}
+
+/* Hover a little brighter, pressed a little darker; the focus ring is the site's own (:focus-visible) */
+:is(.nav, .btn, .mode-pill, .avatar-btn, .icon-btn, .range-btn, .cal-arrow, .hc-ghost, .home-chip, .aes-sound,
+    .due-btn, .day-chip, .pk-chip, .pk-arrow, .ge-day, .ge-step button, .note-badge, .gw-last, .up-done-btn,
+    .tn-filters button, .aes-btn, .fb-btn, .fb-types button, .am-action, .chips li):hover { --glass-over: var(--glass-hover); }
+:is(.btn, .mode-pill, .avatar-btn, .icon-btn, .range-btn, .cal-arrow, .hc-ghost, .home-chip, .aes-sound,
+    .due-btn, .day-chip, .pk-chip, .pk-arrow, .ge-day, .ge-step button, .note-badge, .gw-last, .up-done-btn,
+    .tn-filters button, .aes-btn, .fb-btn, .fb-types button, .am-action):active { --glass-over: var(--glass-press); }
+
+/* Corners: about 20px for panels, pills for buttons (most already are) */
+:is(.set-card, .cal-card, .up-card, .stat-card, .stat-panel, .goal-card, .cal-overdue, .day-pick, .account-menu,
+    .ge-card, .pk, .mv-sheet, .toast, .hc-menu, .aes-sound-pop, .fb-card,
+    .timer-card, .card, .map-card, .extra-card, .goal-chip, .streak-chip, .pv-short) { border-radius: var(--glass-radius); }
+:is(.btn, .mode-pill, .range-btn, .seg, .hc-ghost, .aes-sound, .due-btn, .day-chip, .pk-chip, .note-badge, .gw-last,
+    .up-done-btn, .tn-filters button, .fb-btn, .fb-types button, .am-action, .chips li) { border-radius: 999px; }
+
+/* Floating panels keep the shadow they had, under the highlight */
+:is(.account-menu, .toast, .hc-menu) { --glass-drop: 0 12px 32px rgb(0 0 0 / 0.35); }
+:is(.pk, .mv-sheet, .tn-panel) { --glass-drop: 0 20px 50px rgb(0 0 0 / 0.45); }
+.aes-widget { --glass-drop: 0 12px 40px rgb(0 0 0 / 0.35); }
+
+/* Kept as they were: the streak card's accent edge; the flag button stays borderless on a phone */
+.streak-card:not(.out) { border-color: var(--p3); }
+
+/* The tab bar fixed at the bottom of a phone, and the landing pages' top bar: content scrolls under them */
+@media (max-width: 600px) {
+    .nav { --glass-tint: var(--glass-tint-strong); }
+}
+:root[data-theme="animated"] body.home-aes .nav { background: var(--glass-grain), linear-gradient(var(--glass-over), var(--glass-over)), var(--glass-tint); }
+:root:not([data-theme]) .topbar {
+    background: var(--glass-grain), var(--glass-tint-strong);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border-bottom-color: var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* Animations off (Settings): the glass changes state at once */
+:root[data-animations="off"] :is(.set-card, .cal-card, .up-card, .stat-card, .stat-panel, .goal-card, .cal-overdue,
+    .day-pick, .account-menu, .ge-card, .pk, .mv-sheet, .toast, .tn-panel, .hc-menu, .home-cap, .home-chip, .fb-card,
+    .aes-widget, .aes-sound, .aes-sound-pop, .nav, .btn, .mode-pill, .avatar-btn, .icon-btn, .range-btn, .seg,
+    .cal-arrow, .hc-ghost, .due-btn, .day-chip, .day-add, .pk-chip, .pk-arrow, .ge-day, .ge-step button, .note-badge,
+    .gw-last, .up-done-btn, .tn-filters button, .aes-btn, .fb-btn, .fb-types button, .am-action) { transition: none; }
+
+/* ---------- 4. Fallbacks and lighter glass ---------- */
+/* Small screens and weak devices (data-lowpower, set in app.html): less blur */
+@media (max-width: 600px) {
+    :root { --glass-blur: 14px; }
+}
+:root[data-lowpower] { --glass-blur: 14px; }
+
+/* No backdrop-filter, or the person asks for less transparency: a solid fill of the same tint (each theme sets its
+   own --glass-solid), no blur. Set on the elements themselves, so it wins over every theme's tint. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    :is(.set-card, .cal-card, .up-card, .stat-card, .stat-panel, .goal-card, .cal-overdue, .day-pick, .account-menu,
+        .ge-card, .pk, .mv-sheet, .toast, .tn-panel, .hc-menu, .home-cap, .home-chip, .fb-card, .aes-widget, .aes-sound,
+        .aes-sound-pop, .nav, .btn, .mode-pill, .avatar-btn, .icon-btn, .range-btn, .seg, .cal-arrow, .hc-ghost,
+        .timer-card, .card, .map-card, .cta, .extra-card, .goal-chip, .streak-chip, .pv-short, .chips li) {
+        background: var(--glass-grain), linear-gradient(var(--glass-over), var(--glass-over)), var(--glass-solid);
+    }
+}
+@media (prefers-reduced-transparency: reduce) {
+    :is(.set-card, .cal-card, .up-card, .stat-card, .stat-panel, .goal-card, .cal-overdue, .day-pick, .account-menu,
+        .ge-card, .pk, .mv-sheet, .toast, .tn-panel, .hc-menu, .home-cap, .home-chip, .fb-card, .aes-widget, .aes-sound,
+        .aes-sound-pop, .nav, .btn, .mode-pill, .avatar-btn, .icon-btn, .range-btn, .seg, .cal-arrow, .hc-ghost,
+        .timer-card, .card, .map-card, .cta, .extra-card, .goal-chip, .streak-chip, .pv-short, .chips li) {
+        background: var(--glass-grain), linear-gradient(var(--glass-over), var(--glass-over)), var(--glass-solid);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    :root:not([data-theme]) .topbar { background: var(--glass-grain), var(--glass-solid); }
+}
+@media (prefers-reduced-transparency: reduce) {
+    :root:not([data-theme]) .topbar { background: var(--glass-grain), var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* ---------- 5. Levels: Settings › Appearance › Glass (appearance.js sets data-glass) ----------
+   Strong is everything above. Soft and Off only change the tokens (values from the "Glass setting" board).
+   Over a video (Animated theme, Home over the video, Aesthetic mode) the tint never drops below what the text needs:
+   those rules set their own tint on the body, and Soft's 50% is above the 42% the Animated theme needs. */
+
+/* Soft: a light blur, a darker tint, a thin edge, no grain and no top highlight. Easy on the processor. */
+:root[data-glass="soft"] {
+    --glass-blur: 12px;
+    --glass-saturate: 1;
+    --glass-grain: none;
+    --glass-highlight: transparent;
+    --glass-tint: rgb(0 0 0 / 0.5);
+    --glass-border: rgb(255 255 255 / 0.14);
+}
+:root[data-glass="soft"][data-theme="graphite"] { --glass-tint: rgb(36 36 38 / 0.6); }
+:root[data-glass="soft"]:is([data-theme="light"], [data-theme="paper"]) {
+    --glass-tint: rgb(255 255 255 / 0.72);
+    --glass-border: rgb(0 0 0 / 0.09);
+}
+:root[data-glass="soft"][data-theme="paper"] { --glass-tint: rgb(251 248 242 / 0.72); }
+/* Colour themes keep their own tint (their grey text was measured on it); only the blur, grain and highlight change */
+:root[data-glass="soft"]:is([data-theme="blush"], [data-theme="vanilla"], [data-theme="olive"], [data-theme="forest"], [data-theme="deep-sea"])[data-bg] {
+    --glass-tint: color-mix(in srgb, color-mix(in srgb, var(--text) 6%, var(--bg)) 55%, transparent);
+    --glass-border: color-mix(in srgb, var(--text) 18%, transparent);
+    --glass-highlight: transparent;
+}
+
+/* Off: solid panels, no blur, no grain, no highlight. For people who find glass distracting, and very old phones. */
+:root[data-glass="off"] {
+    --glass-tint: #101010;
+    --glass-tint-strong: #101010;
+    --glass-solid: #101010;
+    --glass-tint-nested: rgb(255 255 255 / 0.04);
+    --glass-border: #2f2f2f;
+    --glass-highlight: transparent;
+    --glass-grain: none;
+}
+:root[data-glass="off"][data-theme="graphite"] { --glass-tint: #242426; --glass-tint-strong: #242426; --glass-solid: #242426; --glass-border: #3a3a3d; }
+:root[data-glass="off"][data-theme="light"] { --glass-tint: #fff; --glass-tint-strong: #fff; --glass-solid: #fff; --glass-border: #dcdcdc; --glass-tint-nested: rgb(0 0 0 / 0.035); }
+:root[data-glass="off"][data-theme="paper"] { --glass-tint: #f8f4ec; --glass-tint-strong: #f8f4ec; --glass-solid: #f8f4ec; --glass-border: #d8ccb8; --glass-tint-nested: rgb(0 0 0 / 0.035); }
+:root[data-glass="off"]:is([data-theme="blush"], [data-theme="vanilla"], [data-theme="olive"], [data-theme="forest"], [data-theme="deep-sea"])[data-bg] {
+    --glass-tint: var(--bg);
+    --glass-tint-strong: var(--bg);
+    --glass-solid: var(--bg);
+    --glass-border: color-mix(in srgb, var(--text) 22%, transparent);
+    --glass-highlight: transparent;
+    --glass-tint-nested: color-mix(in srgb, var(--text) 6%, transparent);
+}
+/* Over the video too: solid */
+:root[data-glass="off"] :is(body.aesthetic, body.home-aes) { --glass-tint: #101010; --glass-solid: #101010; --glass-border: #2f2f2f; }
+:root[data-glass="off"] :is(
+    .set-card, .cal-card, .up-card, .stat-card, .stat-panel, .goal-card, .cal-overdue, .day-pick, .account-menu,
+    .ge-card, .pk, .mv-sheet, .toast, .tn-panel, .hc-menu, .home-cap, .home-chip, .fb-card, .aes-widget, .aes-sound,
+    .aes-sound-pop, .nav, .btn, .mode-pill, .avatar-btn, .icon-btn, .range-btn, .seg, .cal-arrow, .hc-ghost
+) {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}

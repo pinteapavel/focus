@@ -16,10 +16,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@1000&display=swap" rel="stylesheet">
-    <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');var r=document.documentElement;var t=u.theme||'dark';if(t==='wine')t='blush';if(t==='electric-blue')t='deep-sea';if(t==='system')t='dark';r.dataset.theme=t;r.dataset.bg='solid';var f=['sora','mono','inter','dmsans'].indexOf(u.font)>-1?u.font:'sora';if(u.v!==2&&u.font==='mono')f='sora';r.dataset.font=f;var w=u.weights&&u.weights[f];if(w)r.style.setProperty('--clock-weight',w);if(u.textWeight)r.style.setProperty('--w',u.textWeight);}catch(e){}</script>
+    <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');var r=document.documentElement;var t=u.theme||'dark';if(t==='wine')t='blush';if(t==='electric-blue')t='deep-sea';if(t==='system')t='dark';r.dataset.theme=t;r.dataset.bg='solid';var f=['sora','mono','inter','dmsans'].indexOf(u.font)>-1?u.font:'sora';if(u.v!==2&&u.font==='mono')f='sora';r.dataset.font=f;var w=u.weights&&u.weights[f];if(w)r.style.setProperty('--clock-weight',w);if(u.textWeight)r.style.setProperty('--w',u.textWeight);r.dataset.animations=u.animations===false?'off':'on';var mq=function(q){return window.matchMedia&&matchMedia(q).matches};var g=u.glass;if(mq('(prefers-reduced-transparency: reduce)'))g='off';else if(['off','soft','strong'].indexOf(g)<0)g=mq('(max-width: 600px)')?'soft':'strong';r.dataset.glass=g;if((navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=4)r.dataset.lowpower='';}catch(e){}</script>
     <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' ('+String(e.filename||'').split('/').pop().split('?')[0]+' line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
-    <link rel="stylesheet" href="css/app.css?v=58">
+    <link rel="stylesheet" href="css/app.css?v=59">
     <link rel="stylesheet" href="css/feedback.css?v=1">
+    <link rel="stylesheet" href="css/glass.css?v=4">
 </head>
 <body data-mode="focus" data-tab="clock">
     <header class="topbar">
@@ -399,6 +400,15 @@
                                 <button class="swatch" type="button" data-color="#c2410c" aria-label="Orange"></button>
                                 <button class="swatch" type="button" data-color="#be123c" aria-label="Rose"></button>
                                 <label class="swatch swatch-custom" id="swatch-custom" title="Custom color">+<input type="color" id="accent-custom" aria-label="Custom accent color"></label>
+                            </div>
+                        </div>
+                        <!-- Glass: how frosted panels and buttons look (css/glass.css); every theme. Off when the device asks for less transparency (appearance.js) -->
+                        <div class="set-row" id="glass-row">
+                            <div class="set-row-text"><div id="glass-label">Glass <span class="new-badge">New</span></div><p id="glass-note">How strongly panels and buttons look like frosted glass. Applies on every theme.</p></div>
+                            <div class="seg" role="group" aria-labelledby="glass-label">
+                                <button type="button" data-glass-choice="off">Off</button>
+                                <button type="button" data-glass-choice="soft">Soft</button>
+                                <button type="button" data-glass-choice="strong">Strong</button>
                             </div>
                         </div>
                         <!-- Glow: only with Dark, Light, Graphite and Paper; dimmed with the other themes (appearance.js) -->
@@ -817,8 +827,8 @@
     <!-- App code, split by feature. Classic scripts sharing one global scope: the ORDER matters. -->
     <script src="js/core/helpers.js?v=33"></script>
     <script src="js/core/dom.js?v=33"></script>
-    <script src="js/features/navigation.js?v=38"></script>
-    <script src="js/features/appearance.js?v=45"></script>
+    <script src="js/features/navigation.js?v=39"></script>
+    <script src="js/features/appearance.js?v=47"></script>
     <script src="js/core/toast.js?v=1"></script>
     <script src="js/features/digit-motion.js?v=1"></script>
     <script src="js/features/clock.js?v=34"></script>
@@ -837,14 +847,14 @@
     <script src="js/features/coming-up.js?v=35"></script>
     <script src="js/features/timer-alerts.js?v=47"></script>
     <script src="js/features/clean-mode.js?v=37"></script>
-    <script src="js/features/aesthetic-mode.js?v=54"></script>
+    <script src="js/features/aesthetic-mode.js?v=55"></script>
     <script src="js/features/ambient-sound.js?v=2"></script>
     <script src="js/features/animated-theme.js?v=47"></script>
     <script src="js/features/goal-reached.js?v=35"></script>
     <script src="js/features/home.js?v=44"></script>
     <script src="js/features/task-notes.js?v=36"></script>
     <script src="js/features/shortcuts.js?v=33"></script>
-    <script src="js/services/sync.js?v=46"></script>
+    <script src="js/services/sync.js?v=47"></script>
     <script src="js/services/auth.js?v=34"></script>
     <script src="js/services/delete-account.js?v=1"></script>
     <script src="js/feedback.js?v=1"></script>

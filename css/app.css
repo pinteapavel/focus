@@ -23,7 +23,7 @@
 :root:is([data-theme="light"], [data-theme="paper"], [data-theme="vanilla"], [data-theme="olive"]) {
     --bg: #fff;
     --text: #111;
-    --muted: #777;
+    --muted: #767676;   /* 4.5:1 on white (#777 was 4.48) */
     --line: #e4e4e4;
     --line-strong: #bdbdbd;
     --on-text: #fff;
@@ -2298,6 +2298,11 @@ body.modal-open { overflow: hidden; }
     --hover: color-mix(in srgb, var(--text) 10%, transparent);
     --cal-acc: var(--p4);            /* the accent itself (by default the text colour) */
 }
+/* Grey text at least 4.5:1 on each theme (on its background and on its glass): more of the text colour where needed */
+:root[data-theme="blush"][data-bg] { --muted: color-mix(in srgb, var(--text) 90%, var(--bg)); }
+:root[data-theme="vanilla"][data-bg] { --muted: color-mix(in srgb, var(--text) 70%, var(--bg)); }
+:root[data-theme="olive"][data-bg] { --muted: color-mix(in srgb, var(--text) 78%, var(--bg)); }
+:root[data-theme="deep-sea"][data-bg] { --muted: color-mix(in srgb, var(--text) 95%, var(--bg)); }
 
 :root:is([data-theme="blush"], [data-theme="vanilla"], [data-theme="olive"], [data-theme="forest"], [data-theme="deep-sea"])[data-bg] body {
     background: var(--bg);
