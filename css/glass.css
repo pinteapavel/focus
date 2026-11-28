@@ -167,7 +167,7 @@ body.aesthetic {
 .aes-widget { --glass-drop: 0 12px 40px rgb(0 0 0 / 0.35); }
 
 /* Kept as they were: the streak card's accent edge; the flag button stays borderless on a phone */
-.streak-card:not(.out) { border-color: var(--p3); }
+.streak-card:not(.out), .streak-chip { border-color: var(--p3); }
 
 /* The tab bar fixed at the bottom of a phone, and the landing pages' top bar: content scrolls under them */
 @media (max-width: 600px) {
