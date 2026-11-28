@@ -320,6 +320,20 @@ body.aesthetic .toast:not(.toast-timer) { display: none; }
 /* Read aloud by screen readers, not shown */
 .toast-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
+/* Read by screen readers, never shown and taking no room (e.g. the tab's <h1>) */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+}
+
 @media (max-width: 600px) {
     .toasts { top: calc(10px + env(safe-area-inset-top)); width: calc(100vw - 20px); }
 }

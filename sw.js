@@ -7,7 +7,7 @@
 // - CSS and JS carry ?v= in their address, so a new version is a new file in the cache.
 // Requests to Supabase and to the Google sign-in never go through the cache.
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v3';
 const CACHE = `clockus-${CACHE_VERSION}`;            // the app shell, filled at install
 const RUNTIME = `clockus-runtime-${CACHE_VERSION}`;  // fonts, the Supabase library, files met later
 const APP_PAGE = '/app';
@@ -16,6 +16,7 @@ const STATIC_FILES = [
     '/manifest.json',
     '/icon-192.png',
     '/icon-512.png',
+    '/icon-maskable-512.png',
     '/apple-touch-icon.png',
     '/favicon.svg',
     '/favicon.ico'

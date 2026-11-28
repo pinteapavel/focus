@@ -29,6 +29,8 @@ function fadeParts(root) {
     return parts;
 }
 
+// The new screen fades in, short; the old one is simply hidden at once (nothing overlaps)
+const TAB_FADE_MS = 180;
 function fadeIn(root, duration) {
     fadeParts(root).forEach((el) => el.animate && el.animate([{ opacity: 0 }, { opacity: 1 }], { duration, easing: 'ease-out' }));
 }
@@ -48,37 +50,10 @@ function floatClock(first, tab) {
             { transformOrigin: 'top left', transform: 'none' }
         ], { duration: 550, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
     });
-    fadeIn(tab === 'focus' ? focusContainer : todoContainer, 400);
+    fadeIn(tab === 'focus' ? focusContainer : todoContainer, TAB_FADE_MS);
 }
 
-// A visual copy of something that is about to disappear, so it can fade out in place
-function ghostOf(el) {
-    const r = el.getBoundingClientRect();
-    if (!r.width || !r.height) return null;
-    const cs = getComputedStyle(el);
-    const g = el.cloneNode(true);
-    g.removeAttribute('id');
-    g.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
-    Object.assign(g.style, {
-        position: 'fixed', left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`,
-        // keep its own layout (Home's column is flex, so the capsule stays centred while it fades)
-        margin: '0', display: cs.display === 'none' ? 'block' : cs.display, zIndex: '5', pointerEvents: 'none',
-        fontSize: cs.fontSize, fontFamily: cs.fontFamily, fontWeight: cs.fontWeight,
-        letterSpacing: cs.letterSpacing, lineHeight: cs.lineHeight, color: cs.color, textAlign: cs.textAlign
-    });
-    g.setAttribute('aria-hidden', 'true');
-    g.inert = true;
-    document.body.append(g);
-    return g;
-}
-
-// The copy fades part by part too (see fadeParts): its glass keeps its blur until it is gone
-function fadeOutAndRemove(g) {
-    fadeParts(g).forEach((el) => el.animate && el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: 'ease-out', fill: 'forwards' }));
-    setTimeout(() => g.remove(), 320);
-}
-
-// What each tab shows, for the crossfade between tabs
+// What each tab shows, for the fade-in of the new tab
 const tabParts = (tab) => ({
     clock: [realtimeEl, $('rt-date'), $('home-container')],
     focus: [clockEl, progressEl, focusContainer],
@@ -88,16 +63,16 @@ const tabParts = (tab) => ({
     settings: [settingsContainer]
 }[tab] || []);
 
+const TAB_NAMES = { clock: 'Home', focus: 'Focus', todo: 'To do', calendar: 'Calendar', stats: 'Stats', settings: 'Settings' };
+
 function showTab(tab) {
     if (tab !== 'clock' && tab !== 'focus') setClean(false);
     const prev = document.body.dataset.tab;
     const floating = ui.animations && ((prev === 'focus' && tab === 'todo') || (prev === 'todo' && tab === 'focus'));
-    // Every other change of tab: the old content fades out while the new one fades in
-    const crossfade = ui.animations && !floating && prev !== tab;
-
-    // Copies of what is leaving, taken where it is on screen right now (before scrolling to the top)
-    const ghosts = crossfade ? tabParts(prev).map(ghostOf).filter(Boolean) : [];
-    if ((floating || crossfade) && window.scrollY > 0) window.scrollTo(0, 0);
+    // Every other change of tab: the old content is hidden at once (display: none, below) and the new one fades in.
+    // Animations off: the change is instant.
+    const fade = ui.animations && !floating && prev !== tab;
+    if ((floating || fade) && window.scrollY > 0) window.scrollTo(0, 0);
 
     // Where things are right now (also correct if a previous glide is still running)
     const first = floating ? [clockEl, progressEl].map((el) => el.getBoundingClientRect()) : null;
@@ -107,6 +82,8 @@ function showTab(tab) {
 
     const isClock = tab === 'clock';
     document.body.dataset.tab = tab;
+    // The page's one <h1> names the open tab (hidden, for screen readers)
+    $('tab-heading').textContent = TAB_NAMES[tab] || 'Clockus';
     clockTabBtn.classList.toggle('active', isClock);
     focusBtn.classList.toggle('active', tab === 'focus');
     todoBtn.classList.toggle('active', tab === 'todo');
@@ -140,10 +117,7 @@ function showTab(tab) {
     if (tab === 'todo' && prev !== 'todo' && !tasks.some(onTodoList)) taskInput.focus({ preventScroll: true });
 
     if (first) floatClock(first, tab);
-    if (crossfade) {
-        ghosts.forEach(fadeOutAndRemove);
-        tabParts(tab).forEach((el) => fadeIn(el, 450));
-    }
+    if (fade) tabParts(tab).forEach((el) => fadeIn(el, TAB_FADE_MS));
 }
 clockTabBtn.addEventListener('click', () => showTab('clock'));
 focusBtn.addEventListener('click', () => showTab('focus'));

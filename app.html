@@ -31,7 +31,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@1000&display=swap" rel="stylesheet">
     <script>try{var u=JSON.parse(localStorage.getItem('ui')||'{}');var r=document.documentElement;var first=true;try{for(var i=0;i<localStorage.length;i++){if(!/^sb-/.test(localStorage.key(i))){first=false;break}}}catch(e){first=false}window.clockusFirstVisit=first;var t=u.theme||(first?'animated':'dark');if(t==='wine')t='blush';if(t==='electric-blue')t='deep-sea';if(t==='system')t='dark';r.dataset.theme=t;r.dataset.bg='solid';var f=['sora','mono','inter','dmsans'].indexOf(u.font)>-1?u.font:'sora';if(u.v!==2&&u.font==='mono')f='sora';r.dataset.font=f;var w=u.weights&&u.weights[f];if(w)r.style.setProperty('--clock-weight',w);if(u.textWeight)r.style.setProperty('--w',u.textWeight);r.dataset.animations=u.animations===false?'off':'on';var mq=function(q){return window.matchMedia&&matchMedia(q).matches};var g=u.glass;if(mq('(prefers-reduced-transparency: reduce)'))g='off';else if(['off','soft','strong'].indexOf(g)<0)g=mq('(max-width: 600px)')?'soft':'strong';r.dataset.glass=g;if((navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=4)r.dataset.lowpower='';}catch(e){}</script>
     <script>window.addEventListener('error',function(e){var el=document.getElementById('build-info');var msg=' \u00b7 Error: '+e.message+' ('+String(e.filename||'').split('/').pop().split('?')[0]+' line '+(e.lineno||'?')+')';if(el&&el.textContent.indexOf(msg)<0){el.textContent+=msg;}});</script>
-    <link rel="stylesheet" href="css/app.css?v=64">
+    <link rel="stylesheet" href="css/app.css?v=65">
     <link rel="stylesheet" href="css/feedback.css?v=2">
     <link rel="stylesheet" href="css/glass.css?v=7">
 </head>
@@ -84,6 +84,8 @@
     </header>
 
     <div class="stage">
+        <!-- The open tab's name, for screen readers (not shown); navigation.js keeps it up to date -->
+        <h1 class="visually-hidden" id="tab-heading">Home</h1>
         <div class="realtime" id="realtime"><span id="rt-main">00:00</span><span class="rt-seconds" id="rt-sec">:00</span><span class="rt-ampm" id="rt-ampm"></span></div>
         <div class="rt-date" id="rt-date"></div>
         <div class="mode-pills" id="mode-pills">
@@ -845,7 +847,7 @@
     <!-- App code, split by feature. Classic scripts sharing one global scope: the ORDER matters. -->
     <script src="js/core/helpers.js?v=33"></script>
     <script src="js/core/dom.js?v=33"></script>
-    <script src="js/features/navigation.js?v=40"></script>
+    <script src="js/features/navigation.js?v=42"></script>
     <script src="js/features/appearance.js?v=49"></script>
     <script src="js/core/toast.js?v=1"></script>
     <script src="js/features/digit-motion.js?v=1"></script>
